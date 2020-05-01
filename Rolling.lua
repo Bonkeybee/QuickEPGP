@@ -138,4 +138,27 @@ QUICKEPGP.startRolling = function(message, author)
   end
 end
 
+QUICKEPGP.distributeItem = function(message, type)
+  local hasItemString = select(3, strfind(message, "|c(.+)|r"))
+  local hasPlayer = select(4, strfind(message, "|c(.+)|r(.+)"))a
+  if (hasItemString and hasPlayer) then
+    local player = strtrim(hasPlayer)
+    if (QUICKEPGP.guildMemberIndex(player)) then
+      local itemStrings = "|c"..hasItemString.."|r"
+      local itemParts = {strsplit("|", itemStrings)}
+      local count = table.getn(itemParts) - 1
+      if (count < 6) then
+        local itemId = select(3, strfind(itemStrings, ":(%d+):"))
+        if (itemId) then
+          if (type == QUICKEPGP.ADD) then
+            QUICKEPGP.modifyEPGP(player, nil, (QUICKEPGP.getItemGP(itemId) or 0), itemStrings)
+          elseif (type == QUICKEPGP.MINUS) then
+            QUICKEPGP.modifyEPGP(player, nil, (-QUICKEPGP.getItemGP(itemId) or 0), itemStrings)
+          end
+        end
+      end
+    end
+  end
+end
+
 QUICKEPGP.ROLLING:SetScript("OnUpdate", onUpdate)

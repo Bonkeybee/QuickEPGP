@@ -35,6 +35,11 @@ QUICKEPGP.getCharacterString = function(level, class, name)
   return nil
 end
 
+QUICKEPGP.getSimpleCharacterName = function(name)
+  local simpleName = strsplit("-", name)
+  return simpleName
+end
+
 QUICKEPGP.error = function(str)
   print("|cFFFF0000"..str.."|r")
 end

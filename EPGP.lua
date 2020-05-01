@@ -1,3 +1,9 @@
+local EP = "EP"
+local GP = "GP"
+local DELIMITER = ","
+
+local MINIMUM_EP = 0
+local MINIMUM_GP = 50
 local INFLATION_MOD = 10
 local EXPONENTIAL_MOD = 4
 local NORMALIZER_MOD = 0.125
@@ -66,13 +72,46 @@ local OVERRIDE = {
   --TODO AQ40 OVERRIDES
 
   --TODO NAXXRAMAS OVERRIDES
+
 }
+
+-- ############################################################
+-- ##### LOCAL FUNCTIONS ######################################
+-- ############################################################
+
+local function notifyEPGP(name, value, reason, type)
+  if (name and value) then
+    local message = ""
+    if (value >= 0) then
+      message = message.."Adding "
+    else
+      message = message.."Removing "
+    end
+    if (type == EP) then
+      message = message..value.."EP to "..name
+    elseif (type == GP) then
+      message = message..value.."GP to "..name
+    end
+    if (reason) then
+      message = message.." for "..reason
+    end
+    SendChatMessage(message, "OFFICER")
+  end
+end
+
+local function calculateChange(name, value, type)
+  if (type == EP) then
+    return (QUICKEPGP.guildMemberEP(name) + (value or 0)) or MINIMUM_EP
+  elseif (type == GP) then
+    return (QUICKEPGP.guildMemberGP(name) + (value or 0)) or MINIMUM_GP
+  end
+end
 
 -- ############################################################
 -- ##### GLOBAL FUNCTIONS #####################################
 -- ############################################################
 
-QUICKGP.comparePR = function(name1, name2, rollTable)
+QUICKEPGP.comparePR = function(name1, name2, rollTable)
   if (not name1) then
     return name2
   end
@@ -92,7 +131,7 @@ QUICKGP.comparePR = function(name1, name2, rollTable)
   end
 end
 
-QUICKGP.getItemGP = function(itemId)
+QUICKEPGP.getItemGP = function(itemId)
   local itemId = tonumber(itemId)
   if (OVERRIDE[itemId]) then
     return OVERRIDE[itemId]
@@ -101,7 +140,7 @@ QUICKGP.getItemGP = function(itemId)
   local slot = nil
   if (itemEquipLoc == nil or itemEquipLoc == "") then
     slot = "EXCEPTION"
-    QUICKGP.error(format("QUICKGP::Item %s has no itemEquipLoc (%s)", itemId, itemEquipLoc))
+    QUICKEPGP.error(format("QUICKEPGP::Item %s has no itemEquipLoc (%s)", itemId, itemEquipLoc))
   else
     slot = strsub(itemEquipLoc, strfind(itemEquipLoc, "INVTYPE_") + 8, string.len(itemEquipLoc))
   end
@@ -109,6 +148,12 @@ QUICKGP.getItemGP = function(itemId)
   if (slotWeight) then
     return math.floor((INFLATION_MOD * (EXPONENTIAL_MOD^((itemLevel / 26) + (itemRarity - 4))) * slotWeight) * NORMALIZER_MOD)
   else
-    QUICKGP.error(format("QUICKGP::Item %s has no valid slot weight (%s)", itemId, slot))
+    QUICKEPGP.error(format("QUICKEPGP::Item %s has no valid slot weight (%s)", itemId, slot))
   end
+end
+
+QUICKEPGP.modifyEPGP = function(name, ep, gp, reason)
+  notifyEPGP(name, ep, reason, EP)
+  notifyEPGP(name, ep, reason, GP)
+  GuildRosterSetOfficerNote(QUICKEPGP.guildMemberIndex(name), calculateChange(name, ep, EP)..DELIMITER..calculateChange(name, gp, GP))
 end

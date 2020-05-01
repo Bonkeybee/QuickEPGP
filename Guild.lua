@@ -1,4 +1,6 @@
 QUICKEPGP.GUILD = CreateFrame("Frame")
+local valid = false
+local race = false
 
 local INDEX_INDEX = 1
 local LEVEL_INDEX = 2
@@ -11,6 +13,7 @@ local GP_INDEX = 5
 -- ############################################################
 
 local function updateGuildMemberTable()
+  race = false
   QUICKEPGP.guildMemberTable = {}
   for i = 1, 1000 do
     local name, _, _, level, class, _, _, officerNote = GetGuildRosterInfo(i)
@@ -20,21 +23,31 @@ local function updateGuildMemberTable()
       QUICKEPGP.guildMemberTable[name] = {i, level, class, ep, gp}
     end
   end
+  if (race) then
+    return check()
+  end
+  valid = true
+end
+
+local function check()
+  if (not valid) then
+    updateGuildMemberTable()
+  end
 end
 
 local function onEvent(_, event, message, author)
-  if (event == "PLAYER_ENTERING_WORLD") then
-    return updateGuildMemberTable()
-  end
   if (event == "GUILD_ROSTER_UPDATE") then
-    return updateGuildMemberTable()
+    valid = false
+    race = true
   end
 end
 
 -- ############################################################
 -- ##### GLOBAL FUNCTIONS #####################################
 -- ############################################################
+
 QUICKEPGP.guildMember = function(name)
+  check()
   if (QUICKEPGP.guildMemberTable[name]) then
     return QUICKEPGP.guildMemberTable[name]
   else
@@ -42,6 +55,7 @@ QUICKEPGP.guildMember = function(name)
   end
 end
 QUICKEPGP.guildMemberIndex = function(name)
+  check()
   if (QUICKEPGP.guildMember(name)) then
     return QUICKEPGP.guildMember(name)[INDEX_INDEX]
   else
@@ -49,6 +63,7 @@ QUICKEPGP.guildMemberIndex = function(name)
   end
 end
 QUICKEPGP.guildMemberLevel = function(name)
+  check()
   if (QUICKEPGP.guildMember(name)) then
     return QUICKEPGP.guildMember(name)[LEVEL_INDEX]
   else
@@ -56,6 +71,7 @@ QUICKEPGP.guildMemberLevel = function(name)
   end
 end
 QUICKEPGP.guildMemberClass = function(name)
+  check()
   if (QUICKEPGP.guildMember(name)) then
     return QUICKEPGP.guildMember(name)[CLASS_INDEX]
   else
@@ -63,6 +79,7 @@ QUICKEPGP.guildMemberClass = function(name)
   end
 end
 QUICKEPGP.guildMemberEP = function(name)
+  check()
   if (QUICKEPGP.guildMember(name)) then
     return QUICKEPGP.guildMember(name)[EP_INDEX]
   else
@@ -70,6 +87,7 @@ QUICKEPGP.guildMemberEP = function(name)
   end
 end
 QUICKEPGP.guildMemberGP = function(name)
+  check()
   if (QUICKEPGP.guildMember(name)) then
     return QUICKEPGP.guildMember(name)[GP_INDEX]
   else
@@ -77,6 +95,5 @@ QUICKEPGP.guildMemberGP = function(name)
   end
 end
 
-QUICKEPGP.GUILD:RegisterEvent("PLAYER_ENTERING_WORLD")
 QUICKEPGP.GUILD:RegisterEvent("GUILD_ROSTER_UPDATE")
 QUICKEPGP.GUILD:SetScript("OnEvent", onEvent)
