@@ -1,0 +1,21 @@
+## Interface: 11303
+## X-Min-Interface: 11303
+## Title: QuickEPGP
+## Notes: QuickEPGP
+## OptionalDeps: Ace3
+## LoadOnDemand: 0
+## DefaultState: enabled
+## Author: Bonkeybee
+## Version: 11303.1
+
+
+Libs\LibStub\LibStub.lua
+Libs\AceAddon-3.0\AceAddon-3.0.lua
+Libs\AceComm-3.0\AceComm-3.0.lua
+
+QuickEPGP.lua
+EPGP.lua
+Rolling.lua
+Guild.lua
+Raid.lua
+Utility.lua
