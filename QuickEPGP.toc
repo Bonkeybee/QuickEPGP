@@ -1,12 +1,12 @@
-## Interface: 11303
-## X-Min-Interface: 11303
+## Interface: 11304
+## X-Min-Interface: 11304
 ## Title: QuickEPGP
 ## Notes: QuickEPGP
 ## OptionalDeps: Ace3
 ## LoadOnDemand: 0
 ## DefaultState: enabled
 ## Author: Bonkeybee
-## Version: 11303.2
+## Version: 11304.3
 
 
 Libs\LibStub\LibStub.lua

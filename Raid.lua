@@ -1,4 +1,10 @@
 QUICKEPGP.RAID = CreateFrame("Frame")
+local valid = false
+local race = false
+
+-- ############################################################
+-- ##### LOCAL FUNCTIONS ######################################
+-- ############################################################
 
 local function updateRaidMemberTable()
   QUICKEPGP.raidMemberTable = {}
@@ -11,15 +17,31 @@ local function updateRaidMemberTable()
   end
 end
 
-local function onEvent(_, event, message, author)
-  if (event == "PLAYER_ENTERING_WORLD") then
-    return updateRaidMemberTable()
-  end
-  if (event == "GROUP_ROSTER_UPDATE") then
-    return updateRaidMemberTable()
+local function check()
+  if (not valid) then
+    updateRaidMemberTable()
   end
 end
 
-QUICKEPGP.RAID:RegisterEvent("PLAYER_ENTERING_WORLD")
+local function onEvent(_, event, message, author)
+  if (event == "GROUP_ROSTER_UPDATE") then
+    valid = false
+    race = true
+  end
+end
+
+-- ############################################################
+-- ##### GLOBAL FUNCTIONS #####################################
+-- ############################################################
+
+QUICKEPGP.raidMember = function(name)
+  check()
+  if (QUICKEPGP.raidMemberTable[name]) then
+    return QUICKEPGP.raidMemberTable[name]
+  else
+    QUICKEPGP.error(format("%s is not a raid member", (name or "nil")))
+  end
+end
+
 QUICKEPGP.RAID:RegisterEvent("GROUP_ROSTER_UPDATE")
 QUICKEPGP.RAID:SetScript("OnEvent", onEvent)

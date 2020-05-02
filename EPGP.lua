@@ -154,6 +154,6 @@ end
 
 QUICKEPGP.modifyEPGP = function(name, ep, gp, reason)
   notifyEPGP(name, ep, reason, EP)
-  notifyEPGP(name, ep, reason, GP)
+  notifyEPGP(name, gp, reason, GP)
   GuildRosterSetOfficerNote(QUICKEPGP.guildMemberIndex(name), calculateChange(name, ep, EP)..DELIMITER..calculateChange(name, gp, GP))
 end

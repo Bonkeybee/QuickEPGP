@@ -45,7 +45,7 @@ end
 -- ############################################################
 -- ##### GLOBAL FUNCTIONS #####################################
 -- ############################################################
-
+--TODO ALLOW IGNORECASE NAMES
 QUICKEPGP.guildMember = function(name)
   check()
   if (QUICKEPGP.guildMemberTable[name]) then

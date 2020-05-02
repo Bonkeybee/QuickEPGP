@@ -31,6 +31,9 @@ local function findHighestRoller(rollTable)
 end
 
 local function handleNeeding(player)
+  if (not QUICKEPGP.raidMember(player)) then
+    QUICKEPGP.error("Skipping "..(player or "").."'s need roll as they are not in the raid")
+  end
   if (not rollTable[player]) then
     SendChatMessage(format("%s needed (%s PR)", QUICKEPGP.getCharacterString(QUICKEPGP.guildMemberLevel(player), QUICKEPGP.guildMemberClass(player), player), QUICKEPGP.round(QUICKEPGP.guildMemberEP(player) / QUICKEPGP.guildMemberGP(player), 2)), "RAID")
   end
@@ -108,8 +111,8 @@ QUICKEPGP.startRolling = function(message, author)
   local player = UnitName("player")
   if (player == author) then
     local hasItemString = select(3, strfind(message, "|c(.+)|r"))
-    if (hasItemString and QUICKEPGP.raidMemberTable and QUICKEPGP.raidMemberTable[player]) then
-      local rank = QUICKEPGP.raidMemberTable[player][1]
+    if (hasItemString and QUICKEPGP.raidMember(player)) then
+      local rank = QUICKEPGP.raidMember(player)[1]
       local channel = "RAID"
       if (rank > 0) then
         channel = "RAID_WARNING"
@@ -140,7 +143,7 @@ end
 
 QUICKEPGP.distributeItem = function(message, type)
   local hasItemString = select(3, strfind(message, "|c(.+)|r"))
-  local hasPlayer = select(4, strfind(message, "|c(.+)|r(.+)"))a
+  local hasPlayer = select(4, strfind(message, "|c(.+)|r(.+)"))
   if (hasItemString and hasPlayer) then
     local player = strtrim(hasPlayer)
     if (QUICKEPGP.guildMemberIndex(player)) then

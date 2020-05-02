@@ -18,7 +18,7 @@ local function onEvent(_, event, message, author)
 
   local prefix = strsub(message, 1, 1)
   if (event == "CHAT_MSG_OFFICER") then
-    if (CanEditOfficerNote() and (prefix == ADD or prefix == MINUS)) then
+    if (CanEditOfficerNote() and (prefix == QUICKEPGP.ADD or prefix == QUICKEPGP.MINUS)) then
       QUICKEPGP.distributeItem(message, prefix)
     end
   end
