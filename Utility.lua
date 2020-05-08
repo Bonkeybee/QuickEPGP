@@ -1,3 +1,7 @@
+QUICKEPGP.isMe = function(name)
+  return name == UnitName("player")
+end
+
 QUICKEPGP.round = function(number, decimals)
   if (number == nil) then
     number = 0
@@ -35,8 +39,11 @@ QUICKEPGP.getCharacterString = function(level, class, name)
   return nil
 end
 
-QUICKEPGP.getSimpleCharacterName = function(name)
+QUICKEPGP.getSimpleCharacterName = function(name, tolower)
   local simpleName = strsplit("-", name)
+  if (tolower) then
+    simpleName = strlower(simpleName)
+  end
   return simpleName
 end
 

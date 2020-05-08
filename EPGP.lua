@@ -2,8 +2,6 @@ local EP = "EP"
 local GP = "GP"
 local DELIMITER = ","
 
-local MINIMUM_EP = 0
-local MINIMUM_GP = 50
 local INFLATION_MOD = 10
 local EXPONENTIAL_MOD = 4
 local NORMALIZER_MOD = 0.125
@@ -101,9 +99,9 @@ end
 
 local function calculateChange(name, value, type)
   if (type == EP) then
-    return (QUICKEPGP.guildMemberEP(name) + (value or 0)) or MINIMUM_EP
+    return (QUICKEPGP.guildMemberEP(name) + (value or 0)) or QUICKEPGP.MINIMUM_EP
   elseif (type == GP) then
-    return (QUICKEPGP.guildMemberGP(name) + (value or 0)) or MINIMUM_GP
+    return (QUICKEPGP.guildMemberGP(name) + (value or 0)) or QUICKEPGP.MINIMUM_GP
   end
 end
 

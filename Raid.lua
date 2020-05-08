@@ -1,4 +1,7 @@
 QUICKEPGP.RAID = CreateFrame("Frame")
+
+local NUM_RAID_MEMBERS = 40
+
 local valid = false
 local race = false
 
@@ -7,14 +10,19 @@ local race = false
 -- ############################################################
 
 local function updateRaidMemberTable()
+  race = false
   QUICKEPGP.raidMemberTable = {}
-  for i = 1, 40 do
+  for i = 1, NUM_RAID_MEMBERS do
     local name, rank, _, _, _, _, _, _, _, _, isML = GetRaidRosterInfo(i)
     if (name) then
-      name = strsplit("-", name)
+      name = QUICKEPGP.getSimpleCharacterName(name, true)
       QUICKEPGP.raidMemberTable[name] = {rank, isML}
     end
   end
+  if (race) then
+    return check()
+  end
+  valid = true
 end
 
 local function check()
@@ -36,6 +44,9 @@ end
 
 QUICKEPGP.raidMember = function(name)
   check()
+  if (name) then
+    name = strlower(name)
+  end
   if (QUICKEPGP.raidMemberTable[name]) then
     return QUICKEPGP.raidMemberTable[name]
   else
