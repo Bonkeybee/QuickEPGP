@@ -27,22 +27,22 @@ local function onEvent(_, event, message, author)
       if (hasItemString) then
         QUICKEPGP.distributeItem(message, prefix)
       else
-        -- local keys = {strfind(message, "(.)(%d*)(.*) (.*), (.*)")}
-        -- local operation = keys[3]
-        -- local amount = keys[4]
-        -- local type = strtrim(keys[5])
-        -- local unit = keys[6]
-        -- local reason = keys[7]
-        -- if (operation == QUICKEPGP.ADD or operation == QUICKEPGP.MINUS) then
-        --   if (operation == QUICKEPGP.MINUS) then
-        --     amount = -amount
-        --   end
-        --   if (type == EP) then
-        --     QUICKEPGP.modifyEPGP(unit, amount, nil, reason)
-        --   elseif (type == GP) then
-        --     QUICKEPGP.modifyEPGP(unit, nil, amount, reason)
-        --   end
-        -- end
+        local keys = {strfind(message, "(.)(%d*)(.*) (.*), (.*)")}
+        local operation = keys[3]
+        local amount = keys[4]
+        local type = strtrim(keys[5])
+        local unit = keys[6]
+        local reason = keys[7]
+        if (operation == QUICKEPGP.ADD or operation == QUICKEPGP.MINUS) then
+          if (operation == QUICKEPGP.MINUS) then
+            amount = -amount
+          end
+          if (type == EP) then
+            QUICKEPGP.modifyEPGP(unit, amount, nil, reason)
+          elseif (type == GP) then
+            QUICKEPGP.modifyEPGP(unit, nil, amount, reason)
+          end
+        end
       end
     end
   end

@@ -210,7 +210,7 @@ QUICKEPGP.startRolling = function(message, author)
               rollTable = {}
               highestRoller = nil
               currentItem = itemStrings
-              openRollFrame()
+              --openRollFrame()
               QUICKEPGP.LIBS:SendCommMessage(MODULE_NAME, "ORF"..DELIMITER..currentItem..DELIMITER..(highestRoller or EMPTY), "RAID", nil, "ALERT")
             end
           end
@@ -232,9 +232,9 @@ QUICKEPGP.distributeItem = function(message, type)
         local itemId = select(3, strfind(itemStrings, ":(%d+):"))
         if (itemId) then
           if (type == QUICKEPGP.ADD) then
-            QUICKEPGP.modifyEPGP(player, nil, (QUICKEPGP.getItemGP(itemId) or 0), itemStrings)
+            QUICKEPGP.modifyEPGP(player, nil, (QUICKEPGP.getItemGP(itemId) or 0), itemStrings, false)
           elseif (type == QUICKEPGP.MINUS) then
-            QUICKEPGP.modifyEPGP(player, nil, (-QUICKEPGP.getItemGP(itemId) or 0), itemStrings)
+            QUICKEPGP.modifyEPGP(player, nil, (-QUICKEPGP.getItemGP(itemId) or 0), itemStrings, false)
           end
         end
       end

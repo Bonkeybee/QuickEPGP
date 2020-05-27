@@ -1,6 +1,5 @@
 local EP = "EP"
 local GP = "GP"
-local DELIMITER = ","
 
 local INFLATION_MOD = 10
 local EXPONENTIAL_MOD = 4
@@ -86,9 +85,9 @@ local function notifyEPGP(name, value, reason, type)
       message = message.."Removing "
     end
     if (type == EP) then
-      message = message..value.."EP to "..name
+      message = message..value.."EP to "..QUICKEPGP.camel(name)
     elseif (type == GP) then
-      message = message..value.."GP to "..name
+      message = message..value.."GP to "..QUICKEPGP.camel(name)
     end
     if (reason) then
       message = message.." for "..reason
@@ -97,17 +96,17 @@ local function notifyEPGP(name, value, reason, type)
   end
 end
 
-local function calculateChange(name, value, type)
+-- ############################################################
+-- ##### GLOBAL FUNCTIONS #####################################
+-- ############################################################
+
+QUICKEPGP.calculateChange = function(name, value, type)
   if (type == EP) then
     return (QUICKEPGP.guildMemberEP(name) + (value or 0)) or QUICKEPGP.MINIMUM_EP
   elseif (type == GP) then
     return (QUICKEPGP.guildMemberGP(name) + (value or 0)) or QUICKEPGP.MINIMUM_GP
   end
 end
-
--- ############################################################
--- ##### GLOBAL FUNCTIONS #####################################
--- ############################################################
 
 QUICKEPGP.comparePR = function(name1, name2, rollTable)
   if (not name1) then
@@ -150,8 +149,10 @@ QUICKEPGP.getItemGP = function(itemId)
   end
 end
 
-QUICKEPGP.modifyEPGP = function(name, ep, gp, reason)
-  notifyEPGP(name, ep, reason, EP)
-  notifyEPGP(name, gp, reason, GP)
-  GuildRosterSetOfficerNote(QUICKEPGP.guildMemberIndex(name), calculateChange(name, ep, EP)..DELIMITER..calculateChange(name, gp, GP))
+QUICKEPGP.modifyEPGP = function(name, dep, dgp, reason, mass)
+  if (not mass) then
+    notifyEPGP(name, dep, reason, EP)
+    notifyEPGP(name, dgp, reason, GP)
+  end
+  QUICKEPGP.SafeSetOfficerNote(QUICKEPGP.guildMemberIndex(name), name, dep, dgp)
 end

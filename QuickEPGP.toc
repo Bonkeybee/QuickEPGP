@@ -2,11 +2,12 @@
 ## X-Min-Interface: 11304
 ## Title: QuickEPGP
 ## Notes: QuickEPGP
+## SavedVariables: QUICKEPGP_RAIDING_TIMESTAMP, QUICKEPGP_TIME_REWARDS
 ## OptionalDeps: Ace3
 ## LoadOnDemand: 0
 ## DefaultState: enabled
 ## Author: Bonkeybee
-## Version: 11304.4
+## Version: 11304.5
 
 
 Libs\LibStub\LibStub.lua
@@ -32,3 +33,4 @@ Rolling.lua
 Guild.lua
 Raid.lua
 Utility.lua
+Command.lua
