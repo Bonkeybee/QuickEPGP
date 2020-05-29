@@ -33,4 +33,3 @@ Rolling.lua
 Guild.lua
 Raid.lua
 Utility.lua
-Command.lua
