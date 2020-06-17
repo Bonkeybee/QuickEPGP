@@ -128,7 +128,7 @@ QUICKEPGP.SafeSetOfficerNote = function(index, name, dep, dgp)
 end
 
 QUICKEPGP.camel = function(str)
-  return str:gsub("(%l)(%w*)", function(a, b) return string.upper(a)..b end)
+  return string.gsub(" "..str, "%W%l", string.upper):sub(2)
 end
 
 QUICKEPGP.pluralize = function(single, plural, number)

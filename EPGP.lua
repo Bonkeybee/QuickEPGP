@@ -1,5 +1,6 @@
 local EP = "EP"
 local GP = "GP"
+local EMPTY = ""
 
 local INFLATION_MOD = 10
 local EXPONENTIAL_MOD = 4
@@ -101,10 +102,15 @@ end
 -- ############################################################
 
 QUICKEPGP.calculateChange = function(name, value, type)
-  if (type == EP) then
-    return (QUICKEPGP.guildMemberEP(name) + (value or 0)) or QUICKEPGP.MINIMUM_EP
-  elseif (type == GP) then
-    return (QUICKEPGP.guildMemberGP(name) + (value or 0)) or QUICKEPGP.MINIMUM_GP
+  value = (value or 0)
+  if (QUICKEPGP.guildMember(name)) then
+    if (type == EP) then
+      return max((QUICKEPGP.guildMemberEP(name) or QUICKEPGP.MINIMUM_EP) + value, QUICKEPGP.MINIMUM_EP)
+    elseif (type == GP) then
+      return max((QUICKEPGP.guildMemberGP(name) or QUICKEPGP.MINIMUM_GP) + value, QUICKEPGP.MINIMUM_GP)
+    end
+  else
+    QUICKEPGP.error("Skipping "..(player or EMPTY).."'s EPGP change: not in guild")
   end
 end
 
