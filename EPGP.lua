@@ -86,9 +86,9 @@ local function notifyEPGP(name, value, reason, type)
       message = message.."Removing "
     end
     if (type == EP) then
-      message = message..value.."EP to "..QUICKEPGP.camel(name)
+      message = message..value.."EP to "..name
     elseif (type == GP) then
-      message = message..value.."GP to "..QUICKEPGP.camel(name)
+      message = message..value.."GP to "..name
     end
     if (reason) then
       message = message.." for "..reason
@@ -160,5 +160,5 @@ QUICKEPGP.modifyEPGP = function(name, dep, dgp, reason, mass)
     notifyEPGP(name, dep, reason, EP)
     notifyEPGP(name, dgp, reason, GP)
   end
-  QUICKEPGP.SafeSetOfficerNote(QUICKEPGP.guildMemberIndex(name), name, dep, dgp)
+  QUICKEPGP.SafeSetOfficerNote(name, dep, dgp)
 end

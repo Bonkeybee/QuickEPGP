@@ -27,6 +27,7 @@ local function epgpCommandMessage(message, name)
       local type = strtrim(keys[5])
       local unit = keys[6]
       local reason = keys[7]
+      print(unit)
       if (operation == QUICKEPGP.ADD or operation == QUICKEPGP.MINUS) then
         if (operation == QUICKEPGP.MINUS) then
           amount = -amount
@@ -87,7 +88,9 @@ SLASH_EPGP1 = "/epgp"
 SlashCmdList["EPGP"] = function(message)
   local command, arg1, arg2, arg3 = strsplit(" ", message:lower())
   local prefix = strsub(command, 1, 1)
-  if (command == "" or command == "help") then
+  if (command == "") then
+    QUICKEPGP.InterfaceOptionsFrame_OpenToCategory_Fix(QUICKEPGP.menu)
+  elseif (command == "help") then
     QUICKEPGP.info("Command List:")
     QUICKEPGP.info("/epgp about", " - version information")
     QUICKEPGP.info("/epgp pr [PLAYER]", " - calculates PR of self or the PLAYER")
@@ -123,7 +126,7 @@ SlashCmdList["EPGP"] = function(message)
         if (name == UnitName("player")) then
           QUICKEPGP.info(format("You have %s PR; (%s EP / %s GP)", pr, ep, gp))
         else
-          QUICKEPGP.info(format("%s has %s PR; (%s EP / %s GP)", QUICKEPGP.camel(name), pr, ep, gp))
+          QUICKEPGP.info(format("%s has %s PR; (%s EP / %s GP)", name, pr, ep, gp))
         end
       end
     end

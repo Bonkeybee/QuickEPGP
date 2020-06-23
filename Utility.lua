@@ -41,10 +41,10 @@ local function onUpdate()
               if (QUICKEPGP.count(officerNoteUpdateTable[name]) <= 0) then
                 officerNoteUpdateTable[name] = nil
               end
-              ep = QUICKEPGP.calculateChange(name, epgp[2], "EP")
-              gp = QUICKEPGP.calculateChange(name, epgp[3], "GP")
+              ep = QUICKEPGP.calculateChange(name, epgp[1], "EP")
+              gp = QUICKEPGP.calculateChange(name, epgp[2], "GP")
               work[name] = {ep, gp}
-              GuildRosterSetOfficerNote(epgp[1], ep..","..gp)
+              GuildRosterSetOfficerNote(QUICKEPGP.guildMemberIndex(name), ep..","..gp)
             end
           end
         end
@@ -120,15 +120,11 @@ QUICKEPGP.getSimpleCharacterName = function(name, tolower)
   return simpleName
 end
 
-QUICKEPGP.SafeSetOfficerNote = function(index, name, dep, dgp)
+QUICKEPGP.SafeSetOfficerNote = function(name, dep, dgp)
   if (not officerNoteUpdateTable[name]) then
     officerNoteUpdateTable[name] = {}
   end
-  tinsert(officerNoteUpdateTable[name], {index, dep, dgp})
-end
-
-QUICKEPGP.camel = function(str)
-  return string.gsub(" "..str, "%W%l", string.upper):sub(2)
+  tinsert(officerNoteUpdateTable[name], {dep, dgp})
 end
 
 QUICKEPGP.pluralize = function(single, plural, number)

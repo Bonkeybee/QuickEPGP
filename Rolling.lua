@@ -190,7 +190,7 @@ QUICKEPGP.startRolling = function(message, author)
   if (player == author) then
     local hasItemString = select(3, strfind(message, "|c(.+)|r"))
     if (hasItemString and QUICKEPGP.raidMember(player)) then
-      local rank = QUICKEPGP.raidMember(player)[1]
+      local rank = QUICKEPGP.raidMember(player)[2]
       local channel = "RAID"
       if (rank > 0) then
         channel = "RAID_WARNING"
@@ -210,7 +210,7 @@ QUICKEPGP.startRolling = function(message, author)
               rollTable = {}
               highestRoller = nil
               currentItem = itemStrings
-              --openRollFrame()
+              openRollFrame()
               QUICKEPGP.LIBS:SendCommMessage(MODULE_NAME, "ORF"..DELIMITER..currentItem..DELIMITER..(highestRoller or EMPTY), "RAID", nil, "ALERT")
             end
           end

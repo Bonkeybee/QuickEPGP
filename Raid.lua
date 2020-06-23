@@ -3,12 +3,20 @@ local loaded = false
 local valid = false
 local race = false
 
+local RAID_LEADER = 2
+local RAID_ASSIST = 1
+
 local NUM_RAID_MEMBERS = 40
 local TIME_REWARDS_TEMPLATE = {}
 TIME_REWARDS_TEMPLATE[1] = {0, 100, "raid start"}
 TIME_REWARDS_TEMPLATE[2] = {3600, 100, "raid time"}
 TIME_REWARDS_TEMPLATE[3] = {7200, 200, "raid time"}
 TIME_REWARDS_TEMPLATE[4] = {10800, 300, "raid end"}
+
+local ONLINE_INDEX = 1
+local RANK_INDEX = 2
+local ROLE_INDEX = 3
+local ISML_INDEX = 4
 
 -- ############################################################
 -- ##### LOCAL FUNCTIONS ######################################
@@ -18,10 +26,10 @@ local function updateRaidMemberTable()
   race = false
   QUICKEPGP.raidMemberTable = {}
   for i = 1, NUM_RAID_MEMBERS do
-    local name, rank, _, _, _, _, _, _, _, _, isML = GetRaidRosterInfo(i)
+    local name, rank, _, _, _, _, _, online, _, role, isML = GetRaidRosterInfo(i)
     if (name) then
       name = QUICKEPGP.getSimpleCharacterName(name, true)
-      QUICKEPGP.raidMemberTable[name] = {rank, isML}
+      QUICKEPGP.raidMemberTable[name] = {online, rank, role, isML}
     end
   end
   if (race) then
@@ -34,14 +42,6 @@ local function check()
   if (not valid) then
     updateRaidMemberTable()
   end
-end
-
-local function IsRaidLeader()
-  local raidMember = QUICKEPGP.raidMember(UnitName("player"))
-  if (raidMember and raidMember[1] == 2) then
-    return true
-  end
-  return false
 end
 
 local function stepStatus(index, epStep, timeStep)
@@ -76,7 +76,7 @@ local function onEvent(_, event)
     race = true
   end
   if (event == "PLAYER_REGEN_DISABLED") then
-    if (not QUICKEPGP.ignoreRaidWarning and not QUICKEPGP_RAIDING_TIMESTAMP and UnitInRaid("player") and IsRaidLeader("player")) then
+    if (not QUICKEPGP.ignoreRaidWarning and not QUICKEPGP_RAIDING_TIMESTAMP and UnitInRaid("player") and QUICKEPGP.isRaidLeader()) then
       QUICKEPGP.error("Did you mean to start a raid? Type '/epgp start' to start a raid.")
       QUICKEPGP.error("Type '/epgp ignore' to stop this message until you reload.")
     end
@@ -124,7 +124,7 @@ QUICKEPGP.raidStatus = function()
 end
 
 QUICKEPGP.startRaid = function()
-  if (IsRaidLeader()) then
+  if (QUICKEPGP.isRaidLeader()) then
     if (not QUICKEPGP_RAIDING_TIMESTAMP) then
       QUICKEPGP_RAIDING_TIMESTAMP = GetServerTime()
       QUICKEPGP_TIME_REWARDS = {}
@@ -170,11 +170,56 @@ QUICKEPGP.raidMember = function(name)
     if (QUICKEPGP.raidMemberTable[name]) then
       return QUICKEPGP.raidMemberTable[name]
     else
-      QUICKEPGP.error(format("%s is not a raid member.", (QUICKEPGP.camel(name) or "nil")))
+      QUICKEPGP.error(format("%s is not a raid member.", (name or "nil")))
     end
   else
     QUICKEPGP.error("You are not in a raid group.")
   end
+end
+
+QUICKEPGP.isOnlineRaid = function(name)
+  if (name == nil) then
+    name = UnitName("player")
+  end
+  local raidMember = QUICKEPGP.raidMember(name)
+  if (raidMember and raidMember[ONLINE_INDEX]) then
+    return true
+  end
+  return false
+end
+
+
+QUICKEPGP.isRaidLeader = function(name)
+  if (name == nil) then
+    name = UnitName("player")
+  end
+  local raidMember = QUICKEPGP.raidMember(name)
+  if (raidMember and raidMember[RANK_INDEX] == RAID_LEADER) then
+    return true
+  end
+  return false
+end
+
+QUICKEPGP.isMasterLooter = function(name)
+  if (name == nil) then
+    name = UnitName("player")
+  end
+  local raidMember = QUICKEPGP.raidMember(name)
+  if (raidMember and raidMember[ISML_INDEX]) then
+    return true
+  end
+  return false
+end
+
+QUICKEPGP.isMainAssist = function(name)
+  if (name == nil) then
+    name = UnitName("player")
+  end
+  local raidMember = QUICKEPGP.raidMember(name)
+  if (raidMember and raidMember[ROLE_INDEX] == "MAINASSIST") then
+    return true
+  end
+  return false
 end
 
 QUICKEPGP.RAID:RegisterEvent("ADDON_LOADED")

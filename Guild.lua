@@ -46,10 +46,6 @@ end
 -- ##### GLOBAL FUNCTIONS #####################################
 -- ############################################################
 
-QUICKEPGP.invalidateGuildMemberTable = function()
-  valid = false
-end
-
 QUICKEPGP.guildMember = function(name)
   check()
   if (name) then
@@ -62,43 +58,49 @@ QUICKEPGP.guildMember = function(name)
   end
 end
 QUICKEPGP.guildMemberIndex = function(name)
-  if (QUICKEPGP.guildMember(name)) then
-    return QUICKEPGP.guildMember(name)[INDEX_INDEX]
+  local guildMemberData = QUICKEPGP.guildMember(name)
+  if (guildMemberData) then
+    return guildMemberData[INDEX_INDEX]
   else
     QUICKEPGP.error("Cannot get guild member "..(name or "").." index")
   end
 end
 QUICKEPGP.guildMemberLevel = function(name)
-  if (QUICKEPGP.guildMember(name)) then
-    return QUICKEPGP.guildMember(name)[LEVEL_INDEX]
+  local guildMemberData = QUICKEPGP.guildMember(name)
+  if (guildMemberData) then
+    return guildMemberData[LEVEL_INDEX]
   else
     QUICKEPGP.error("Cannot get guild member "..(name or "").." level")
   end
 end
 QUICKEPGP.guildMemberClass = function(name)
-  if (QUICKEPGP.guildMember(name)) then
-    return QUICKEPGP.guildMember(name)[CLASS_INDEX]
+  local guildMemberData = QUICKEPGP.guildMember(name)
+  if (guildMemberData) then
+    return guildMemberData[CLASS_INDEX]
   else
     QUICKEPGP.error("Cannot get guild member "..(name or "").." class")
   end
 end
 QUICKEPGP.guildMemberEP = function(name)
-  if (QUICKEPGP.guildMember(name)) then
-    return QUICKEPGP.guildMember(name)[EP_INDEX]
+  local guildMemberData = QUICKEPGP.guildMember(name)
+  if (guildMemberData) then
+    return guildMemberData[EP_INDEX]
   else
     QUICKEPGP.error("Cannot get guild member "..(name or "").." EP")
   end
 end
 QUICKEPGP.guildMemberGP = function(name)
-  if (QUICKEPGP.guildMember(name)) then
-    return QUICKEPGP.guildMember(name)[GP_INDEX]
+  local guildMemberData = QUICKEPGP.guildMember(name)
+  if (guildMemberData) then
+    return guildMemberData[GP_INDEX]
   else
     QUICKEPGP.error("Cannot get guild member "..(name or "").." GP")
   end
 end
 QUICKEPGP.guildMemberPR = function(name)
-  if (QUICKEPGP.guildMember(name)) then
-    return QUICKEPGP.round(QUICKEPGP.guildMember(name)[EP_INDEX] / QUICKEPGP.guildMember(name)[GP_INDEX], 2)
+  local guildMemberData = QUICKEPGP.guildMember(name)
+  if (guildMemberData) then
+    return QUICKEPGP.round(guildMemberData[EP_INDEX] / guildMemberData[GP_INDEX], 2)
   else
     QUICKEPGP.error("Cannot get guild member "..(name or "").." PR")
   end
