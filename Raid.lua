@@ -15,8 +15,9 @@ TIME_REWARDS_TEMPLATE[4] = {10800, 300, "raid end"}
 
 local ONLINE_INDEX = 1
 local RANK_INDEX = 2
-local ROLE_INDEX = 3
-local ISML_INDEX = 4
+local CLASS_INDEX = 3
+local ROLE_INDEX = 4
+local ISML_INDEX = 5
 
 -- ############################################################
 -- ##### LOCAL FUNCTIONS ######################################
@@ -26,10 +27,10 @@ local function updateRaidMemberTable()
   race = false
   QUICKEPGP.raidMemberTable = {}
   for i = 1, NUM_RAID_MEMBERS do
-    local name, rank, _, _, _, _, _, online, _, role, isML = GetRaidRosterInfo(i)
+    local name, rank, _, _, _, class, _, online, _, role, isML = GetRaidRosterInfo(i)
     if (name) then
       name = QUICKEPGP.getSimpleCharacterName(name, true)
-      QUICKEPGP.raidMemberTable[name] = {online, rank, role, isML}
+      QUICKEPGP.raidMemberTable[name] = {online, rank, class, role, isML}
     end
   end
   if (race) then
@@ -186,6 +187,16 @@ QUICKEPGP.isOnlineRaid = function(name)
     return true
   end
   return false
+end
+
+QUICKEPGP.raidMemberClass = function(name)
+  if (name == nil) then
+    name = UnitName("player")
+  end
+  local raidMember = QUICKEPGP.raidMember(name)
+  if (raidMember) then
+    return raidMember[CLASS_INDEX]
+  end
 end
 
 

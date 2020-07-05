@@ -104,7 +104,7 @@ end
 QUICKEPGP.calculateChange = function(name, value, type)
   value = (value or 0)
   if (QUICKEPGP.guildMember(name)) then
-    if (type == EP) then
+    if (type == EP) then --TODO DOES NOT ALWAYS PRODUCE NON-NIL
       return max((QUICKEPGP.guildMemberEP(name) or QUICKEPGP.MINIMUM_EP) + value, QUICKEPGP.MINIMUM_EP)
     elseif (type == GP) then
       return max((QUICKEPGP.guildMemberGP(name) or QUICKEPGP.MINIMUM_GP) + value, QUICKEPGP.MINIMUM_GP)

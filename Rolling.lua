@@ -1,5 +1,5 @@
 QUICKEPGP.ROLLING = CreateFrame("Frame")
-local MODULE_NAME = "QuickEPGP-Rolling"
+local MODULE_NAME = "QEPGP-Rolling"
 
 local ANNOUNCE_TIME = 20
 local DELIMITER = ":"
@@ -35,15 +35,15 @@ local function findHighestRoller(rollTable)
   return name
 end
 
-local function updateRollFrame(rollFrame)
-  if (not rollFrame) then
-    rollFrame = _G["QuickEPGProllFrame"]
-  end
-  rollFrame:SetTitle("Rolling on "..currentItem)
-  if (highestRoller) then
-    rollFrame:SetStatusText(highestRoller.." ("..QUICKEPGP.guildMemberPR(highestRoller)..")")
-  else
-    rollFrame:SetStatusText(nil)
+local function updateRollFrame()
+  if (_G["QuickEPGProllFrame"]) then
+    local frame = _G["QuickEPGProllFrame"]
+    frame:SetTitle("Rolling on "..currentItem)
+    if (highestRoller) then
+      frame:SetStatusText(QUICKEPGP.colorByClass(highestRoller, QUICKEPGP.raidMemberClass(highestRoller)).." ("..QUICKEPGP.guildMemberPR(highestRoller).." PR)")
+    else
+      frame:SetStatusText(nil)
+    end
   end
 end
 
@@ -60,25 +60,25 @@ local function validateRoll(player)
   return true
 end
 
-local function handleNeeding(player, rollFrame)
+local function handleNeeding(player)
   if (validateRoll(player)) then
     if (not rollTable[player]) then
       SendChatMessage(format("%s needed (%s PR)", QUICKEPGP.getCharacterString(QUICKEPGP.guildMemberLevel(player), QUICKEPGP.guildMemberClass(player), player), QUICKEPGP.guildMemberPR(player)), "RAID")
     end
     rollTable[player] = {QUICKEPGP.guildMemberLevel(player), QUICKEPGP.guildMemberClass(player), QUICKEPGP.guildMemberEP(player), QUICKEPGP.guildMemberGP(player)}
     highestRoller = QUICKEPGP.comparePR(highestRoller, player, rollTable)
-    updateRollFrame(rollFrame)
+    updateRollFrame()
   end
 end
 
-local function handlePassing(player, rollFrame)
+local function handlePassing(player)
   if (validateRoll(player)) then
     if (rollTable[player]) then
       SendChatMessage(format("%s passed", QUICKEPGP.getCharacterString(QUICKEPGP.guildMemberLevel(player), QUICKEPGP.guildMemberClass(player), player)), "RAID")
     end
     rollTable[player] = nil
     highestRoller = findHighestRoller(rollTable)
-    updateRollFrame(rollFrame)
+    updateRollFrame()
   end
 end
 
@@ -91,7 +91,19 @@ end
 
 local function closeRollFrame()
   if (_G["QuickEPGProllFrame"]) then
-    _G["QuickEPGProllFrame"]:Hide()
+    local frame = _G["QuickEPGProllFrame"]
+    if (not QUICKEPGP_OPTIONS.QuickEPGProllFrame) then
+      QUICKEPGP_OPTIONS.QuickEPGProllFrame = {}
+    end
+    for i = 1, frame:GetNumPoints() do
+      local p, rt, rp, ox, oy = frame:GetPoint(i)
+      QUICKEPGP_OPTIONS.QuickEPGProllFrame.P = p
+      QUICKEPGP_OPTIONS.QuickEPGProllFrame.RT = rt
+      QUICKEPGP_OPTIONS.QuickEPGProllFrame.RP = rp
+      QUICKEPGP_OPTIONS.QuickEPGProllFrame.OX = ox
+      QUICKEPGP_OPTIONS.QuickEPGProllFrame.OY = oy
+    end
+    frame:Hide()
     _G["QuickEPGProllFrame"] = nil
   end
 end
@@ -118,30 +130,56 @@ end
 
 local function openRollFrame()
   local rollFrame = QUICKEPGP.LIBS.GUI:Create("Frame")
-  _G["QuickEPGProllFrame"] = rollFrame.frame
+  _G["QuickEPGProllFrame"] = rollFrame
   tinsert(UISpecialFrames, "QuickEPGProllFrame")
   rollFrame:SetCallback("OnClose", function(widget) QUICKEPGP.LIBS.GUI:Release(widget) end)
   rollFrame:EnableResize(false)
   rollFrame:SetLayout("Flow")
-  rollFrame:SetWidth(294)
+  rollFrame:SetWidth(314)
   rollFrame:SetHeight(92)
-  updateRollFrame(rollFrame)
+  if (QUICKEPGP_OPTIONS.QuickEPGProllFrame) then
+    rollFrame:SetPoint(QUICKEPGP_OPTIONS.QuickEPGProllFrame.P, QUICKEPGP_OPTIONS.QuickEPGProllFrame.RT, QUICKEPGP_OPTIONS.QuickEPGProllFrame.RP, QUICKEPGP_OPTIONS.QuickEPGProllFrame.OX, QUICKEPGP_OPTIONS.QuickEPGProllFrame.OY)
+  end
+  updateRollFrame()
 
   local btn1 = QUICKEPGP.LIBS.GUI:Create("Button")
   btn1:SetCallback("OnClick", function()
-    handleNeeding(UnitName("player"), rollFrame)
+    handleNeeding(UnitName("player"))
   end)
   btn1:SetText("NEED")
-  btn1:SetWidth(125)
+  btn1:SetWidth(169)
   rollFrame:AddChild(btn1)
 
   local btn2 = QUICKEPGP.LIBS.GUI:Create("Button")
   btn2:SetCallback("OnClick", function()
-    handlePassing(UnitName("player"), rollFrame)
+    handlePassing(UnitName("player"))
   end)
   btn2:SetText("PASS")
-  btn2:SetWidth(125)
+  btn2:SetWidth(102)
   rollFrame:AddChild(btn2)
+end
+
+local handleRollFrameEvent = function(module, message, distribution, author)
+  if (module ~= MODULE_NAME) then
+    return
+  end
+  if (author == UnitName("player")) then
+    return
+  end
+  if (distribution == "RAID") then
+    local event = strsplit(":", message)
+    if (event == "ORF") then
+      local _, ci, hr = strsplit(":", message)
+      currentItem = ci
+      highestRoller = hr
+      openRollFrame()
+    elseif (event == "CRF") then
+      local _, ci, hr = strsplit(":", message)
+      currentItem = ci
+      highestRoller = hr
+      closeRollFrame()
+    end
+  end
 end
 
 local last = GetTime()
@@ -172,15 +210,29 @@ QUICKEPGP.rolling = function()
   return rolling
 end
 
-QUICKEPGP.handleRolling = function(command, author)
-  if (command == "need") then
-    return handleNeeding(author)
-  end
-  if (command == "pass") then
-    return handlePassing(author)
-  end
-  if (command == "end") then
-    return endRolling()
+QUICKEPGP.handleRolling = function(event, command, author)
+  if (QUICKEPGP.rolling()) then
+    if (event == "CHAT_MSG_RAID" or event == "CHAT_MSG_RAID_LEADER") then
+      if (command == "need") then
+        return handleNeeding(author)
+      end
+      if (command == "pass") then
+        return handlePassing(author)
+      end
+      if (command == "end") then
+        return endRolling()
+      end
+    end
+    if (event == "CHAT_MSG_WHISPER") then
+      if (QUICKEPGP.guildMember(author)) then
+        if (command == "need") then
+          return handleNeeding(author)
+        end
+        if (command == "pass") then
+          return handlePassing(author)
+        end
+      end
+    end
   end
 end
 
@@ -243,3 +295,4 @@ QUICKEPGP.distributeItem = function(message, type)
 end
 
 QUICKEPGP.ROLLING:SetScript("OnUpdate", onUpdate)
+QUICKEPGP.LIBS:RegisterComm(MODULE_NAME, handleRollFrameEvent)

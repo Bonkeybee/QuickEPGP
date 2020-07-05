@@ -14,6 +14,13 @@ local options = {
           set = function(info, val) QUICKEPGP_OPTIONS.LOOTING.enabled = val end,
           get = function(info) return QUICKEPGP_OPTIONS.LOOTING.enabled end
         },
+        safe = {
+          name = "Safe Mode",
+          desc = "will only autoloot when it's safe to do so",
+          type = "toggle",
+          set = function(info, val) QUICKEPGP_OPTIONS.LOOTING.safe = val end,
+          get = function(info) return QUICKEPGP_OPTIONS.LOOTING.safe end
+        },
         equiplootee = {
           name = "Equip Lootee",
           desc = "who to automatically send equippable items to",
@@ -95,6 +102,7 @@ QUICKEPGP.DefaultConfig = function(QUICKEPGP_OPTIONS)
   QUICKEPGP_OPTIONS = default(QUICKEPGP_OPTIONS, {})
   QUICKEPGP_OPTIONS.LOOTING = default(QUICKEPGP_OPTIONS.LOOTING, {})
   QUICKEPGP_OPTIONS.LOOTING.enabled = default(QUICKEPGP_OPTIONS.LOOTING.enabled, false)
+  QUICKEPGP_OPTIONS.LOOTING.safe = default(QUICKEPGP_OPTIONS.LOOTING.safe, true)
   QUICKEPGP_OPTIONS.LOOTING.equiplootee = default(QUICKEPGP_OPTIONS.LOOTING.equiplootee, 1)
   QUICKEPGP_OPTIONS.LOOTING.equiprarity = default(QUICKEPGP_OPTIONS.LOOTING.equiprarity, 3)
   QUICKEPGP_OPTIONS.LOOTING.otherlootee = default(QUICKEPGP_OPTIONS.LOOTING.otherlootee, 2)

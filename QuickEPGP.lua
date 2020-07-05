@@ -54,23 +54,12 @@ local function onEvent(_, event, message, author)
 
   if (event == "CHAT_MSG_RAID" or event == "CHAT_MSG_RAID_LEADER") then
     local command = strlower(strsub(message, 1, 4))
-
     if (command == "roll" and QUICKEPGP.isMe(name) and CanEditOfficerNote()) then
       return QUICKEPGP.startRolling(message, name)
     end
-
-    if (QUICKEPGP.rolling()) then
-      return QUICKEPGP.handleRolling(strlower(message), name)
-    end
   end
 
-  if (event == "CHAT_MSG_WHISPER") then
-    if (QUICKEPGP.rolling()) then
-      if (QUICKEPGP.guildMember(name)) then
-        return QUICKEPGP.handleRolling(strlower(message), name)
-      end
-    end
-  end
+  QUICKEPGP.handleRolling(event, strlower(message), name)
 end
 
 QUICKEPGP.FRAME:RegisterEvent("CHAT_MSG_WHISPER")
@@ -99,8 +88,9 @@ SlashCmdList["EPGP"] = function(message)
     QUICKEPGP.info("/epgp stop", " - stops an EPGP raid (will reward remaining time)")
     QUICKEPGP.info("/epgp status", " - shows status of an EPGP raid")
     QUICKEPGP.info("/epgp ignore", " - will turn off the EPGP start raid warning during this session")
-    QUICKEPGP.info("/epgp <add/remove> ITEMLINK PLAYER [, REASON]", " - adds/removes GP cost of ITEMLINK to/from PLAYER") --todo
-    QUICKEPGP.info("/epgp <add/remove> AMOUNT <EP / GP> PLAYER [, REASON]", " - adds/removes AMOUNT EP/GP to/from PLAYER") --todo
+    --TODO add QUICKEPGP_OPTIONS.QuickEPGProllFrame reset
+    --QUICKEPGP.info("/epgp <add/remove> ITEMLINK PLAYER [, REASON]", " - adds/removes GP cost of ITEMLINK to/from PLAYER") --todo
+    --QUICKEPGP.info("/epgp <add/remove> AMOUNT <EP / GP> PLAYER [, REASON]", " - adds/removes AMOUNT EP/GP to/from PLAYER") --todo
   elseif (command == "about") then
     QUICKEPGP.info("installed version:", format(" %s", QUICKEPGP.VERSION))
   elseif (command == "pr") then
@@ -139,27 +129,27 @@ SlashCmdList["EPGP"] = function(message)
   elseif (command == "ignore") then
     QUICKEPGP.ignoreRaidWarning = true
     QUICKEPGP.info("Now ignoring raid start warnings until next reload")
-  elseif (command == "+" or command == "add" or command == "-" or command == "remove") then
-    if (command == "add") then
-      prefix = "+"
-    elseif (command == "remove") then
-      prefix = "-"
-    end
-    local hasItemString = select(3, strfind(arg1, "|c(.+)|r"))
-    if (hasItemString and arg2) then
-      QUICKEPGP.distributeItem(command..arg2, prefix)
-    else
-      if (arg1 and arg2 and arg3) then
-        if (prefix == "-") then
-          arg1 = -arg1
-        end
-        if (arg2 == "EP") then
-          QUICKEPGP.modifyEPGP(arg3, arg1, nil, arg4)
-        elseif (arg2 == "GP") then
-          QUICKEPGP.modifyEPGP(arg3, nil, arg1, arg4)
-        end
-      end
-    end
+    -- elseif (command == "+" or command == "add" or command == "-" or command == "remove") then
+    --   if (command == "add") then
+    --     prefix = "+"
+    --   elseif (command == "remove") then
+    --     prefix = "-"
+    --   end
+    --   local hasItemString = select(3, strfind(arg1, "|c(.+)|r"))
+    --   if (hasItemString and arg2) then
+    --     QUICKEPGP.distributeItem(command..arg2, prefix)
+    --   else
+    --     if (arg1 and arg2 and arg3) then
+    --       if (prefix == "-") then
+    --         arg1 = -arg1
+    --       end
+    --       if (arg2 == "EP") then
+    --         QUICKEPGP.modifyEPGP(arg3, arg1, nil, arg4)
+    --       elseif (arg2 == "GP") then
+    --         QUICKEPGP.modifyEPGP(arg3, nil, arg1, arg4)
+    --       end
+    --     end
+    --   end
   else
     QUICKEPGP.error("invalid command - type `/epgp help` for a list of commands")
   end
