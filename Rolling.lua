@@ -69,6 +69,7 @@ local function handleNeeding(player)
     highestRoller = QUICKEPGP.comparePR(highestRoller, player, rollTable)
     updateRollFrame()
   end
+  QUICKEPGP.LIBS:SendCommMessage(MODULE_NAME, "URF"..DELIMITER..(currentItem or EMPTY)..DELIMITER..(highestRoller or EMPTY), "RAID", nil, "ALERT")
 end
 
 local function handlePassing(player)
@@ -80,6 +81,7 @@ local function handlePassing(player)
     highestRoller = findHighestRoller(rollTable)
     updateRollFrame()
   end
+  QUICKEPGP.LIBS:SendCommMessage(MODULE_NAME, "URF"..DELIMITER..(currentItem or EMPTY)..DELIMITER..(highestRoller or EMPTY), "RAID", nil, "ALERT")
 end
 
 local function clearRollData()
@@ -191,11 +193,9 @@ local handleRollFrameEvent = function(module, message, distribution, author)
     elseif (event == "RN" and rolling) then
       local _, player = strsplit(DELIMITER, message)
       handleNeeding(player)
-      QUICKEPGP.LIBS:SendCommMessage(MODULE_NAME, "URF"..DELIMITER..(currentItem or EMPTY)..DELIMITER..(highestRoller or EMPTY), "RAID", nil, "ALERT")
     elseif (event == "RP" and rolling) then
       local _, player = strsplit(DELIMITER, message)
       handlePassing(player)
-      QUICKEPGP.LIBS:SendCommMessage(MODULE_NAME, "URF"..DELIMITER..(currentItem or EMPTY)..DELIMITER..(highestRoller or EMPTY), "RAID", nil, "ALERT")
     end
   end
 end
