@@ -38,14 +38,16 @@ end
 local function updateRollFrame()
   if (_G["QuickEPGProllFrame"]) then
     local frame = _G["QuickEPGProllFrame"]
-    frame:SetTitle("Rolling on "..currentItem)
-    if (highestRoller) then
+    frame:SetTitle("Rolling on "..(currentItem or EMPTY))
+    if (highestRoller and highestRoller ~= EMPTY) then
       frame:SetStatusText(QUICKEPGP.colorByClass(highestRoller, QUICKEPGP.raidMemberClass(highestRoller)).." ("..QUICKEPGP.guildMemberPR(highestRoller).." PR)")
     else
       frame:SetStatusText(nil)
     end
   end
-  QUICKEPGP.LIBS:SendCommMessage(MODULE_NAME, "URF"..DELIMITER..(currentItem or EMPTY)..DELIMITER..(highestRoller or EMPTY), "RAID", nil, "ALERT")
+  if (rolling) then
+    QUICKEPGP.LIBS:SendCommMessage(MODULE_NAME, "URF"..DELIMITER..(currentItem or EMPTY)..DELIMITER..(highestRoller or EMPTY), "RAID", nil, "ALERT")
+  end
 end
 
 local function validateRoll(player)
@@ -67,7 +69,12 @@ local function handleNeeding(player)
       SendChatMessage(format("%s needed (%s PR)", QUICKEPGP.getCharacterString(QUICKEPGP.guildMemberLevel(player), QUICKEPGP.guildMemberClass(player), player), QUICKEPGP.guildMemberPR(player)), "RAID")
     end
     rollTable[player] = {QUICKEPGP.guildMemberLevel(player), QUICKEPGP.guildMemberClass(player), QUICKEPGP.guildMemberEP(player), QUICKEPGP.guildMemberGP(player)}
-    highestRoller = QUICKEPGP.comparePR(highestRoller, player, rollTable)
+    if (not rollTable[highestRoller]) then
+      highestRoller = findHighestRoller(rollTable)
+    end
+    if (highestRoller ~= player) then
+      highestRoller = QUICKEPGP.comparePR(highestRoller, player, rollTable)
+    end
     updateRollFrame()
   end
 end
@@ -107,6 +114,7 @@ local function closeRollFrame()
     frame:Hide()
     _G["QuickEPGProllFrame"] = nil
   end
+  clearRollData()
 end
 
 local function endRolling(rollFrame)
@@ -124,7 +132,6 @@ local function endRolling(rollFrame)
       end
     end
   end
-  clearRollData()
   closeRollFrame()
   QUICKEPGP.LIBS:SendCommMessage(MODULE_NAME, "CRF"..DELIMITER..(currentItem or EMPTY)..DELIMITER..(highestRoller or EMPTY), "RAID", nil, "ALERT")
 end
@@ -186,12 +193,8 @@ local handleRollFrameEvent = function(module, message, distribution, author)
       closeRollFrame()
     elseif (event == "URF") then
       local _, ci, hr = strsplit(DELIMITER, message)
-      if (ci and ci ~= EMPTY) then
-        currentItem = ci
-      end
-      if (hr and hr ~= EMPTY) then
-        highestRoller = hr
-      end
+      currentItem = ci
+      highestRoller = hr
       updateRollFrame()
     elseif (event == "RN" and rolling) then
       local _, player = strsplit(DELIMITER, message)
