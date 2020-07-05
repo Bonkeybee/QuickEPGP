@@ -45,6 +45,7 @@ local function updateRollFrame()
       frame:SetStatusText(nil)
     end
   end
+  QUICKEPGP.LIBS:SendCommMessage(MODULE_NAME, "URF"..DELIMITER..(currentItem or EMPTY)..DELIMITER..(highestRoller or EMPTY), "RAID", nil, "ALERT")
 end
 
 local function validateRoll(player)
@@ -163,14 +164,9 @@ local handleRollFrameEvent = function(module, message, distribution, author)
   if (module ~= MODULE_NAME) then
     return
   end
-  if (author == UnitName("player")) then
-    return
-  end
-
   if (distribution == "RAID") then
     local event = strsplit(DELIMITER, message)
     if (event == "ORF") then
-      print(message)
       local _, ci, hr = strsplit(DELIMITER, message)
       if (ci and ci ~= EMPTY) then
         currentItem = ci
@@ -180,7 +176,6 @@ local handleRollFrameEvent = function(module, message, distribution, author)
       end
       openRollFrame()
     elseif (event == "CRF") then
-      print(message)
       local _, ci, hr = strsplit(DELIMITER, message)
       if (ci and ci ~= EMPTY) then
         currentItem = ci
@@ -189,6 +184,15 @@ local handleRollFrameEvent = function(module, message, distribution, author)
         highestRoller = hr
       end
       closeRollFrame()
+    elseif (event == "URF") then
+      local _, ci, hr = strsplit(DELIMITER, message)
+      if (ci and ci ~= EMPTY) then
+        currentItem = ci
+      end
+      if (hr and hr ~= EMPTY) then
+        highestRoller = hr
+      end
+      updateRollFrame()
     elseif (event == "RN" and rolling) then
       local _, player = strsplit(DELIMITER, message)
       handleNeeding(player)
