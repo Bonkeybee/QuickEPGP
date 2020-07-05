@@ -2,7 +2,7 @@ QUICKEPGP.ROLLING = CreateFrame("Frame")
 local MODULE_NAME = "QEPGP-Rolling"
 
 local ANNOUNCE_TIME = 20
-local DELIMITER = ":"
+local DELIMITER = ";"
 local EMPTY = ""
 
 local LEVEL_INDEX = 1
@@ -144,7 +144,7 @@ local function openRollFrame()
 
   local btn1 = QUICKEPGP.LIBS.GUI:Create("Button")
   btn1:SetCallback("OnClick", function()
-    handleNeeding(UnitName("player"))
+    QUICKEPGP.LIBS:SendCommMessage(MODULE_NAME, "RN"..DELIMITER..UnitName("player"), "RAID", nil, "ALERT")
   end)
   btn1:SetText("NEED")
   btn1:SetWidth(169)
@@ -152,7 +152,7 @@ local function openRollFrame()
 
   local btn2 = QUICKEPGP.LIBS.GUI:Create("Button")
   btn2:SetCallback("OnClick", function()
-    handlePassing(UnitName("player"))
+    QUICKEPGP.LIBS:SendCommMessage(MODULE_NAME, "RP"..DELIMITER..UnitName("player"), "RAID", nil, "ALERT")
   end)
   btn2:SetText("PASS")
   btn2:SetWidth(102)
@@ -166,18 +166,35 @@ local handleRollFrameEvent = function(module, message, distribution, author)
   if (author == UnitName("player")) then
     return
   end
+
   if (distribution == "RAID") then
-    local event = strsplit(":", message)
+    local event = strsplit(DELIMITER, message)
     if (event == "ORF") then
-      local _, ci, hr = strsplit(":", message)
-      currentItem = ci
-      highestRoller = hr
+      print(message)
+      local _, ci, hr = strsplit(DELIMITER, message)
+      if (ci and ci ~= EMPTY) then
+        currentItem = ci
+      end
+      if (hr and hr ~= EMPTY) then
+        highestRoller = hr
+      end
       openRollFrame()
     elseif (event == "CRF") then
-      local _, ci, hr = strsplit(":", message)
-      currentItem = ci
-      highestRoller = hr
+      print(message)
+      local _, ci, hr = strsplit(DELIMITER, message)
+      if (ci and ci ~= EMPTY) then
+        currentItem = ci
+      end
+      if (hr and hr ~= EMPTY) then
+        highestRoller = hr
+      end
       closeRollFrame()
+    elseif (event == "RN" and rolling) then
+      local _, player = strsplit(DELIMITER, message)
+      handleNeeding(player)
+    elseif (event == "RP" and rolling) then
+      local _, player = strsplit(DELIMITER, message)
+      handlePassing(player)
     end
   end
 end
