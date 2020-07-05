@@ -88,6 +88,7 @@ SlashCmdList["EPGP"] = function(message)
     QUICKEPGP.info("/epgp stop", " - stops an EPGP raid (will reward remaining time)")
     QUICKEPGP.info("/epgp status", " - shows status of an EPGP raid")
     QUICKEPGP.info("/epgp ignore", " - will turn off the EPGP start raid warning during this session")
+    QUICKEPGP.info("/epgp frame reset", " - will reset the roll frame")
     --TODO add QUICKEPGP_OPTIONS.QuickEPGProllFrame reset
     --QUICKEPGP.info("/epgp <add/remove> ITEMLINK PLAYER [, REASON]", " - adds/removes GP cost of ITEMLINK to/from PLAYER") --todo
     --QUICKEPGP.info("/epgp <add/remove> AMOUNT <EP / GP> PLAYER [, REASON]", " - adds/removes AMOUNT EP/GP to/from PLAYER") --todo

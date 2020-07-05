@@ -224,12 +224,8 @@ end
 -- ##### GLOBAL FUNCTIONS #####################################
 -- ############################################################
 
-QUICKEPGP.rolling = function()
-  return rolling
-end
-
 QUICKEPGP.handleRolling = function(event, command, author)
-  if (QUICKEPGP.rolling()) then
+  if (rolling) then
     if (event == "CHAT_MSG_RAID" or event == "CHAT_MSG_RAID_LEADER") then
       if (command == "need") then
         return handleNeeding(author)
@@ -237,7 +233,7 @@ QUICKEPGP.handleRolling = function(event, command, author)
       if (command == "pass") then
         return handlePassing(author)
       end
-      if (command == "end") then
+      if (command == "end" and UnitIsUnit("player", author)) then
         return endRolling()
       end
     end
