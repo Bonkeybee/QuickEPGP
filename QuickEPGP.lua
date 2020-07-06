@@ -130,6 +130,10 @@ SlashCmdList["EPGP"] = function(message)
   elseif (command == "ignore") then
     QUICKEPGP.ignoreRaidWarning = true
     QUICKEPGP.info("Now ignoring raid start warnings until next reload")
+  elseif (command == "frame" and arg1 == "reset") then
+    QUICKEPGP_OPTIONS.QuickEPGProllFrame.OX = 0
+    QUICKEPGP_OPTIONS.QuickEPGProllFrame.OY = 0
+    QUICKEPGP.info("Position of the roll frame has been reset")
     -- elseif (command == "+" or command == "add" or command == "-" or command == "remove") then
     --   if (command == "add") then
     --     prefix = "+"

@@ -14,6 +14,8 @@ local rolling = false
 local rollTable = {}
 local highestRoller = nil
 local currentItem = nil
+local iNeed = false
+local iPass = false
 
 -- ############################################################
 -- ##### LOCAL FUNCTIONS ######################################
@@ -38,7 +40,14 @@ end
 local function updateRollFrame()
   if (_G["QuickEPGProllFrame"]) then
     local frame = _G["QuickEPGProllFrame"]
-    frame:SetTitle("Rolling on "..(currentItem or EMPTY))
+    local str = "Rolling"
+    if (iNeed) then
+      str = "|cFF00FF00Needing|r"
+    end
+    if (iPass) then
+      str = "|cFFFF0000Passing|r"
+    end
+    frame:SetTitle(str.." on "..(currentItem or EMPTY))
     if (highestRoller and highestRoller ~= EMPTY) then
       frame:SetStatusText(QUICKEPGP.colorByClass(highestRoller, QUICKEPGP.raidMemberClass(highestRoller)).." ("..QUICKEPGP.guildMemberPR(highestRoller).." PR)")
     else
@@ -89,6 +98,8 @@ local function clearRollData()
   rollTable = {}
   highestRoller = nil
   currentItem = nil
+  iNeed = false
+  iPass = false
 end
 
 local function closeRollFrame()
@@ -97,14 +108,12 @@ local function closeRollFrame()
     if (not QUICKEPGP_OPTIONS.QuickEPGProllFrame) then
       QUICKEPGP_OPTIONS.QuickEPGProllFrame = {}
     end
-    for i = 1, frame:GetNumPoints() do
-      local p, rt, rp, ox, oy = frame:GetPoint(i)
-      QUICKEPGP_OPTIONS.QuickEPGProllFrame.P = p
-      QUICKEPGP_OPTIONS.QuickEPGProllFrame.RT = rt
-      QUICKEPGP_OPTIONS.QuickEPGProllFrame.RP = rp
-      QUICKEPGP_OPTIONS.QuickEPGProllFrame.OX = ox
-      QUICKEPGP_OPTIONS.QuickEPGProllFrame.OY = oy
-    end
+    local p, rt, rp, ox, oy = frame:GetPoint(1)
+    QUICKEPGP_OPTIONS.QuickEPGProllFrame.P = p
+    QUICKEPGP_OPTIONS.QuickEPGProllFrame.RT = rt
+    QUICKEPGP_OPTIONS.QuickEPGProllFrame.RP = rp
+    QUICKEPGP_OPTIONS.QuickEPGProllFrame.OX = ox
+    QUICKEPGP_OPTIONS.QuickEPGProllFrame.OY = oy
     frame:Hide()
     _G["QuickEPGProllFrame"] = nil
   end
@@ -146,6 +155,7 @@ local function openRollFrame()
 
   local btn1 = QUICKEPGP.LIBS.GUI:Create("Button")
   btn1:SetCallback("OnClick", function()
+    iNeed = true
     QUICKEPGP.LIBS:SendCommMessage(MODULE_NAME, "RN"..DELIMITER..UnitName("player"), "RAID", nil, "ALERT")
   end)
   btn1:SetText("NEED")
@@ -154,6 +164,7 @@ local function openRollFrame()
 
   local btn2 = QUICKEPGP.LIBS.GUI:Create("Button")
   btn2:SetCallback("OnClick", function()
+    iPass = true
     QUICKEPGP.LIBS:SendCommMessage(MODULE_NAME, "RP"..DELIMITER..UnitName("player"), "RAID", nil, "ALERT")
   end)
   btn2:SetText("PASS")

@@ -156,9 +156,11 @@ QUICKEPGP.getItemGP = function(itemId)
 end
 
 QUICKEPGP.modifyEPGP = function(name, dep, dgp, reason, mass)
-  if (not mass) then
-    notifyEPGP(name, dep, reason, EP)
-    notifyEPGP(name, dgp, reason, GP)
+  if (QUICKEPGP.guildMember(name)) then
+    if (not mass) then
+      notifyEPGP(name, dep, reason, EP)
+      notifyEPGP(name, dgp, reason, GP)
+    end
+    QUICKEPGP.SafeSetOfficerNote(name, dep, dgp)
   end
-  QUICKEPGP.SafeSetOfficerNote(name, dep, dgp)
 end
