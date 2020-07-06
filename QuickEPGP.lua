@@ -54,8 +54,12 @@ local function onEvent(_, event, message, author)
 
   if (event == "CHAT_MSG_RAID" or event == "CHAT_MSG_RAID_LEADER") then
     local command = strlower(strsub(message, 1, 4))
-    if (command == "roll" and QUICKEPGP.isMe(name) and CanEditOfficerNote()) then
-      return QUICKEPGP.startRolling(message, name)
+    if (command == "roll" and UnitIsUnit("player", name)) then
+      local itemLink = strsub(message, 5)
+      local itemId = QUICKEPGP.itemIdFromLink(itemLink)
+      if itemId then
+        return QUICKEPGP.startRolling(itemId, itemLink)
+      end
     end
   end
 
@@ -155,6 +159,8 @@ SlashCmdList["EPGP"] = function(message)
     --       end
     --     end
     --   end
+  elseif (command == "toggle" and arg1 == "master") then
+    QUICKEPGP.toggleMasterFrame()
   else
     QUICKEPGP.error("invalid command - type `/epgp help` for a list of commands")
   end

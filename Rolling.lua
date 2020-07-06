@@ -108,10 +108,7 @@ local function closeRollFrame()
     if (not QUICKEPGP_OPTIONS.QuickEPGProllFrame) then
       QUICKEPGP_OPTIONS.QuickEPGProllFrame = {}
     end
-    local p, rt, rp, ox, oy = frame:GetPoint(1)
-    QUICKEPGP_OPTIONS.QuickEPGProllFrame.P = p
-    QUICKEPGP_OPTIONS.QuickEPGProllFrame.RT = rt
-    QUICKEPGP_OPTIONS.QuickEPGProllFrame.RP = rp
+    local _, _, _, ox, oy = frame:GetPoint(1)
     QUICKEPGP_OPTIONS.QuickEPGProllFrame.OX = ox
     QUICKEPGP_OPTIONS.QuickEPGProllFrame.OY = oy
     frame:Hide()
@@ -149,13 +146,14 @@ local function openRollFrame()
   rollFrame:SetWidth(314)
   rollFrame:SetHeight(92)
   if (QUICKEPGP_OPTIONS.QuickEPGProllFrame) then
-    rollFrame:SetPoint(QUICKEPGP_OPTIONS.QuickEPGProllFrame.P, QUICKEPGP_OPTIONS.QuickEPGProllFrame.RT, QUICKEPGP_OPTIONS.QuickEPGProllFrame.RP, QUICKEPGP_OPTIONS.QuickEPGProllFrame.OX, QUICKEPGP_OPTIONS.QuickEPGProllFrame.OY)
+    rollFrame:SetPoint("CENTER", QUICKEPGP_OPTIONS.QuickEPGProllFrame.OX, QUICKEPGP_OPTIONS.QuickEPGProllFrame.OY)
   end
   updateRollFrame()
 
   local btn1 = QUICKEPGP.LIBS.GUI:Create("Button")
   btn1:SetCallback("OnClick", function()
     iNeed = true
+    iPass = false
     QUICKEPGP.LIBS:SendCommMessage(MODULE_NAME, "RN"..DELIMITER..UnitName("player"), "RAID", nil, "ALERT")
   end)
   btn1:SetText("NEED")
@@ -165,12 +163,15 @@ local function openRollFrame()
   local btn2 = QUICKEPGP.LIBS.GUI:Create("Button")
   btn2:SetCallback("OnClick", function()
     iPass = true
+    iNeed = false
     QUICKEPGP.LIBS:SendCommMessage(MODULE_NAME, "RP"..DELIMITER..UnitName("player"), "RAID", nil, "ALERT")
   end)
   btn2:SetText("PASS")
   btn2:SetWidth(102)
   rollFrame:AddChild(btn2)
 end
+
+QUICKEPGP.openRollFrame = openRollFrame
 
 local handleRollFrameEvent = function(module, message, distribution, author)
   if (module ~= MODULE_NAME) then
@@ -261,37 +262,21 @@ QUICKEPGP.handleRolling = function(event, command, author)
   end
 end
 
-QUICKEPGP.startRolling = function(message, author)
-  endRolling()
-  local player = UnitName("player")
-  if (player == author) then
-    local hasItemString = select(3, strfind(message, "|c(.+)|r"))
-    if (hasItemString and QUICKEPGP.raidMember(player)) then
-      local rank = QUICKEPGP.raidMember(player)[2]
-      local channel = "RAID"
-      if (rank > 0) then
-        channel = "RAID_WARNING"
-      end
-      if (rank > 0) then
-        local itemStrings = "|c"..hasItemString.."|r"
-        local itemParts = {strsplit("|", itemStrings)}
-        local count = table.getn(itemParts) - 1
-        if (count < 6) then
-          local itemId = select(3, strfind(itemStrings, ":(%d+):"))
-          if (itemId) then
-            local cost = QUICKEPGP.getItemGP(itemId)
-            if (cost) then
-              SendChatMessage(format("starting rolls on %s(%s GP)", itemStrings, cost), channel)
-              SendChatMessage(format("type NEED or PASS"), "RAID")
-              rolling = true
-              rollTable = {}
-              highestRoller = nil
-              currentItem = itemStrings
-              openRollFrame()
-              QUICKEPGP.LIBS:SendCommMessage(MODULE_NAME, "ORF"..DELIMITER..currentItem..DELIMITER..(highestRoller or EMPTY), "RAID", nil, "ALERT")
-            end
-          end
-        end
+QUICKEPGP.startRolling = function(itemId, itemLink)
+  if CanEditOfficerNote() then
+    local raidMember = QUICKEPGP.raidMember(UnitName("player"))
+    if (raidMember and raidMember[2] > 0) then
+      endRolling()
+      local cost = QUICKEPGP.getItemGP(itemId)
+      if (cost) then
+        SendChatMessage(format("starting rolls on %s(%s GP)", itemLink, cost), "RAID_WARNING")
+        SendChatMessage(format("type NEED or PASS"), "RAID")
+        rolling = true
+        rollTable = {}
+        highestRoller = nil
+        currentItem = itemLink
+        openRollFrame()
+        QUICKEPGP.LIBS:SendCommMessage(MODULE_NAME, "ORF"..DELIMITER..itemLink..DELIMITER..(highestRoller or EMPTY), "RAID", nil, "ALERT")
       end
     end
   end
@@ -316,6 +301,46 @@ QUICKEPGP.distributeItem = function(message, type)
         end
       end
     end
+  end
+end
+
+QUICKEPGP.openMasterFrame = function()
+  local frame = QUICKEPGP.LIBS.GUI:Create("Frame")
+  frame:SetTitle("Loot Master")
+  frame:SetCallback("OnClose", function(widget) QUICKEPGP.LIBS.GUI:Release(widget) QUICKEPGP.masterFrame = nil end)
+  frame:SetLayout("Fill")
+  frame:SetWidth(200)
+  frame:SetHeight(120)
+
+  local button = QUICKEPGP.LIBS.GUI:Create("Button")
+  button:SetText("Drag here to start roll, or click to end current roll")
+  button:SetCallback("OnClick", function()
+    local type, itemId, itemLink = GetCursorInfo()
+
+    if type == "item" and itemId and itemLink then
+      QUICKEPGP.startRolling(itemId, itemLink)
+      ClearCursor()
+    elseif not type and rolling then
+      endRolling()
+    end
+  end)
+  frame:AddChild(button)
+
+  QUICKEPGP.masterFrame = frame
+end
+
+QUICKEPGP.closeMasterFrame = function()
+  local frame = QUICKEPGP.masterFrame
+  if frame then
+    frame:Hide()
+  end
+end
+
+QUICKEPGP.toggleMasterFrame = function()
+  if QUICKEPGP.masterFrame then
+    QUICKEPGP.closeMasterFrame()
+  else
+    QUICKEPGP.openMasterFrame()
   end
 end
 

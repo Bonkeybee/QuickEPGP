@@ -66,6 +66,13 @@ QUICKEPGP.isMe = function(name)
   return name == UnitName("player")
 end
 
+QUICKEPGP.itemIdFromLink = function(itemLink)
+  if itemLink and string.find(itemLink, "^|c.*|r$") then
+    local _, itemId, _ = strsplit(":", itemLink)
+    return tonumber(itemId)
+  end
+end
+
 QUICKEPGP.round = function(number, decimals)
   if (number == nil) then
     number = 0
