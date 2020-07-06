@@ -4,9 +4,31 @@ local MODULE_NAME = "QuickEPGP-Options"
 local options = {
   type = "group",
   args = {
+    minimap = {
+      name = "Minimap Button",
+      type = "group",
+      order = 1,
+      args = {
+        enable = {
+          name = "Show Minimap Button",
+          type = "toggle",
+          set = function(info, val)
+            if val then
+              QUICKEPGP.MinimapIcon:Show(QUICKEPGP_ADDON_NAME)
+              QUICKEPGP_OPTIONS.MINIMAP.hide = false
+            else
+              QUICKEPGP.MinimapIcon:Hide(QUICKEPGP_ADDON_NAME)
+              QUICKEPGP_OPTIONS.MINIMAP.hide = true
+            end
+          end,
+          get = function(info) return not QUICKEPGP_OPTIONS.MINIMAP.hide end
+        }
+      }
+    },
     looting = {
       name = "Looting",
       type = "group",
+      order = 2,
       args = {
         enable = {
           name = "Enable",
@@ -91,6 +113,12 @@ end
 local function onEvent(_, event)
   if (event == "ADDON_LOADED") then
     QUICKEPGP_OPTIONS = QUICKEPGP.DefaultConfig(QUICKEPGP_OPTIONS)
+
+    if not QUICKEPGP.MinimapIcon then
+      QUICKEPGP.MinimapIcon = LibStub("LibDBIcon-1.0")
+      QUICKEPGP.MinimapIcon:Register(QUICKEPGP_ADDON_NAME, QUICKEPGP.MinimapButton, QUICKEPGP_OPTIONS.MINIMAP)
+    end
+
   end
 end
 
@@ -107,6 +135,15 @@ QUICKEPGP.DefaultConfig = function(QUICKEPGP_OPTIONS)
   QUICKEPGP_OPTIONS.LOOTING.equiprarity = default(QUICKEPGP_OPTIONS.LOOTING.equiprarity, 3)
   QUICKEPGP_OPTIONS.LOOTING.otherlootee = default(QUICKEPGP_OPTIONS.LOOTING.otherlootee, 2)
   QUICKEPGP_OPTIONS.LOOTING.otherrarity = default(QUICKEPGP_OPTIONS.LOOTING.otherrarity, 1)
+  QUICKEPGP_OPTIONS.MINIMAP = default(QUICKEPGP_OPTIONS.MINIMAP, {hide=false})
+  QUICKEPGP_OPTIONS.MasterFrame = default(QUICKEPGP_OPTIONS.MasterFrame, {})
+  QUICKEPGP_OPTIONS.MasterFrame.X = default(QUICKEPGP_OPTIONS.MasterFrame.X, 0)
+  QUICKEPGP_OPTIONS.MasterFrame.Y = default(QUICKEPGP_OPTIONS.MasterFrame.Y, 0)
+  QUICKEPGP_OPTIONS.MasterFrame.Point = default(QUICKEPGP_OPTIONS.MasterFrame.Point, "CENTER")
+  QUICKEPGP_OPTIONS.RollFrame = default(QUICKEPGP_OPTIONS.RollFrame, {})
+  QUICKEPGP_OPTIONS.RollFrame.X = default(QUICKEPGP_OPTIONS.RollFrame.X, 0)
+  QUICKEPGP_OPTIONS.RollFrame.Y = default(QUICKEPGP_OPTIONS.RollFrame.Y, 0)
+  QUICKEPGP_OPTIONS.RollFrame.Point = default(QUICKEPGP_OPTIONS.RollFrame.Point, "CENTER")
   return QUICKEPGP_OPTIONS
 end
 

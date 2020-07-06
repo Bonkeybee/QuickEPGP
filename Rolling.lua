@@ -38,8 +38,7 @@ local function findHighestRoller(rollTable)
 end
 
 local function updateRollFrame()
-  if (_G["QuickEPGProllFrame"]) then
-    local frame = _G["QuickEPGProllFrame"]
+  if QuickEPGProllFrame then
     local str = "Rolling"
     if (iNeed) then
       str = "|cFF00FF00Needing|r"
@@ -47,12 +46,25 @@ local function updateRollFrame()
     if (iPass) then
       str = "|cFFFF0000Passing|r"
     end
-    frame:SetTitle(str.." on "..(currentItem or EMPTY))
-    if (highestRoller and highestRoller ~= EMPTY) then
-      frame:SetStatusText(QUICKEPGP.colorByClass(highestRoller, QUICKEPGP.raidMemberClass(highestRoller)).." ("..QUICKEPGP.guildMemberPR(highestRoller).." PR)")
+    if currentItem then
+      QuickEPGProllFrame.Title:SetText(str.." on "..currentItem)
     else
-      frame:SetStatusText(nil)
+      QuickEPGProllFrame.Title:SetText(" ")
     end
+    if (highestRoller and highestRoller ~= EMPTY) then
+      QuickEPGProllFrame.Status:SetText(QUICKEPGP.colorByClass(highestRoller, QUICKEPGP.raidMemberClass(highestRoller)).." ("..QUICKEPGP.guildMemberPR(highestRoller).." PR)")
+    else
+      QuickEPGProllFrame.Status:SetText(nil)
+    end
+
+    if (currentItem) then
+      local btn = QuickEPGProllFrame.LootButton
+      local _, _, _, _, _, _, _, _, _, texture = GetItemInfo(currentItem);
+      QuickEPGProllFrame.Picture.Texture:SetTexture(texture)
+    else
+      QuickEPGProllFrame.Picture.Texture:SetTexture(nil)
+    end
+
   end
 end
 
@@ -103,18 +115,10 @@ local function clearRollData()
 end
 
 local function closeRollFrame()
-  if (_G["QuickEPGProllFrame"]) then
-    local frame = _G["QuickEPGProllFrame"]
-    if (not QUICKEPGP_OPTIONS.QuickEPGProllFrame) then
-      QUICKEPGP_OPTIONS.QuickEPGProllFrame = {}
-    end
-    local _, _, _, ox, oy = frame:GetPoint(1)
-    QUICKEPGP_OPTIONS.QuickEPGProllFrame.OX = ox
-    QUICKEPGP_OPTIONS.QuickEPGProllFrame.OY = oy
-    frame:Hide()
-    _G["QuickEPGProllFrame"] = nil
+  if QuickEPGProllFrame then
+    QuickEPGProllFrame:Hide()
   end
-  clearRollData()
+  --clearRollData()
 end
 
 local function endRolling()
@@ -133,45 +137,122 @@ local function endRolling()
     end
   end
   closeRollFrame()
+  clearRollData()
   QUICKEPGP.LIBS:SendCommMessage(MODULE_NAME, "CRF"..DELIMITER..(currentItem or EMPTY)..DELIMITER..(highestRoller or EMPTY), "RAID", nil, "ALERT")
 end
 
 local function openRollFrame()
-  local rollFrame = QUICKEPGP.LIBS.GUI:Create("Frame")
-  _G["QuickEPGProllFrame"] = rollFrame
-  tinsert(UISpecialFrames, "QuickEPGProllFrame")
-  rollFrame:SetCallback("OnClose", function(widget) QUICKEPGP.LIBS.GUI:Release(widget) end)
-  rollFrame:EnableResize(false)
-  rollFrame:SetLayout("Flow")
-  rollFrame:SetWidth(314)
-  rollFrame:SetHeight(92)
-  if (QUICKEPGP_OPTIONS.QuickEPGProllFrame) then
-    rollFrame:SetPoint("CENTER", QUICKEPGP_OPTIONS.QuickEPGProllFrame.OX, QUICKEPGP_OPTIONS.QuickEPGProllFrame.OY)
+  if QuickEPGProllFrame then
+    QuickEPGProllFrame:Show()
+    updateRollFrame()
+    return
   end
-  updateRollFrame()
 
-  local btn1 = QUICKEPGP.LIBS.GUI:Create("Button")
-  btn1:SetCallback("OnClick", function()
+  local rollFrame = CreateFrame("Frame", "QuickEPGProllFrame", UIParent)
+  QuickEPGProllFrame = rollFrame
+  tinsert(UISpecialFrames, "QuickEPGProllFrame")
+	rollFrame:SetFrameStrata("DIALOG")
+	rollFrame:SetBackdrop({
+		bgFile		= "Interface\\DialogFrame\\UI-DialogBox-Background", -- 131071
+		tile		= true,
+		tileSize	= 16
+	})
+	rollFrame:SetPoint(QUICKEPGP_OPTIONS.RollFrame.Point, UIParent, QUICKEPGP_OPTIONS.RollFrame.Point, QUICKEPGP_OPTIONS.RollFrame.X, QUICKEPGP_OPTIONS.RollFrame.Y)
+	rollFrame:SetSize(314, 56)
+	rollFrame:SetClampedToScreen(true)
+	rollFrame:EnableMouse(true)
+	rollFrame:SetToplevel(true)
+	rollFrame:SetMovable(true)
+	rollFrame:RegisterForDrag("LeftButton")
+	rollFrame:SetScript("OnDragStart", function(self)
+		self:StartMoving()
+	end)
+	rollFrame:SetScript("OnDragStop", function(self)
+		self:StopMovingOrSizing()
+		local point, _, _, x, y = self:GetPoint(1)
+		QUICKEPGP_OPTIONS.RollFrame.X = x
+		QUICKEPGP_OPTIONS.RollFrame.Y = y
+		QUICKEPGP_OPTIONS.RollFrame.Point = point
+	end)
+
+	local title = rollFrame:CreateFontString(nil, "OVERLAY", "GameTooltipText")
+	title:SetWidth(314)
+	title:SetHeight(12)
+	title:SetPoint("BOTTOMLEFT", rollFrame, "TOPLEFT", 1, 1)
+	title:SetTextColor(1, 1, 1, 1)
+  title:SetText(" ")
+	title:Show()
+	rollFrame.Title = title
+
+  local topRoller = rollFrame:CreateFontString(nil, "OVERLAY", "GameTooltipText")
+	topRoller:SetWidth(314)
+	topRoller:SetHeight(12)
+	topRoller:SetPoint("TOPLEFT", rollFrame, "BOTTOMLEFT", 1, 1)
+	topRoller:SetTextColor(1, 1, 1, 1)
+  topRoller:SetText(" ")
+	topRoller:Show()
+  rollFrame.Status = topRoller
+
+  local pictureFrame = CreateFrame("Frame", nil, rollFrame)
+  pictureFrame:SetSize(48, 48)
+  pictureFrame:SetPoint("BOTTOMLEFT", rollFrame, "BOTTOMLEFT", 4, 4)
+  pictureFrame:Show()
+  pictureFrame:EnableMouse(true)
+	pictureFrame:RegisterForDrag("LeftButton")
+	pictureFrame:SetScript("OnDragStart", function(self)
+		QuickEPGProllFrame:StartMoving()
+	end)
+	pictureFrame:SetScript("OnDragStop", function(self)
+		QuickEPGProllFrame:StopMovingOrSizing()
+		local point, _, _, x, y = QuickEPGProllFrame:GetPoint(1)
+		QUICKEPGP_OPTIONS.RollFrame.X = x
+		QUICKEPGP_OPTIONS.RollFrame.Y = y
+		QUICKEPGP_OPTIONS.RollFrame.Point = point
+	end)
+	pictureFrame:SetScript("OnEnter", function(self)
+    if currentItem then
+      GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT")
+      GameTooltip:SetHyperlink(currentItem)
+      GameTooltip:Show()
+    end
+	end)
+	pictureFrame:SetScript("OnLeave", function(self)
+    GameTooltip:Hide()
+	end)
+  local pictureTexture = pictureFrame:CreateTexture(nil, "BACKGROUND")
+  pictureTexture:SetAllPoints()
+  pictureFrame.Texture = pictureTexture
+  rollFrame.Picture = pictureFrame
+
+  local needButton = CreateFrame("Button", nil, rollFrame, "UIPanelButtonTemplate")
+  needButton:SetSize(238, 22)
+  needButton:SetText("NEED")
+  needButton:SetPoint("BOTTOMLEFT", rollFrame, "BOTTOMLEFT", 72, 30)
+  needButton:Show()
+  needButton:SetScript("OnClick", function()
     iNeed = true
     iPass = false
     QUICKEPGP.LIBS:SendCommMessage(MODULE_NAME, "RN"..DELIMITER..UnitName("player"), "RAID", nil, "ALERT")
   end)
-  btn1:SetText("NEED")
-  btn1:SetWidth(169)
-  rollFrame:AddChild(btn1)
 
-  local btn2 = QUICKEPGP.LIBS.GUI:Create("Button")
-  btn2:SetCallback("OnClick", function()
+  local passButton = CreateFrame("Button", nil, rollFrame, "UIPanelButtonTemplate")
+  passButton:SetSize(116, 22)
+  passButton:SetText("PASS")
+  passButton:SetPoint("BOTTOMLEFT", rollFrame, "BOTTOMLEFT", 72, 4)
+  passButton:Show()
+  passButton:SetScript("OnClick", function()
     iPass = true
     iNeed = false
     QUICKEPGP.LIBS:SendCommMessage(MODULE_NAME, "RP"..DELIMITER..UnitName("player"), "RAID", nil, "ALERT")
   end)
-  btn2:SetText("PASS")
-  btn2:SetWidth(102)
-  rollFrame:AddChild(btn2)
-end
 
-QUICKEPGP.openRollFrame = openRollFrame
+  local closeButton = CreateFrame("Button", nil, rollFrame, "UIPanelButtonTemplate")
+  closeButton:SetSize(116, 22)
+  closeButton:SetText("Close")
+  closeButton:SetPoint("BOTTOMLEFT", rollFrame, "BOTTOMLEFT", 194, 4)
+  closeButton:Show()
+  closeButton:SetScript("OnClick", closeRollFrame)
+end
 
 local handleRollFrameEvent = function(module, message, distribution, author)
   if (module ~= MODULE_NAME) then
@@ -197,6 +278,7 @@ local handleRollFrameEvent = function(module, message, distribution, author)
         highestRoller = hr
       end
       closeRollFrame()
+      clearRollData()
     elseif (event == "URF" and not rolling) then
       local _, ci, hr = strsplit(DELIMITER, message)
       currentItem = ci
@@ -305,16 +387,48 @@ QUICKEPGP.distributeItem = function(message, type)
 end
 
 QUICKEPGP.openMasterFrame = function()
-  local frame = QUICKEPGP.LIBS.GUI:Create("Frame")
-  frame:SetTitle("Loot Master")
-  frame:SetCallback("OnClose", function(widget) QUICKEPGP.LIBS.GUI:Release(widget) QUICKEPGP.masterFrame = nil end)
-  frame:SetLayout("Fill")
-  frame:SetWidth(200)
-  frame:SetHeight(120)
 
-  local button = QUICKEPGP.LIBS.GUI:Create("Button")
-  button:SetText("Drag here to start roll, or click to end current roll")
-  button:SetCallback("OnClick", function()
+  if QuickEPGPMasterLootFrame then
+    QuickEPGPMasterLootFrame:Show()
+    return
+  end
+  
+	local textFrame = CreateFrame("Frame", "QuickEPGPMasterLootFrame", UIParent)
+  QuickEPGPMasterLootFrame = textFrame
+	textFrame:SetFrameStrata("DIALOG")
+	textFrame:SetBackdrop({
+		bgFile		= "Interface\\DialogFrame\\UI-DialogBox-Background", -- 131071
+		tile		= true,
+		tileSize	= 16
+	})
+	textFrame:SetPoint(QUICKEPGP_OPTIONS.MasterFrame.Point, UIParent, QUICKEPGP_OPTIONS.MasterFrame.Point, QUICKEPGP_OPTIONS.MasterFrame.X, QUICKEPGP_OPTIONS.MasterFrame.Y)
+	textFrame:SetSize(128, 64)
+	textFrame:SetClampedToScreen(true)
+	textFrame:EnableMouse(true)
+	textFrame:SetToplevel(true)
+	textFrame:SetMovable(true)
+	textFrame:RegisterForDrag("LeftButton")
+	textFrame:SetScript("OnDragStart", function(self)
+		self:StartMoving()
+	end)
+	textFrame:SetScript("OnDragStop", function(self)
+		self:StopMovingOrSizing()
+		local point, _, _, x, y = self:GetPoint(1)
+		QUICKEPGP_OPTIONS.MasterFrame.X = x
+		QUICKEPGP_OPTIONS.MasterFrame.Y = y
+		QUICKEPGP_OPTIONS.MasterFrame.Point = point
+	end)
+
+	local text = textFrame:CreateFontString(nil, "OVERLAY", "GameTooltipText")
+	text:SetWidth(120)
+	text:SetHeight(56)
+	text:SetPoint("TOPLEFT", textFrame, "TOPLEFT", 4, 4)
+	text:SetTextColor(1, 1, 1, 1)
+  text:SetText("Drag here to start roll, or click to end current roll")
+	text:Show()
+	textFrame.text = text
+
+	textFrame:SetScript("OnMouseUp", function(_, button)
     local type, itemId, itemLink = GetCursorInfo()
 
     if type == "item" and itemId and itemLink then
@@ -323,24 +437,29 @@ QUICKEPGP.openMasterFrame = function()
     elseif not type and rolling then
       endRolling()
     end
-  end)
-  frame:AddChild(button)
-
-  QUICKEPGP.masterFrame = frame
+	end)
 end
 
 QUICKEPGP.closeMasterFrame = function()
-  local frame = QUICKEPGP.masterFrame
+  local frame = QuickEPGPMasterLootFrame
   if frame then
     frame:Hide()
   end
 end
 
 QUICKEPGP.toggleMasterFrame = function()
-  if QUICKEPGP.masterFrame then
+  if QuickEPGPMasterLootFrame and QuickEPGPMasterLootFrame:IsShown() then
     QUICKEPGP.closeMasterFrame()
   else
     QUICKEPGP.openMasterFrame()
+  end
+end
+
+QUICKEPGP.toggleRollFrame = function()
+  if QuickEPGProllFrame and QuickEPGProllFrame:IsShown() then
+    closeRollFrame()
+  else
+    openRollFrame()
   end
 end
 

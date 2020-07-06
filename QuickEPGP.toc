@@ -26,6 +26,8 @@ Libs\AceConfig-3.0\AceConfig-3.0.xml
 Libs\AceComm-3.0\AceComm-3.0.xml
 Libs\AceTab-3.0\AceTab-3.0.xml
 Libs\AceSerializer-3.0\AceSerializer-3.0.xml
+Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
+Libs\LibDBIcon-1.0\lib.xml
 
 QuickEPGP.lua
 Options.lua
@@ -34,4 +36,5 @@ Looting.lua
 Rolling.lua
 Guild.lua
 Raid.lua
+Minimap.lua
 Utility.lua
