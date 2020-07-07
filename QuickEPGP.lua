@@ -113,18 +113,7 @@ SlashCmdList["EPGP"] = function(message)
       end
       QUICKEPGP.info(format("Your new PR would be %s (%s from %s) with a %s GP item", newpr, status, pr, cost))
     else
-      local name = (arg1 or UnitName("player"))
-      local member = QUICKEPGP.guildMember(name)
-      if (member) then
-        local ep = QUICKEPGP.guildMemberEP(name)
-        local gp = QUICKEPGP.guildMemberGP(name)
-        local pr = QUICKEPGP.guildMemberPR(name)
-        if (name == UnitName("player")) then
-          QUICKEPGP.info(format("You have %s PR; (%s EP / %s GP)", pr, ep, gp))
-        else
-          QUICKEPGP.info(format("%s has %s PR; (%s EP / %s GP)", name, pr, ep, gp))
-        end
-      end
+      QUICKEPGP.info(QUICKEPGP.getEPGPPRMessage(arg1 or UnitName("player")))
     end
   elseif (command == "start" or command == "begin") then
     QUICKEPGP.startRaid()
