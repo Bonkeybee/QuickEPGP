@@ -14,6 +14,7 @@ local rolling = false
 local rollTable = {}
 local highestRoller = nil
 local currentItem = nil
+local currentCost = nil
 local iNeed = false
 local iPass = false
 
@@ -39,7 +40,7 @@ end
 
 local function updateRollFrame()
   if QuickEPGProllFrame then
-    local str = "Rolling"
+    local str = "|cFFFFFF00Rolling|r"
     if (iNeed) then
       str = "|cFF00FF00Needing|r"
     end
@@ -47,12 +48,12 @@ local function updateRollFrame()
       str = "|cFFFF0000Passing|r"
     end
     if currentItem then
-      QuickEPGProllFrame.Title:SetText(str.." on "..currentItem)
+      QuickEPGProllFrame.Title:SetText(str.." on "..currentItem.." |cFFFFFF00("..currentCost.." GP)|r")
     else
       QuickEPGProllFrame.Title:SetText(" ")
     end
     if (highestRoller and highestRoller ~= EMPTY) then
-      QuickEPGProllFrame.Status:SetText(QUICKEPGP.colorByClass(highestRoller, QUICKEPGP.raidMemberClass(highestRoller)).." ("..QUICKEPGP.guildMemberPR(highestRoller).." PR)")
+      QuickEPGProllFrame.Status:SetText(QUICKEPGP.colorByClass(highestRoller, QUICKEPGP.raidMemberClass(highestRoller)).." |cFFFFFF00("..QUICKEPGP.guildMemberPR(highestRoller).." PR)|r |cFFFF0000["..QUICKEPGP.guildMemberPR(highestRoller, true, currentCost).." PR]|r")
     else
       QuickEPGProllFrame.Status:SetText(nil)
     end
@@ -110,6 +111,7 @@ local function clearRollData()
   rollTable = {}
   highestRoller = nil
   currentItem = nil
+  currentCost = nil
   iNeed = false
   iPass = false
 end
@@ -142,6 +144,7 @@ local function endRolling()
 end
 
 local function openRollFrame()
+  PlaySoundFile("Interface\\AddOns\\QuickEPGP\\Sounds\\whatcanidoforya.ogg", "Master")
   if QuickEPGProllFrame then
     QuickEPGProllFrame:Show()
     updateRollFrame()
@@ -157,8 +160,9 @@ local function openRollFrame()
     tile = true,
     tileSize = 16
   })
+  local width = 231
   rollFrame:SetPoint(QUICKEPGP_OPTIONS.RollFrame.Point, UIParent, QUICKEPGP_OPTIONS.RollFrame.Point, QUICKEPGP_OPTIONS.RollFrame.X, QUICKEPGP_OPTIONS.RollFrame.Y)
-  rollFrame:SetSize(206, 46)
+  rollFrame:SetSize(width, 46)
   rollFrame:SetClampedToScreen(true)
   rollFrame:EnableMouse(true)
   rollFrame:SetToplevel(true)
@@ -176,7 +180,7 @@ local function openRollFrame()
   end)
 
   local title = rollFrame:CreateFontString(nil, "OVERLAY", "GameTooltipText")
-  title:SetWidth(206)
+  title:SetWidth(width * 2)
   title:SetHeight(12)
   title:SetPoint("BOTTOMLEFT", rollFrame, "TOPLEFT", 1, 1)
   title:SetTextColor(1, 1, 1, 1)
@@ -185,7 +189,7 @@ local function openRollFrame()
   rollFrame.Title = title
 
   local topRoller = rollFrame:CreateFontString(nil, "OVERLAY", "GameTooltipText")
-  topRoller:SetWidth(206)
+  topRoller:SetWidth(width * 2)
   topRoller:SetHeight(12)
   topRoller:SetPoint("TOPLEFT", rollFrame, "BOTTOMLEFT", 1, 1)
   topRoller:SetTextColor(1, 1, 1, 1)
@@ -243,6 +247,14 @@ local function openRollFrame()
     iPass = true
     iNeed = false
     QUICKEPGP.LIBS:SendCommMessage(MODULE_NAME, "RP"..DELIMITER..UnitName("player"), "RAID", nil, "ALERT")
+  end)
+
+  local closeButton = CreateFrame("Button", nil, rollFrame, "UIPanelButtonTemplate")
+  closeButton:SetSize(25, 42)
+  closeButton:SetText("X")
+  closeButton:SetPoint("BOTTOMLEFT", rollFrame, "BOTTOMLEFT", 194, 3)
+  closeButton:Show()
+  closeButton:SetScript("OnClick", function()
     closeRollFrame()
   end)
 end
@@ -350,6 +362,7 @@ QUICKEPGP.startRolling = function(itemId, itemLink)
         rollTable = {}
         highestRoller = nil
         currentItem = itemLink
+        currentCost = cost
         openRollFrame()
         QUICKEPGP.LIBS:SendCommMessage(MODULE_NAME, "ORF"..DELIMITER..itemLink..DELIMITER..(highestRoller or EMPTY), "RAID", nil, "ALERT")
       end

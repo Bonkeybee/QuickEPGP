@@ -5,7 +5,7 @@ local options = {
   type = "group",
   args = {
     minimap = {
-      name = "Minimap Button",
+      name = "Minimap",
       type = "group",
       order = 1,
       args = {
@@ -93,6 +93,24 @@ local options = {
         },
       }
     },
+    rolling = {
+      name = "Rolling",
+      type = "group",
+      order = 3,
+      args = {
+        enable = {
+          name = "Play RollFrame Sound",
+          type = "toggle",
+          set = function(info, val)
+            if val then
+              PlaySoundFile("Interface\\AddOns\\QuickEPGP\\Sounds\\whatcanidoforya.ogg", "Master")
+            end
+            QUICKEPGP_OPTIONS.ROLLING.sound = val
+          end,
+          get = function(info) return QUICKEPGP_OPTIONS.ROLLING.sound end
+        }
+      }
+    },
   },
 }
 LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable(QUICKEPGP_ADDON_NAME, options, SLASH_EPGP1)
@@ -135,6 +153,8 @@ QUICKEPGP.DefaultConfig = function(QUICKEPGP_OPTIONS)
   QUICKEPGP_OPTIONS.LOOTING.equiprarity = default(QUICKEPGP_OPTIONS.LOOTING.equiprarity, 3)
   QUICKEPGP_OPTIONS.LOOTING.otherlootee = default(QUICKEPGP_OPTIONS.LOOTING.otherlootee, 2)
   QUICKEPGP_OPTIONS.LOOTING.otherrarity = default(QUICKEPGP_OPTIONS.LOOTING.otherrarity, 1)
+  QUICKEPGP_OPTIONS.ROLLING = default(QUICKEPGP_OPTIONS.ROLLING, {})
+  QUICKEPGP_OPTIONS.ROLLING.sound = default(QUICKEPGP_OPTIONS.ROLLING.sound, true)
   QUICKEPGP_OPTIONS.MINIMAP = default(QUICKEPGP_OPTIONS.MINIMAP, {hide = false})
   QUICKEPGP_OPTIONS.MasterFrame = default(QUICKEPGP_OPTIONS.MasterFrame, {})
   QUICKEPGP_OPTIONS.MasterFrame.X = default(QUICKEPGP_OPTIONS.MasterFrame.X, 0)
