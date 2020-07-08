@@ -47,7 +47,7 @@ local function updateRollFrame()
       str = "|cFFFF0000Passing|r"
     end
 
-    local cost = (QUICKEPGP.getItemGP(QUICKEPGP.getItemId(currentItem)) or 0)
+    local cost = QUICKEPGP.getItemGP(QUICKEPGP.getItemId(currentItem))
     if currentItem then
       QuickEPGProllFrame.Title:SetText(str.." on "..currentItem.." |cFFFFFF00("..cost.." GP)|r")
       local btn = QuickEPGProllFrame.LootButton

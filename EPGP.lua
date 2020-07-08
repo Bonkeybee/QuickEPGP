@@ -150,24 +150,29 @@ QUICKEPGP.comparePR = function(name1, name2, rollTable)
 end
 
 QUICKEPGP.getItemGP = function(itemId)
-  local itemId = tonumber(itemId)
-  if (OVERRIDE[itemId]) then
-    return OVERRIDE[itemId]
-  end
-  local _, _, itemRarity, itemLevel, _, _, _, _, itemEquipLoc = GetItemInfo(itemId)
-  local slot = nil
-  if (itemEquipLoc == nil or itemEquipLoc == "") then
-    slot = "EXCEPTION"
-    QUICKEPGP.error(format("QUICKEPGP::Item %s has no itemEquipLoc (%s)", itemId, itemEquipLoc))
+  if (itemId) then
+    local itemId = tonumber(itemId)
+    if (OVERRIDE[itemId]) then
+      return OVERRIDE[itemId]
+    end
+    local _, _, itemRarity, itemLevel, _, _, _, _, itemEquipLoc = GetItemInfo(itemId)
+    local slot = nil
+    if (itemEquipLoc == nil or itemEquipLoc == "") then
+      slot = "EXCEPTION"
+      QUICKEPGP.error(format("QUICKEPGP::Item %s has no itemEquipLoc (%s)", itemId, itemEquipLoc))
+    else
+      slot = strsub(itemEquipLoc, strfind(itemEquipLoc, "INVTYPE_") + 8, string.len(itemEquipLoc))
+    end
+    local slotWeight = SLOTWEIGHTS[slot]
+    if (slotWeight) then
+      return math.floor((INFLATION_MOD * (EXPONENTIAL_MOD^((itemLevel / 26) + (itemRarity - 4))) * slotWeight) * NORMALIZER_MOD)
+    else
+      QUICKEPGP.error(format("QUICKEPGP::Item %s has no valid slot weight (%s)", itemId, slot))
+    end
   else
-    slot = strsub(itemEquipLoc, strfind(itemEquipLoc, "INVTYPE_") + 8, string.len(itemEquipLoc))
+    QUICKEPGP.error("QUICKEPGP::Invalid itemId, returning 0")
   end
-  local slotWeight = SLOTWEIGHTS[slot]
-  if (slotWeight) then
-    return math.floor((INFLATION_MOD * (EXPONENTIAL_MOD^((itemLevel / 26) + (itemRarity - 4))) * slotWeight) * NORMALIZER_MOD)
-  else
-    QUICKEPGP.error(format("QUICKEPGP::Item %s has no valid slot weight (%s)", itemId, slot))
-  end
+  return 0
 end
 
 QUICKEPGP.modifyEPGP = function(name, dep, dgp, reason, mass)
