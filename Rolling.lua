@@ -14,7 +14,6 @@ local rolling = false
 local rollTable = {}
 local highestRoller = nil
 local currentItem = nil
-local currentCost = nil
 local iNeed = false
 local iPass = false
 
@@ -47,25 +46,23 @@ local function updateRollFrame()
     if (iPass) then
       str = "|cFFFF0000Passing|r"
     end
-    if currentItem then
-      QuickEPGProllFrame.Title:SetText(str.." on "..currentItem.." |cFFFFFF00("..currentCost.." GP)|r")
-    else
-      QuickEPGProllFrame.Title:SetText(" ")
-    end
-    if (highestRoller and highestRoller ~= EMPTY) then
-      QuickEPGProllFrame.Status:SetText(QUICKEPGP.colorByClass(highestRoller, QUICKEPGP.raidMemberClass(highestRoller)).." |cFFFFFF00("..QUICKEPGP.guildMemberPR(highestRoller).." PR)|r |cFFFF0000["..QUICKEPGP.guildMemberPR(highestRoller, true, currentCost).." PR]|r")
-    else
-      QuickEPGProllFrame.Status:SetText(nil)
-    end
 
-    if (currentItem) then
+    local cost = (QUICKEPGP.getItemGP(QUICKEPGP.getItemId(currentItem)) or 0)
+    if currentItem then
+      QuickEPGProllFrame.Title:SetText(str.." on "..currentItem.." |cFFFFFF00("..cost.." GP)|r")
       local btn = QuickEPGProllFrame.LootButton
       local _, _, _, _, _, _, _, _, _, texture = GetItemInfo(currentItem);
       QuickEPGProllFrame.Picture.Texture:SetTexture(texture)
     else
+      QuickEPGProllFrame.Title:SetText(" ")
       QuickEPGProllFrame.Picture.Texture:SetTexture(nil)
     end
 
+    if (highestRoller and highestRoller ~= EMPTY) then
+      QuickEPGProllFrame.Status:SetText(QUICKEPGP.colorByClass(highestRoller, QUICKEPGP.raidMemberClass(highestRoller)).." |cFFFFFF00("..QUICKEPGP.guildMemberPR(highestRoller).." PR)|r |cFFFF0000["..QUICKEPGP.guildMemberPR(highestRoller, true, cost).." PR]|r")
+    else
+      QuickEPGProllFrame.Status:SetText(nil)
+    end
   end
 end
 
@@ -111,7 +108,6 @@ local function clearRollData()
   rollTable = {}
   highestRoller = nil
   currentItem = nil
-  currentCost = nil
   iNeed = false
   iPass = false
 end
@@ -257,6 +253,7 @@ local function openRollFrame()
   closeButton:SetScript("OnClick", function()
     closeRollFrame()
   end)
+  updateRollFrame()
 end
 
 local handleRollFrameEvent = function(module, message, distribution, author)
@@ -362,7 +359,6 @@ QUICKEPGP.startRolling = function(itemId, itemLink)
         rollTable = {}
         highestRoller = nil
         currentItem = itemLink
-        currentCost = cost
         openRollFrame()
         QUICKEPGP.LIBS:SendCommMessage(MODULE_NAME, "ORF"..DELIMITER..itemLink..DELIMITER..(highestRoller or EMPTY), "RAID", nil, "ALERT")
       end
