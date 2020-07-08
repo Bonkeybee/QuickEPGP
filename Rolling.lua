@@ -335,14 +335,10 @@ QUICKEPGP.handleRolling = function(event, command, author)
     end
     if (event == "CHAT_MSG_WHISPER") then
       if (command == "need") then
-        if (QUICKEPGP.guildMember(author)) then
-          return handleNeeding(author)
-        end
+        return handleNeeding(author)
       end
       if (command == "pass") then
-        if (QUICKEPGP.guildMember(author)) then
-          return handlePassing(author)
-        end
+        return handlePassing(author)
       end
     end
   end
