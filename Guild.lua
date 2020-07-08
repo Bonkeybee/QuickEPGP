@@ -58,7 +58,7 @@ QUICKEPGP.guildMember = function(name, silent)
   end
 end
 QUICKEPGP.guildMemberIndex = function(name, silent)
-  local guildMemberData = QUICKEPGP.guildMember(name)
+  local guildMemberData = QUICKEPGP.guildMember(name, silent)
   if (guildMemberData) then
     return guildMemberData[INDEX_INDEX]
   elseif (not silent) then
@@ -66,7 +66,7 @@ QUICKEPGP.guildMemberIndex = function(name, silent)
   end
 end
 QUICKEPGP.guildMemberLevel = function(name, silent)
-  local guildMemberData = QUICKEPGP.guildMember(name)
+  local guildMemberData = QUICKEPGP.guildMember(name, silent)
   if (guildMemberData) then
     return guildMemberData[LEVEL_INDEX]
   elseif (not silent) then
@@ -74,7 +74,7 @@ QUICKEPGP.guildMemberLevel = function(name, silent)
   end
 end
 QUICKEPGP.guildMemberClass = function(name, silent)
-  local guildMemberData = QUICKEPGP.guildMember(name)
+  local guildMemberData = QUICKEPGP.guildMember(name, silent)
   if (guildMemberData) then
     return guildMemberData[CLASS_INDEX]
   elseif (not silent) then
@@ -82,7 +82,7 @@ QUICKEPGP.guildMemberClass = function(name, silent)
   end
 end
 QUICKEPGP.guildMemberEP = function(name, silent)
-  local guildMemberData = QUICKEPGP.guildMember(name)
+  local guildMemberData = QUICKEPGP.guildMember(name, silent)
   if (guildMemberData) then
     return guildMemberData[EP_INDEX]
   elseif (not silent) then
@@ -90,7 +90,7 @@ QUICKEPGP.guildMemberEP = function(name, silent)
   end
 end
 QUICKEPGP.guildMemberGP = function(name, silent)
-  local guildMemberData = QUICKEPGP.guildMember(name)
+  local guildMemberData = QUICKEPGP.guildMember(name, silent)
   if (guildMemberData) then
     return guildMemberData[GP_INDEX]
   elseif (not silent) then
@@ -98,7 +98,7 @@ QUICKEPGP.guildMemberGP = function(name, silent)
   end
 end
 QUICKEPGP.guildMemberPR = function(name, silent, gp)
-  local guildMemberData = QUICKEPGP.guildMember(name)
+  local guildMemberData = QUICKEPGP.guildMember(name, silent)
   if (guildMemberData) then
     return QUICKEPGP.round(guildMemberData[EP_INDEX] / (guildMemberData[GP_INDEX] + (gp or 0)), 2)
   elseif (not silent) then

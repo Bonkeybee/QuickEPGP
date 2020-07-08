@@ -2,14 +2,15 @@ do
   local ldb = LibStub("LibDataBroker-1.1")
   QUICKEPGP.MinimapButton = ldb:NewDataObject(QUICKEPGP_ADDON_NAME, {
     type = "data source",
-    --text = QUICKEPGP.guildMemberPR(UnitName("player"), true),
     icon = "Interface\\GuildFrame\\GuildLogo-NoLogo",
     OnClick = function(self, button)
       if button == "RightButton" then
         QUICKEPGP.InterfaceOptionsFrame_OpenToCategory_Fix(QUICKEPGP.menu)
       else
         if IsShiftKeyDown() then
-          QUICKEPGP.toggleMasterFrame()
+          if CanEditOfficerNote() then
+            QUICKEPGP.toggleMasterFrame()
+          end
         else
           QUICKEPGP.toggleRollFrame()
         end
@@ -24,7 +25,9 @@ do
 
       tooltip:AddLine(" ")
       tooltip:AddLine(GRAY_FONT_COLOR_CODE.."Left Click:|r Toggle roll window")
-      tooltip:AddLine(GRAY_FONT_COLOR_CODE.."Shift + Left Click:|r Toggle loot master window")
+      if CanEditOfficerNote() then
+        tooltip:AddLine(GRAY_FONT_COLOR_CODE.."Shift + Left Click:|r Toggle loot master window")
+      end
       tooltip:AddLine(GRAY_FONT_COLOR_CODE.."Right Click:|r Show Options")
     end,
   })
