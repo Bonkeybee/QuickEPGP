@@ -10,6 +10,7 @@ local CLASS_INDEX = 2
 local EP_INDEX = 3
 local GP_INDEX = 4
 
+local last = GetTime()
 local rolling = false
 local rollTable = {}
 local highestRoller = nil
@@ -45,13 +46,15 @@ local function clearCurrentItem()
     QuickEPGProllFrame.Picture.Texture:SetTexture(nil)
   end
 
-  if QuickEPGPMasterLootFrame then 
+  if (QuickEPGPMasterLootFrame and QuickEPGPMasterLootFrame.Dropper and QuickEPGPMasterLootFrame.Dropper.Texture) then
     QuickEPGPMasterLootFrame.Dropper.Texture:SetTexture(nil)
     QuickEPGPMasterLootFrame.Dropper.Text:Show()
   end
 end
 
 local function setCurrentItem(item)
+  currentItem = item
+
   if item then
     local name, link, _, _, _, _, _, _, _, texture = GetItemInfo(currentItem);
 
@@ -60,8 +63,6 @@ local function setCurrentItem(item)
       clearCurrentItem()
       return
     end
-
-    currentItem = link
 
     if QuickEPGProllFrame then
       local str = "|cFFFFFF00Rolling|r"
@@ -77,7 +78,7 @@ local function setCurrentItem(item)
       QuickEPGProllFrame.Picture.Texture:SetTexture(texture)
     end
 
-    if QuickEPGPMasterLootFrame then
+    if (QuickEPGPMasterLootFrame and QuickEPGPMasterLootFrame.Dropper and QuickEPGPMasterLootFrame.Dropper.Texture) then
       QuickEPGPMasterLootFrame.Dropper.Texture:SetTexture(texture)
       QuickEPGPMasterLootFrame.Dropper.Text:Hide()
     end
@@ -93,6 +94,8 @@ local function clearHighestRoller()
 end
 
 local function setHighestRoller(name)
+  highestRoller = name
+
   if QuickEPGProllFrame then
     if (name and name ~= EMPTY) then
       QuickEPGProllFrame.Status:SetText(QUICKEPGP.colorByClass(highestRoller, QUICKEPGP.raidMemberClass(highestRoller)).." |cFFFFFF00("..QUICKEPGP.guildMemberPR(highestRoller).." PR)|r |cFFFF0000["..QUICKEPGP.guildMemberPR(highestRoller, true, cost).." PR]|r")
@@ -322,7 +325,7 @@ local handleRollFrameEvent = function(module, message, distribution, author)
   end
 end
 
-local last = GetTime()
+
 local function onUpdate()
   local now = GetTime()
   if (not rolling) then
@@ -381,6 +384,7 @@ QUICKEPGP.startRolling = function(itemId, itemLink)
       if (cost) then
         SendChatMessage(format("starting rolls on %s(%s GP)", itemLink, cost), "RAID_WARNING")
         SendChatMessage(format("type NEED or PASS"), "RAID")
+        last = GetTime()
         rolling = true
         rollTable = {}
         openRollFrame()
@@ -445,7 +449,7 @@ QUICKEPGP.openMasterFrame = function()
     local dropper = CreateFrame("Frame", nil, QuickEPGPMasterLootFrame)
     QuickEPGPMasterLootFrame.Dropper = dropper
     dropper:SetSize(64, 64)
-    dropper:SetPoint("TOPRIGHT", QuickEPGPMasterLootFrame, "TOPRIGHT", -padding, -padding)
+    dropper:SetPoint("TOPRIGHT", QuickEPGPMasterLootFrame, "TOPRIGHT", - padding, - padding)
     dropper:SetBackdrop({
       edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
       edgeSize = 16,
@@ -461,178 +465,178 @@ QUICKEPGP.openMasterFrame = function()
         ClearCursor()
       end
     end)
-    
+
     local dropText = QuickEPGPMasterLootFrame:CreateFontString(nil, "OVERLAY", "GameTooltipText")
     dropper.Text = dropText
     dropText:SetSize(64, 64)
-    dropText:SetPoint("TOPLEFT", dropper, "TOPLEFT", padding, -padding)
+    dropText:SetPoint("TOPLEFT", dropper, "TOPLEFT", padding, - padding)
     dropText:SetTextColor(1, 1, 1, 1)
     dropText:SetText("DROP HERE TO START ROLL")
-    
+
     local endButton = CreateFrame("Button", nil, QuickEPGPMasterLootFrame, "UIPanelButtonTemplate")
     endButton:SetText("END")
-    endButton:SetPoint("TOP", dropper, "BOTTOM", 0, -padding)
+    endButton:SetPoint("TOP", dropper, "BOTTOM", 0, - padding)
     endButton:SetPoint("LEFT", dropper, "LEFT")
     endButton:SetPoint("RIGHT", dropper, "RIGHT")
     endButton:SetScript("OnClick", function()
-      if rolling then 
-        endRolling()
-      end
-    end)
+      if rolling then
+      endRolling()
+    end
+  end)
 
-    local toggleManualButton = CreateFrame("Button", nil, QuickEPGPMasterLootFrame, "UIPanelButtonTemplate")
-    toggleManualButton:SetText("Manual")
-    toggleManualButton:SetPoint("BOTTOM", 0, padding)
-    toggleManualButton:SetPoint("LEFT", dropper, "LEFT")
-    toggleManualButton:SetPoint("RIGHT", dropper, "RIGHT")
-    toggleManualButton:SetScript("OnClick", function()
-      if QuickEPGPMasterLootFrame.Manual:IsShown() then
-        QuickEPGPMasterLootFrame.Manual:Hide()
-        QuickEPGPMasterLootFrame:SetWidth(72)
-      else
-        QuickEPGPMasterLootFrame.Manual:Show()
-        QuickEPGPMasterLootFrame:SetWidth(300)
-      end
-    end)
+  local toggleManualButton = CreateFrame("Button", nil, QuickEPGPMasterLootFrame, "UIPanelButtonTemplate")
+  toggleManualButton:SetText("Manual")
+  toggleManualButton:SetPoint("BOTTOM", 0, padding)
+  toggleManualButton:SetPoint("LEFT", dropper, "LEFT")
+  toggleManualButton:SetPoint("RIGHT", dropper, "RIGHT")
+  toggleManualButton:SetScript("OnClick", function()
+    if QuickEPGPMasterLootFrame.Manual:IsShown() then
+    QuickEPGPMasterLootFrame.Manual:Hide()
+    QuickEPGPMasterLootFrame:SetWidth(72)
+  else
+    QuickEPGPMasterLootFrame.Manual:Show()
+    QuickEPGPMasterLootFrame:SetWidth(300)
+  end
+end)
 
-    local manualFrame = CreateFrame("Frame", nil, QuickEPGPMasterLootFrame)
-    QuickEPGPMasterLootFrame.Manual = manualFrame
-    manualFrame:SetPoint("RIGHT", dropper, "LEFT", -padding, -padding)
-    manualFrame:SetPoint("LEFT", padding, padding)
-    manualFrame:SetPoint("TOP", -padding, -padding)
-    manualFrame:SetPoint("BOTTOM", padding, padding)
-    manualFrame:SetBackdrop({
-      edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-      edgeSize = 16,
-      tile = true,
-      tileSize = 16,
-      insets = { left = 4, right = 4, top = 4, bottom = 4 }
-    })
+local manualFrame = CreateFrame("Frame", nil, QuickEPGPMasterLootFrame)
+QuickEPGPMasterLootFrame.Manual = manualFrame
+manualFrame:SetPoint("RIGHT", dropper, "LEFT", - padding, - padding)
+manualFrame:SetPoint("LEFT", padding, padding)
+manualFrame:SetPoint("TOP", - padding, - padding)
+manualFrame:SetPoint("BOTTOM", padding, padding)
+manualFrame:SetBackdrop({
+  edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+  edgeSize = 16,
+  tile = true,
+  tileSize = 16,
+  insets = { left = 4, right = 4, top = 4, bottom = 4 }
+})
 
-    local manualHeader = manualFrame:CreateFontString(nil, "OVERLAY", "GameTooltipText")
-    manualHeader:SetPoint("TOPLEFT", manualFrame, "TOPLEFT", padding * 2, -padding * 2)
-    manualHeader:SetTextColor(1, 1, 1, 1)
-    manualHeader:SetText("MANUAL EDIT:\n\nPlayer:")
+local manualHeader = manualFrame:CreateFontString(nil, "OVERLAY", "GameTooltipText")
+manualHeader:SetPoint("TOPLEFT", manualFrame, "TOPLEFT", padding * 2, - padding * 2)
+manualHeader:SetTextColor(1, 1, 1, 1)
+manualHeader:SetText("MANUAL EDIT:\n\nPlayer:")
 
-    local nameBox = CreateFrame("EditBox", nil, manualFrame, "InputBoxTemplate")
-    manualFrame.NameBox = nameBox
-    nameBox:SetFontObject(ChatFontNormal)
-    nameBox:ClearAllPoints() --bugfix
-    nameBox:SetPoint("TOPLEFT", manualHeader, "BOTTOMLEFT", 0, -padding)
-    nameBox:SetPoint("BOTTOMRIGHT", manualHeader, "BOTTOMRIGHT", 0, -padding - 22)
-    nameBox:SetAutoFocus(false)
+local nameBox = CreateFrame("EditBox", nil, manualFrame, "InputBoxTemplate")
+manualFrame.NameBox = nameBox
+nameBox:SetFontObject(ChatFontNormal)
+nameBox:ClearAllPoints() --bugfix
+nameBox:SetPoint("TOPLEFT", manualHeader, "BOTTOMLEFT", 0, - padding)
+nameBox:SetPoint("BOTTOMRIGHT", manualHeader, "BOTTOMRIGHT", 0, - padding - 22)
+nameBox:SetAutoFocus(false)
 
-    local targetButton = CreateFrame("Button", nil, manualFrame, "UIPanelButtonTemplate")
-    targetButton:SetPoint("TOP", nameBox, "TOP")
-    targetButton:SetPoint("BOTTOM", nameBox, "BOTTOM")
-    targetButton:SetPoint("LEFT", nameBox, "RIGHT")
-    targetButton:SetText("Target")
-    targetButton:SetScript("OnClick", function()
-      QuickEPGPMasterLootFrame.Manual.NameBox:SetText(UnitName("target"))
-    end)
+local targetButton = CreateFrame("Button", nil, manualFrame, "UIPanelButtonTemplate")
+targetButton:SetPoint("TOP", nameBox, "TOP")
+targetButton:SetPoint("BOTTOM", nameBox, "BOTTOM")
+targetButton:SetPoint("LEFT", nameBox, "RIGHT")
+targetButton:SetText("Target")
+targetButton:SetScript("OnClick", function()
+  QuickEPGPMasterLootFrame.Manual.NameBox:SetText(UnitName("target"))
+end)
 
-    local valueHeader = manualFrame:CreateFontString(nil, "OVERLAY", "GameTooltipText")
-    valueHeader:SetPoint("TOP", nameBox, "BOTTOM", 0, 0)
-    valueHeader:SetPoint("LEFT", manualHeader, "LEFT", 0, 0)
-    valueHeader:SetTextColor(1, 1, 1, 1)
-    valueHeader:SetText("Amount:")
+local valueHeader = manualFrame:CreateFontString(nil, "OVERLAY", "GameTooltipText")
+valueHeader:SetPoint("TOP", nameBox, "BOTTOM", 0, 0)
+valueHeader:SetPoint("LEFT", manualHeader, "LEFT", 0, 0)
+valueHeader:SetTextColor(1, 1, 1, 1)
+valueHeader:SetText("Amount:")
 
-    local gpCheckBox = CreateFrame("CheckButton", "MLGPCheckbox", manualFrame, "UIRadioButtonTemplate")
-    manualFrame.GPBox = gpCheckBox
-    gpCheckBox:SetPoint("TOP", valueHeader, "BOTTOM", -padding, -padding)
-    gpCheckBox:SetPoint("RIGHT", manualFrame, -padding - padding - 16, -padding)
-    gpCheckBox:SetChecked(true)
-    _G[gpCheckBox:GetName() .. "Text"]:SetText("GP")
-    gpCheckBox:HookScript("OnClick", function(self)
-      QuickEPGPMasterLootFrame.Manual.EPBox:SetChecked(not self:GetChecked())
-    end)
+local gpCheckBox = CreateFrame("CheckButton", "MLGPCheckbox", manualFrame, "UIRadioButtonTemplate")
+manualFrame.GPBox = gpCheckBox
+gpCheckBox:SetPoint("TOP", valueHeader, "BOTTOM", - padding, - padding)
+gpCheckBox:SetPoint("RIGHT", manualFrame, - padding - padding - 16, - padding)
+gpCheckBox:SetChecked(true)
+_G[gpCheckBox:GetName() .. "Text"]:SetText("GP")
+gpCheckBox:HookScript("OnClick", function(self)
+  QuickEPGPMasterLootFrame.Manual.EPBox:SetChecked(not self:GetChecked())
+end)
 
-    local epCheckBox = CreateFrame("CheckButton", "MLEPCheckbox", manualFrame, "UIRadioButtonTemplate")
-    manualFrame.EPBox = epCheckBox
-    epCheckBox:SetPoint("TOPRIGHT", gpCheckBox, "TOPLEFT", -padding -16, 0)
-    _G[epCheckBox:GetName() .. "Text"]:SetText("EP")
-    epCheckBox:HookScript("OnClick", function(self)
-      QuickEPGPMasterLootFrame.Manual.GPBox:SetChecked(not self:GetChecked())
-    end)
+local epCheckBox = CreateFrame("CheckButton", "MLEPCheckbox", manualFrame, "UIRadioButtonTemplate")
+manualFrame.EPBox = epCheckBox
+epCheckBox:SetPoint("TOPRIGHT", gpCheckBox, "TOPLEFT", - padding - 16, 0)
+_G[epCheckBox:GetName() .. "Text"]:SetText("EP")
+epCheckBox:HookScript("OnClick", function(self)
+  QuickEPGPMasterLootFrame.Manual.GPBox:SetChecked(not self:GetChecked())
+end)
 
-    local valueBox = CreateFrame("EditBox", nil, manualFrame, "InputBoxTemplate")
-    manualFrame.ValueBox = valueBox
-    valueBox:SetFontObject(ChatFontNormal)
-    valueBox:ClearAllPoints() --bugfix
-    valueBox:SetPoint("TOP", epCheckBox, "TOP")
-    valueBox:SetPoint("BOTTOM", epCheckBox, "BOTTOM")
-    valueBox:SetPoint("RIGHT", epCheckBox, "LEFT", -padding, 0)
-    valueBox:SetPoint("LEFT", nameBox, "LEFT", 0, 0)
-    valueBox:SetAutoFocus(false)
-    valueBox:SetNumeric()
-    valueBox:SetNumber(0)
+local valueBox = CreateFrame("EditBox", nil, manualFrame, "InputBoxTemplate")
+manualFrame.ValueBox = valueBox
+valueBox:SetFontObject(ChatFontNormal)
+valueBox:ClearAllPoints() --bugfix
+valueBox:SetPoint("TOP", epCheckBox, "TOP")
+valueBox:SetPoint("BOTTOM", epCheckBox, "BOTTOM")
+valueBox:SetPoint("RIGHT", epCheckBox, "LEFT", - padding, 0)
+valueBox:SetPoint("LEFT", nameBox, "LEFT", 0, 0)
+valueBox:SetAutoFocus(false)
+valueBox:SetNumeric()
+valueBox:SetNumber(0)
 
-    local function ManualModifyEPGP(negate)
-      local amount = QuickEPGPMasterLootFrame.Manual.ValueBox:GetNumber()
-      local player = QuickEPGPMasterLootFrame.Manual.NameBox:GetText()
+local function ManualModifyEPGP(negate)
+  local amount = QuickEPGPMasterLootFrame.Manual.ValueBox:GetNumber()
+  local player = QuickEPGPMasterLootFrame.Manual.NameBox:GetText()
 
-      if player then
+  if player then
 
-        if negate then
-          amount = -amount
-        end
-
-        local ep = nil
-        local gp = nil
-
-        if QuickEPGPMasterLootFrame.Manual.EPBox:GetChecked() then
-          ep = amount
-        else
-          gp = amount
-        end
-
-        QUICKEPGP.modifyEPGP(player, ep, gp)
-      end
+    if negate then
+      amount = -amount
     end
 
-    local addButton = CreateFrame("Button", nil, manualFrame, "UIPanelButtonTemplate")
-    addButton:SetText("Add")
-    addButton:SetSize(90, 22)
-    addButton:SetPoint("TOPLEFT", valueBox, "BOTTOMLEFT", 0, -padding)
-    addButton:SetScript("OnClick", function()
-      ManualModifyEPGP(false)
-    end)
+    local ep = nil
+    local gp = nil
 
-    local removeButton = CreateFrame("Button", nil, manualFrame, "UIPanelButtonTemplate")
-    removeButton:SetText("Remove")
-    removeButton:SetSize(90, 22)
-    removeButton:SetPoint("TOPLEFT", addButton, "TOPRIGHT", padding, 0)
-    removeButton:SetScript("OnClick", function()
-      ManualModifyEPGP(true)
-    end)
+    if QuickEPGPMasterLootFrame.Manual.EPBox:GetChecked() then
+      ep = amount
+    else
+      gp = amount
+    end
 
-    manualFrame:Hide()
+    QUICKEPGP.modifyEPGP(player, ep, gp)
   end
+end
 
-  QuickEPGPMasterLootFrame:Show()
+local addButton = CreateFrame("Button", nil, manualFrame, "UIPanelButtonTemplate")
+addButton:SetText("Add")
+addButton:SetSize(90, 22)
+addButton:SetPoint("TOPLEFT", valueBox, "BOTTOMLEFT", 0, - padding)
+addButton:SetScript("OnClick", function()
+  ManualModifyEPGP(false)
+end)
+
+local removeButton = CreateFrame("Button", nil, manualFrame, "UIPanelButtonTemplate")
+removeButton:SetText("Remove")
+removeButton:SetSize(90, 22)
+removeButton:SetPoint("TOPLEFT", addButton, "TOPRIGHT", padding, 0)
+removeButton:SetScript("OnClick", function()
+  ManualModifyEPGP(true)
+end)
+
+manualFrame:Hide()
+end
+
+QuickEPGPMasterLootFrame:Show()
 end
 
 QUICKEPGP.closeMasterFrame = function()
-  local frame = QuickEPGPMasterLootFrame
-  if frame then
-    frame:Hide()
-  end
+local frame = QuickEPGPMasterLootFrame
+if frame then
+frame:Hide()
+end
 end
 
 QUICKEPGP.toggleMasterFrame = function()
-  if QuickEPGPMasterLootFrame and QuickEPGPMasterLootFrame:IsShown() then
-    QUICKEPGP.closeMasterFrame()
-  else
-    QUICKEPGP.openMasterFrame()
-  end
+if QuickEPGPMasterLootFrame and QuickEPGPMasterLootFrame:IsShown() then
+QUICKEPGP.closeMasterFrame()
+else
+QUICKEPGP.openMasterFrame()
+end
 end
 
 QUICKEPGP.toggleRollFrame = function()
-  if QuickEPGProllFrame and QuickEPGProllFrame:IsShown() then
-    closeRollFrame()
-  else
-    openRollFrame()
-  end
+if QuickEPGProllFrame and QuickEPGProllFrame:IsShown() then
+closeRollFrame()
+else
+openRollFrame()
+end
 end
 
 QUICKEPGP.ROLLING:SetScript("OnUpdate", onUpdate)
