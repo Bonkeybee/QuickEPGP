@@ -105,13 +105,15 @@ QUICKEPGP.getEPGPPRMessage = function(name)
   local name = (name or UnitName("player"))
   local member = QUICKEPGP.guildMember(name, true)
   if (member) then
-    local ep = QUICKEPGP.guildMemberEP(name)
-    local gp = QUICKEPGP.guildMemberGP(name)
-    local pr = QUICKEPGP.guildMemberPR(name)
-    if (UnitIsUnit("player", name)) then
-      return format("You have %s PR; (%s EP / %s GP)", pr, ep, gp)
-    else
-      return format("%s has %s PR; (%s EP / %s GP)", name, pr, ep, gp)
+    local ep = QUICKEPGP.guildMemberEP(name, true)
+    local gp = QUICKEPGP.guildMemberGP(name, true)
+    local pr = QUICKEPGP.guildMemberPR(name, true)
+    if (ep and gp and pr) then
+      if (UnitIsUnit("player", name)) then
+        return format("You have %s PR; (%s EP / %s GP)", pr, ep, gp)
+      else
+        return format("%s has %s PR; (%s EP / %s GP)", name, pr, ep, gp)
+      end
     end
   end
 end
