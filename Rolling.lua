@@ -100,6 +100,7 @@ local function setHighestRoller(name)
 
   if QuickEPGProllFrame then
     if (name and name ~= EMPTY) then
+      local cost = QUICKEPGP.getItemGP(QUICKEPGP.getItemId(currentItem))
       QuickEPGProllFrame.Status:SetText(QUICKEPGP.colorByClass(highestRoller, QUICKEPGP.raidMemberClass(highestRoller)).." |cFFFFFF00("..QUICKEPGP.guildMemberPR(highestRoller).." PR)|r |cFFFF0000["..QUICKEPGP.guildMemberPR(highestRoller, true, cost).." PR]|r")
     else
       clearHighestRoller()
@@ -111,6 +112,7 @@ local function updateRollFrame()
   if QuickEPGProllFrame then
 
     if (highestRoller and highestRoller ~= EMPTY) then
+      local cost = QUICKEPGP.getItemGP(QUICKEPGP.getItemId(currentItem))
       QuickEPGProllFrame.Status:SetText(QUICKEPGP.colorByClass(highestRoller, QUICKEPGP.raidMemberClass(highestRoller)).." |cFFFFFF00("..QUICKEPGP.guildMemberPR(highestRoller).." PR)|r |cFFFF0000["..QUICKEPGP.guildMemberPR(highestRoller, true, cost).." PR]|r")
     else
       QuickEPGProllFrame.Status:SetText(nil)
@@ -469,6 +471,17 @@ QUICKEPGP.openMasterFrame = function()
         QUICKEPGP.startRolling(itemId, itemLink)
         ClearCursor()
       end
+    end)
+    dropper.Texture = dropper:CreateTexture(nil, "BACKGROUND")
+    dropper.Texture:SetAllPoints()
+    dropper:SetScript("OnEnter", function(self)
+      if currentItem then
+      GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT")
+      GameTooltip:SetHyperlink(currentItem)
+      GameTooltip:Show()
+    end end)
+    dropper:SetScript("OnLeave", function(self)
+      GameTooltip:Hide()
     end)
 
     local dropText = QuickEPGPMasterLootFrame:CreateFontString(nil, "OVERLAY", "GameTooltipText")
