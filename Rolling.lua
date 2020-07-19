@@ -170,18 +170,20 @@ local function closeRollFrame()
   end
 end
 
-local function endRolling()
+local function endRolling(cancel)
   local itemId = QUICKEPGP.getItemId(currentItem)
   if (itemId) then
     local cost = QUICKEPGP.getItemGP(itemId)
     if (cost) then
-      if (highestRoller) then
+      if cancel then
+        SendChatMessage(format("Cancelled rolls on %s(%s GP)", currentItem, cost), "RAID_WARNING")
+      elseif (highestRoller) then
         SendChatMessage(format("%s (%s PR) wins %s(%s GP)", QUICKEPGP.getCharacterString(QUICKEPGP.guildMemberLevel(highestRoller), QUICKEPGP.guildMemberClass(highestRoller), highestRoller), QUICKEPGP.guildMemberPR(highestRoller), currentItem, cost), "RAID_WARNING")
         SendChatMessage(format("%s (%s PR) wins %s(%s GP)", QUICKEPGP.getCharacterString(QUICKEPGP.guildMemberLevel(highestRoller), QUICKEPGP.guildMemberClass(highestRoller), highestRoller), QUICKEPGP.guildMemberPR(highestRoller), currentItem, cost), "OFFICER")
         GuildRosterSetOfficerNote(QUICKEPGP.guildMemberIndex(highestRoller), (QUICKEPGP.guildMemberEP(highestRoller) or QUICKEPGP.MINIMUM_EP)..","..((QUICKEPGP.guildMemberGP(highestRoller) + cost) or QUICKEPGP.MINIMUM_GP))
       else
-        SendChatMessage(format("everyone passed on %s(%s GP)", currentItem, cost), "RAID_WARNING")
-        SendChatMessage(format("everyone passed on %s(%s GP)", currentItem, cost), "OFFICER")
+        SendChatMessage(format("Everyone passed on %s(%s GP)", currentItem, cost), "RAID_WARNING")
+        SendChatMessage(format("Everyone passed on %s(%s GP)", currentItem, cost), "OFFICER")
       end
     end
   end
@@ -270,6 +272,11 @@ local function openRollFrame(automatic)
   end end)
   pictureFrame:SetScript("OnLeave", function(self)
     GameTooltip:Hide()
+  end)
+  pictureFrame:SetScript("OnMouseUp", function()
+    if currentItem and IsControlKeyDown() then
+      DressUpItemLink(currentItem)
+    end
   end)
   local pictureTexture = pictureFrame:CreateTexture(nil, "BACKGROUND")
   pictureTexture:SetAllPoints()
@@ -389,8 +396,8 @@ QUICKEPGP.startRolling = function(itemId, itemLink)
       endRolling()
       local cost = QUICKEPGP.getItemGP(itemId)
       if (cost) then
-        SendChatMessage(format("starting rolls on %s(%s GP)", itemLink, cost), "RAID_WARNING")
-        SendChatMessage(format("type NEED or PASS"), "RAID")
+        SendChatMessage(format("Starting rolls on %s(%s GP)", itemLink, cost), "RAID_WARNING")
+        SendChatMessage(format("Type NEED or PASS"), "RAID")
         last = GetTime()
         rolling = true
         rollTable = {}
@@ -465,11 +472,17 @@ QUICKEPGP.openMasterFrame = function()
       insets = { left = 4, right = 4, top = 4, bottom = 4 }
     })
     dropper:SetScript("OnMouseUp", function()
-      local type, itemId, itemLink = GetCursorInfo()
+      if IsControlKeyDown() then
+        if currentItem then
+          DressUpItemLink(currentItem)
+        end
+      else
+        local type, itemId, itemLink = GetCursorInfo()
 
-      if type == "item" and itemId and itemLink then
-        QUICKEPGP.startRolling(itemId, itemLink)
-        ClearCursor()
+        if type == "item" and itemId and itemLink then
+          QUICKEPGP.startRolling(itemId, itemLink)
+          ClearCursor()
+        end
       end
     end)
     dropper.Texture = dropper:CreateTexture(nil, "BACKGROUND")
@@ -498,8 +511,20 @@ QUICKEPGP.openMasterFrame = function()
     endButton:SetPoint("RIGHT", dropper, "RIGHT")
     endButton:SetScript("OnClick", function()
       if rolling then
-      endRolling()
-    end end)
+        endRolling()
+      end
+    end)
+
+    local cancelButton = CreateFrame("Button", nil, QuickEPGPMasterLootFrame, "UIPanelButtonTemplate")
+    cancelButton:SetText("CANCEL")
+    cancelButton:SetPoint("TOP", endButton, "BOTTOM", 0, - padding)
+    cancelButton:SetPoint("LEFT", endButton, "LEFT")
+    cancelButton:SetPoint("RIGHT", endButton, "RIGHT")
+    cancelButton:SetScript("OnClick", function()
+      if rolling then
+        endRolling(true)
+      end
+    end)
 
     local toggleManualButton = CreateFrame("Button", nil, QuickEPGPMasterLootFrame, "UIPanelButtonTemplate")
     toggleManualButton:SetText("Manual")
