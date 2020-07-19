@@ -165,6 +165,8 @@ SlashCmdList["EPGP"] = function(message)
     --   end
   elseif (command == "toggle" and arg1 == "master") then
     QUICKEPGP.toggleMasterFrame()
+  elseif command == "raid" then
+    QUICKEPGP.RaidStandings:ToggleFrame()
   else
     QUICKEPGP.error("invalid command - type `/epgp help` for a list of commands")
   end

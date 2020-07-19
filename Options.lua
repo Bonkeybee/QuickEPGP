@@ -186,6 +186,7 @@ QUICKEPGP.DefaultConfig = function(QUICKEPGP_OPTIONS)
   QUICKEPGP_OPTIONS.TOOLTIP.enabled = default(QUICKEPGP_OPTIONS.TOOLTIP.enabled, true)
   QUICKEPGP_OPTIONS.ROLLING.openSound = default(QUICKEPGP_OPTIONS.ROLLING.openSound, QUICKEPGP_OPTIONS.ROLLING.sound and "WhatAreYouBuyin" or "None")
   QUICKEPGP_OPTIONS.ROLLING.winSound = default(QUICKEPGP_OPTIONS.ROLLING.winSound, QUICKEPGP_OPTIONS.ROLLING.sound and "AnAwesomeChoice" or "None")
+  QUICKEPGP_OPTIONS.RaidStandings = default(QUICKEPGP_OPTIONS.RaidStandings, {X = 0, Y = 0, Point = "CENTER"})
   return QUICKEPGP_OPTIONS
 end
 

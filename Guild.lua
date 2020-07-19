@@ -1,6 +1,7 @@
 QUICKEPGP.GUILD = CreateFrame("Frame")
 local valid = false
 local race = false
+local check = nil
 
 local INDEX_INDEX = 1
 local LEVEL_INDEX = 2
@@ -16,11 +17,11 @@ local function updateGuildMemberTable()
   race = false
   QUICKEPGP.guildMemberTable = {}
   for i = 1, GetNumGuildMembers() do
-    local name, _, _, level, class, _, _, officerNote = GetGuildRosterInfo(i)
+    local name, _, _, level, class, _, _, officerNote, _, _, invariantClass = GetGuildRosterInfo(i)
     if (name) then
       name = QUICKEPGP.getSimpleCharacterName(name, true)
-      ep, gp = strsplit(",", officerNote)
-      QUICKEPGP.guildMemberTable[name] = {i, level, class, tonumber(ep), tonumber(gp)}
+      local ep, gp = strsplit(",", officerNote)
+      QUICKEPGP.guildMemberTable[name] = {i, level, class, tonumber(ep), tonumber(gp), invariantClass}
     end
   end
   if (race) then
@@ -29,7 +30,7 @@ local function updateGuildMemberTable()
   valid = true
 end
 
-local function check()
+check = function()
   if (not valid) then
     updateGuildMemberTable()
   end

@@ -163,6 +163,25 @@ QUICKEPGP.error = function(str)
   print("|cFFFF0000"..str.."|r")
 end
 
+QUICKEPGP.spairs = function(t, order)
+    local keys = {}
+    for k in pairs(t) do keys[#keys+1] = k end
+
+    if order then
+        table.sort(keys, function(a,b) return order(t, a, b) end)
+    else
+        table.sort(keys)
+    end
+
+    local i = 0
+    return function()
+        i = i + 1
+        if keys[i] then
+            return keys[i], t[keys[i]]
+        end
+    end
+end
+
 QUICKEPGP.UTILITY:RegisterEvent("ADDON_LOADED")
 QUICKEPGP.UTILITY:SetScript("OnEvent", onEvent)
 QUICKEPGP.UTILITY:SetScript("OnUpdate", onUpdate)
