@@ -13,12 +13,16 @@ QUICKEPGP.MINUS = "-"
 
 QUICKEPGP.SOUNDNAMES = {
   None = "None",
-  WhatCanIDoForYa = "What Can I Do For Ya?"
+  WhatCanIDoForYa = "What can I do for ya?",
+  WhatAreYouBuyin = "What are you buyin'?",
+  AnAwesomeChoice = "An awesome choice, stranger!"
 }
 
 QUICKEPGP.SOUNDS = {
   None = nil,
-  WhatCanIDoForYa = "Interface\\AddOns\\QuickEPGP\\Sounds\\whatcanidoforya.ogg"
+  WhatCanIDoForYa = "Interface\\AddOns\\QuickEPGP\\Sounds\\whatcanidoforya.ogg",
+  WhatAreYouBuyin = "Interface\\AddOns\\QuickEPGP\\Sounds\\whatareyoubuyin.ogg",
+  AnAwesomeChoice = "Interface\\AddOns\\QuickEPGP\\Sounds\\anawesomechoice.ogg"
 }
 
 -- ############################################################
