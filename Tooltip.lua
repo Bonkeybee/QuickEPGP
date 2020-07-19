@@ -1,6 +1,6 @@
 
 local function TooltipSetItem(frame)
-    if not frame.__hasEPGPTooltip then
+    if not frame.__hasEPGPTooltip and QUICKEPGP_OPTIONS.TOOLTIP.enabled then
         frame.__hasEPGPTooltip = true
         local _, link = frame:GetItem()
         if link then

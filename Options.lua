@@ -4,12 +4,12 @@ local MODULE_NAME = "QuickEPGP-Options"
 local options = {
   type = "group",
   args = {
-    minimap = {
-      name = "Minimap",
+    general = {
+      name = "General",
       type = "group",
       order = 1,
       args = {
-        enable = {
+        minimap = {
           name = "Show Minimap Button",
           type = "toggle",
           set = function(info, val)
@@ -22,6 +22,23 @@ local options = {
             end
           end,
           get = function(info) return not QUICKEPGP_OPTIONS.MINIMAP.hide end
+        },
+        rollSound = {
+          name = "Play RollFrame Sound",
+          type = "toggle",
+          set = function(info, val)
+            if val then
+              PlaySoundFile("Interface\\AddOns\\QuickEPGP\\Sounds\\whatcanidoforya.ogg", "Master")
+            end
+            QUICKEPGP_OPTIONS.ROLLING.sound = val
+          end,
+          get = function(info) return QUICKEPGP_OPTIONS.ROLLING.sound end
+        },
+        tooltips = {
+          name = "Show GP in tooltips",
+          type = "toggle",
+          set = function(info, val) QUICKEPGP_OPTIONS.TOOLTIP.enabled = val end,
+          get = function(info) return QUICKEPGP_OPTIONS.TOOLTIP.enabled end
         }
       }
     },
@@ -92,25 +109,7 @@ local options = {
           get = function(info) return QUICKEPGP_OPTIONS.LOOTING.otherrarity end
         },
       }
-    },
-    rolling = {
-      name = "Rolling",
-      type = "group",
-      order = 3,
-      args = {
-        enable = {
-          name = "Play RollFrame Sound",
-          type = "toggle",
-          set = function(info, val)
-            if val then
-              PlaySoundFile("Interface\\AddOns\\QuickEPGP\\Sounds\\whatcanidoforya.ogg", "Master")
-            end
-            QUICKEPGP_OPTIONS.ROLLING.sound = val
-          end,
-          get = function(info) return QUICKEPGP_OPTIONS.ROLLING.sound end
-        }
-      }
-    },
+    }
   },
 }
 LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable(QUICKEPGP_ADDON_NAME, options, SLASH_EPGP1)
@@ -164,6 +163,8 @@ QUICKEPGP.DefaultConfig = function(QUICKEPGP_OPTIONS)
   QUICKEPGP_OPTIONS.RollFrame.X = default(QUICKEPGP_OPTIONS.RollFrame.X, 0)
   QUICKEPGP_OPTIONS.RollFrame.Y = default(QUICKEPGP_OPTIONS.RollFrame.Y, 0)
   QUICKEPGP_OPTIONS.RollFrame.Point = default(QUICKEPGP_OPTIONS.RollFrame.Point, "CENTER")
+  QUICKEPGP_OPTIONS.TOOLTIP = default(QUICKEPGP_OPTIONS.tooltips, {})
+  QUICKEPGP_OPTIONS.TOOLTIP.enabled = default(QUICKEPGP_OPTIONS.TOOLTIP.enabled, true)
   return QUICKEPGP_OPTIONS
 end
 
