@@ -11,6 +11,7 @@ local officerNoteUpdateTable = {}
 local function onEvent(_, event)
   if (event == "ADDON_LOADED") then
     loaded = true
+    QUICKEPGP:InitializeTooltip()
   end
 end
 
@@ -41,8 +42,8 @@ local function onUpdate()
               if (QUICKEPGP.count(officerNoteUpdateTable[name]) <= 0) then
                 officerNoteUpdateTable[name] = nil
               end
-              ep = (QUICKEPGP.calculateChange(name, epgp[1], "EP") or QUICKEPGP.MINIMUM_EP)
-              gp = (QUICKEPGP.calculateChange(name, epgp[2], "GP") or QUICKEPGP.MINIMUM_GP)
+              local ep = (QUICKEPGP.calculateChange(name, epgp[1], "EP") or QUICKEPGP.MINIMUM_EP)
+              local gp = (QUICKEPGP.calculateChange(name, epgp[2], "GP") or QUICKEPGP.MINIMUM_GP)
               work[name] = {ep, gp}
               GuildRosterSetOfficerNote(QUICKEPGP.guildMemberIndex(name), ep..","..gp)
             end
