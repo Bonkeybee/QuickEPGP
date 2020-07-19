@@ -12,6 +12,7 @@ local options = {
         minimap = {
           name = "Show Minimap Button",
           type = "toggle",
+          order = 1,
           set = function(info, val)
             if val then
               QUICKEPGP.MinimapIcon:Show(QUICKEPGP_ADDON_NAME)
@@ -24,19 +25,37 @@ local options = {
           get = function(info) return not QUICKEPGP_OPTIONS.MINIMAP.hide end
         },
         rollSound = {
-          name = "Play RollFrame Sound",
-          type = "toggle",
+          name = "Starting Rolls Sound",
+          type = "select",
+          order = 3,
+          values = QUICKEPGP.SOUNDNAMES,
           set = function(info, val)
-            if val then
-              PlaySoundFile("Interface\\AddOns\\QuickEPGP\\Sounds\\whatcanidoforya.ogg", "Master")
+            local soundFile = QUICKEPGP.SOUNDS[val]
+            if soundFile then
+              PlaySoundFile(soundFile, "Master")
             end
-            QUICKEPGP_OPTIONS.ROLLING.sound = val
+            QUICKEPGP_OPTIONS.ROLLING.openSound = val
           end,
-          get = function(info) return QUICKEPGP_OPTIONS.ROLLING.sound end
+          get = function(info) return QUICKEPGP_OPTIONS.ROLLING.openSound end
+        },
+        winSound = {
+          name = "Won Roll Sound",
+          type = "select",
+          order = 4,
+          values = QUICKEPGP.SOUNDNAMES,
+          set = function(info, val)
+            local soundFile = QUICKEPGP.SOUNDS[val]
+            if soundFile then
+              PlaySoundFile(soundFile, "Master")
+            end
+            QUICKEPGP_OPTIONS.ROLLING.winSound = val
+          end,
+          get = function(info) return QUICKEPGP_OPTIONS.ROLLING.winSound end
         },
         tooltips = {
           name = "Show GP in tooltips",
           type = "toggle",
+          order = 2,
           set = function(info, val) QUICKEPGP_OPTIONS.TOOLTIP.enabled = val end,
           get = function(info) return QUICKEPGP_OPTIONS.TOOLTIP.enabled end
         }
@@ -165,6 +184,8 @@ QUICKEPGP.DefaultConfig = function(QUICKEPGP_OPTIONS)
   QUICKEPGP_OPTIONS.RollFrame.Point = default(QUICKEPGP_OPTIONS.RollFrame.Point, "CENTER")
   QUICKEPGP_OPTIONS.TOOLTIP = default(QUICKEPGP_OPTIONS.tooltips, {})
   QUICKEPGP_OPTIONS.TOOLTIP.enabled = default(QUICKEPGP_OPTIONS.TOOLTIP.enabled, true)
+  QUICKEPGP_OPTIONS.ROLLING.openSound = default(QUICKEPGP_OPTIONS.ROLLING.openSound, QUICKEPGP_OPTIONS.ROLLING.sound and "What Can I Do For Ya?" or "None")
+  QUICKEPGP_OPTIONS.ROLLING.winSound = default(QUICKEPGP_OPTIONS.ROLLING.winSound, "None")
   return QUICKEPGP_OPTIONS
 end
 

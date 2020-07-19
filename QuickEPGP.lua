@@ -11,6 +11,16 @@ QUICKEPGP.MINIMUM_GP = 50
 QUICKEPGP.ADD = "+"
 QUICKEPGP.MINUS = "-"
 
+QUICKEPGP.SOUNDNAMES = {
+  None = "None",
+  WhatCanIDoForYa = "What Can I Do For Ya?"
+}
+
+QUICKEPGP.SOUNDS = {
+  None = nil,
+  WhatCanIDoForYa = "Interface\\AddOns\\QuickEPGP\\Sounds\\whatcanidoforya.ogg"
+}
+
 -- ############################################################
 -- ##### LOCAL FUNCTIONS ######################################
 -- ############################################################
@@ -33,9 +43,9 @@ local function epgpCommandMessage(message, name)
         if (operation == QUICKEPGP.MINUS) then
           amount = -amount
         end
-        if (type == EP) then
+        if (type == "EP") then
           QUICKEPGP.modifyEPGP(unit, amount, nil, reason)
-        elseif (type == GP) then
+        elseif (type == "GP") then
           QUICKEPGP.modifyEPGP(unit, nil, amount, reason)
         end
       end

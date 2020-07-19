@@ -177,6 +177,7 @@ local function endRolling(cancel)
     if (cost) then
       if cancel then
         SendChatMessage(format("Cancelled rolls on %s(%s GP)", currentItem, cost), "RAID_WARNING")
+        clearHighestRoller()
       elseif (highestRoller) then
         SendChatMessage(format("%s (%s PR) wins %s(%s GP)", QUICKEPGP.getCharacterString(QUICKEPGP.guildMemberLevel(highestRoller), QUICKEPGP.guildMemberClass(highestRoller), highestRoller), QUICKEPGP.guildMemberPR(highestRoller), currentItem, cost), "RAID_WARNING")
         SendChatMessage(format("%s (%s PR) wins %s(%s GP)", QUICKEPGP.getCharacterString(QUICKEPGP.guildMemberLevel(highestRoller), QUICKEPGP.guildMemberClass(highestRoller), highestRoller), QUICKEPGP.guildMemberPR(highestRoller), currentItem, cost), "OFFICER")
@@ -187,14 +188,15 @@ local function endRolling(cancel)
       end
     end
   end
-  closeRollFrame()
-  clearRollData()
   QUICKEPGP.LIBS:SendCommMessage(MODULE_NAME, "CRF"..DELIMITER..(currentItem or EMPTY)..DELIMITER..(highestRoller or EMPTY), "RAID", nil, "ALERT")
 end
 
 local function openRollFrame(automatic)
-  if (automatic and QUICKEPGP_OPTIONS.ROLLING.sound) then
-    PlaySoundFile("Interface\\AddOns\\QuickEPGP\\Sounds\\whatcanidoforya.ogg", "Master")
+  if automatic then
+    local soundFile = QUICKEPGP.SOUNDS[QUICKEPGP_OPTIONS.ROLLING.openSound]
+    if soundFile then
+      PlaySoundFile(soundFile, "Master")
+    end
   end
 
   if QuickEPGProllFrame then
@@ -325,7 +327,13 @@ local handleRollFrameEvent = function(module, message, distribution, author)
       openRollFrame(true)
       setCurrentItem(param1)
       setHighestRoller(param2)
-    elseif (event == "CRF" and not rolling) then
+    elseif (event == "CRF") then
+      if UnitIsUnit("player", param2) then
+        local soundFile = QUICKEPGP.SOUNDS[QUICKEPGP_OPTIONS.ROLLING.winSound]
+        if soundFile then
+          PlaySoundFile(soundFile, "Master")
+        end
+      end
       closeRollFrame()
       clearRollData()
     elseif (event == "URF" and not rolling) then
@@ -393,7 +401,9 @@ QUICKEPGP.startRolling = function(itemId, itemLink)
   if CanEditOfficerNote() then
     local raidMember = QUICKEPGP.raidMember(UnitName("player"))
     if (raidMember and raidMember[2] > 0) then
-      endRolling()
+      if rolling then
+        endRolling()
+      end
       local cost = QUICKEPGP.getItemGP(itemId)
       if (cost) then
         SendChatMessage(format("Starting rolls on %s(%s GP)", itemLink, cost), "RAID_WARNING")
