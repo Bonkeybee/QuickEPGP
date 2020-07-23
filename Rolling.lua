@@ -53,37 +53,36 @@ local function clearCurrentItem()
 end
 
 local function setCurrentItem(item)
-  currentItem = item
+  if (item) then
+    local itemName, link, _, _, _, _, _, _, _, texture = GetItemInfo(item);
+    if (itemName) then
+      currentItem = item
 
-  if item then
-    local name, link, _, _, _, _, _, _, _, texture = GetItemInfo(currentItem);
+      if (QuickEPGProllFrame) then
+        local str = "|cFFFFFF00Rolling|r"
+        if (iNeed) then
+          str = "|cFF00FF00Needing|r"
+        end
+        if (iPass) then
+          str = "|cFFFF0000Passing|r"
+        end
+        local cost = QUICKEPGP.getItemGP(QUICKEPGP.getItemId(currentItem))
+        QuickEPGProllFrame.Title:SetText(str.." on "..currentItem.." |cFFFFFF00("..cost.." GP)|r")
+        local btn = QuickEPGProllFrame.LootButton
+        QuickEPGProllFrame.Picture.Texture:SetTexture(texture)
+      end
 
-    if not name then
-      QUICKEPGP.error("QUICKEPGP::Invalid itemId")
+      if (QuickEPGPMasterLootFrame and QuickEPGPMasterLootFrame.Dropper and QuickEPGPMasterLootFrame.Dropper.Texture) then
+        QuickEPGPMasterLootFrame.Dropper.Texture:SetTexture(texture)
+        QuickEPGPMasterLootFrame.Dropper.Text:Hide()
+      end
+    else
       clearCurrentItem()
-      return
-    end
-
-    if QuickEPGProllFrame then
-      local str = "|cFFFFFF00Rolling|r"
-      if (iNeed) then
-        str = "|cFF00FF00Needing|r"
-      end
-      if (iPass) then
-        str = "|cFFFF0000Passing|r"
-      end
-      local cost = QUICKEPGP.getItemGP(QUICKEPGP.getItemId(currentItem))
-      QuickEPGProllFrame.Title:SetText(str.." on "..currentItem.." |cFFFFFF00("..cost.." GP)|r")
-      local btn = QuickEPGProllFrame.LootButton
-      QuickEPGProllFrame.Picture.Texture:SetTexture(texture)
-    end
-
-    if (QuickEPGPMasterLootFrame and QuickEPGPMasterLootFrame.Dropper and QuickEPGPMasterLootFrame.Dropper.Texture) then
-      QuickEPGPMasterLootFrame.Dropper.Texture:SetTexture(texture)
-      QuickEPGPMasterLootFrame.Dropper.Text:Hide()
+      QUICKEPGP.error("QUICKEPGP::Invalid itemId "..(itemName or EMPTY))
     end
   else
     clearCurrentItem()
+    QUICKEPGP.error("QUICKEPGP::Invalid itemId "..(item or EMPTY))
   end
 end
 

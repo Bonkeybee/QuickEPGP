@@ -1,13 +1,19 @@
 QUICKEPGP.LOOTING = CreateFrame("Frame")
 local MODULE_NAME = "QuickEPGP-Looting"
 
+local TICK_RATE = 0.01
+
+local INSTANCE_TYPE = "raid"
 local FREE_FOR_ALL = "freeforall"
 local ROUND_ROBIN = "roundrobin"
 local MASTER_LOOT = "master"
 local GROUP_LOOT = "group"
 local NEED_BEFORE_GREED = "needbeforegreed"
 local EQUIPPABLE = "EQUIPPABLE"
+local MAX_PARTY_SIZE = 40
+local MAX_NUM_LOOT = 12
 
+local looting = false
 
 -- ############################################################
 -- ##### LOCAL FUNCTIONS ######################################
@@ -17,7 +23,7 @@ local function safeGiveMasterLoot(slot, playerIndex)
   local _, instanceType = GetInstanceInfo()
   if (not QUICKEPGP_OPTIONS.LOOTING.safe) then
     GiveMasterLoot(slot, playerIndex)
-  elseif (instanceType == "raid") then
+  elseif (instanceType == INSTANCE_TYPE) then
     GiveMasterLoot(slot, playerIndex)
   end
 end
@@ -26,7 +32,7 @@ local function safeConfirmLootSlot(slot)
   local _, instanceType = GetInstanceInfo()
   if (not QUICKEPGP_OPTIONS.LOOTING.safe) then
     ConfirmLootSlot(slot)
-  elseif (instanceType == "raid") then
+  elseif (instanceType == INSTANCE_TYPE) then
     ConfirmLootSlot(slot)
   end
 end
@@ -35,7 +41,7 @@ local function safeLootSlot(slot)
   local _, instanceType = GetInstanceInfo()
   if (not QUICKEPGP_OPTIONS.LOOTING.safe) then
     LootSlot(slot)
-  elseif (instanceType == "raid") then
+  elseif (instanceType == INSTANCE_TYPE) then
     LootSlot(slot)
   end
 end
@@ -43,7 +49,7 @@ end
 local function masterLootee(slot, type)
   local _, instanceType = GetInstanceInfo()
   local masterlooterIndex = nil
-  for i = 1, 40 do
+  for i = 1, MAX_PARTY_SIZE do
     local name = GetMasterLootCandidate(slot, i)
     if (name) then
       if (QUICKEPGP.isOnlineRaid(name)) then --TODO doesnt work for parties
@@ -96,14 +102,12 @@ local function masterLoot(i)
     if (QUICKEPGP.isMasterLooter()) then
       local _, _, _, _, rarity, locked, isQuest, _, isActive = GetLootSlotInfo(i)
       if (not isQuest and not isActive) then
-        if (rarity and rarity > 1) then
+        if (rarity) then
           local itemLink = GetLootSlotLink(i)
           if (itemLink) then
             if (IsEquippableItem(itemLink) and rarity >= QUICKEPGP_OPTIONS.LOOTING.equiprarity) then
-              print(1)
               masterLootee(i, EQUIPPABLE)
             elseif (rarity >= QUICKEPGP_OPTIONS.LOOTING.otherrarity) then
-              print(2)
               masterLootee(i)
             end
           else
@@ -131,14 +135,59 @@ local function needBeforeGreed(i)
   end
 end
 
+local function getActualNumLootItems()
+  local count = 0
+  for i = 1, GetNumLootItems() do
+    local _, _, _, _, rarity, locked, isQuest, _, isActive = GetLootSlotInfo(i)
+    if (not isQuest and not isActive) then
+      if (rarity) then
+        local itemLink = GetLootSlotLink(i)
+        if (itemLink) then
+          if (IsEquippableItem(itemLink) and rarity >= QUICKEPGP_OPTIONS.LOOTING.equiprarity) then
+            count = count + 1
+          elseif (rarity >= QUICKEPGP_OPTIONS.LOOTING.otherrarity) then
+            count = count + 1
+          end
+        else
+          count = count + 1
+        end
+      else
+        count = count + 1
+      end
+    end
+  end
+  return count
+end
+
 local function onEvent(_, event)
-  if (QUICKEPGP_OPTIONS.LOOTING.enabled and event == "LOOT_OPENED") then
-    for i = 1, GetNumLootItems() do
-      freeForAll(i)
-      roundRobin(i)
-      masterLoot(i)
-      groupLoot(i)
-      needBeforeGreed(i)
+  if (QUICKEPGP_OPTIONS.LOOTING.enabled) then
+    if (event == "LOOT_OPENED") then
+      if (getActualNumLootItems() > 0) then
+        looting = true
+      end
+    end
+
+    if (event == "LOOT_CLOSED") then
+      looting = false
+    end
+  end
+end
+
+local last = GetTime()
+local function onUpdate()
+  if (QUICKEPGP_OPTIONS.LOOTING.enabled) then
+    if (looting) then
+      local now = GetTime()
+      if (now - last >= TICK_RATE) then
+        for i = 1, MAX_NUM_LOOT do
+          freeForAll(i)
+          roundRobin(i)
+          masterLoot(i)
+          groupLoot(i)
+          needBeforeGreed(i)
+        end
+        last = now
+      end
     end
   end
 end
@@ -148,4 +197,8 @@ end
 -- ############################################################
 
 QUICKEPGP.LOOTING:RegisterEvent("LOOT_OPENED")
+QUICKEPGP.LOOTING:RegisterEvent("LOOT_CLOSED")
+QUICKEPGP.LOOTING:RegisterEvent("LOOT_SLOT_CLEARED")
+QUICKEPGP.LOOTING:RegisterEvent("LOOT_SLOT_CHANGED")
 QUICKEPGP.LOOTING:SetScript("OnEvent", onEvent)
+QUICKEPGP.LOOTING:SetScript("OnUpdate", onUpdate)
