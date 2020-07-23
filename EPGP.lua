@@ -127,7 +127,7 @@ QUICKEPGP.calculateChange = function(name, value, type)
       return max((QUICKEPGP.guildMemberGP(name) or QUICKEPGP.MINIMUM_GP) + value, QUICKEPGP.MINIMUM_GP)
     end
   else
-    QUICKEPGP.error("Skipping "..(player or EMPTY).."'s EPGP change: not in guild")
+    QUICKEPGP.error("Skipping "..(name or EMPTY).."'s EPGP change: not in guild")
   end
 end
 
@@ -151,28 +151,32 @@ QUICKEPGP.comparePR = function(name1, name2, rollTable)
   end
 end
 
-QUICKEPGP.getItemGP = function(itemId)
+QUICKEPGP.getItemGP = function(itemId, silent)
   if (itemId) then
-    local itemId = tonumber(itemId)
+    itemId = tonumber(itemId)
     if (OVERRIDE[itemId]) then
       return OVERRIDE[itemId]
     end
     local _, _, itemRarity, itemLevel, _, _, _, _, itemEquipLoc = GetItemInfo(itemId)
-    local slot = nil
-    if (itemEquipLoc == nil or itemEquipLoc == "") then
-      slot = "EXCEPTION"
-      QUICKEPGP.error(format("QUICKEPGP::Item %s has no itemEquipLoc (%s)", itemId, itemEquipLoc))
-    else
-      slot = strsub(itemEquipLoc, strfind(itemEquipLoc, "INVTYPE_") + 8, string.len(itemEquipLoc))
+    if itemRarity and itemLevel then
+      local slot = nil
+      if (itemEquipLoc == nil or itemEquipLoc == "") then
+        slot = "EXCEPTION"
+        if not silent then
+          QUICKEPGP.error(format("QUICKEPGP::Item %s has no itemEquipLoc (%s)", itemId, itemEquipLoc))
+        end
+      else
+        slot = strsub(itemEquipLoc, strfind(itemEquipLoc, "INVTYPE_") + 8, string.len(itemEquipLoc))
+      end
+      local slotWeight = SLOTWEIGHTS[slot]
+      if (slotWeight) then
+        return math.floor((INFLATION_MOD * (EXPONENTIAL_MOD^((itemLevel / 26) + (itemRarity - 4))) * slotWeight) * NORMALIZER_MOD)
+      elseif not silent then
+        QUICKEPGP.error(format("QUICKEPGP::Item %s has no valid slot weight (%s)", itemId, slot))
+      end
+    elseif not silent then
+      QUICKEPGP.error("QUICKEPGP::Invalid itemId, returning 0")
     end
-    local slotWeight = SLOTWEIGHTS[slot]
-    if (slotWeight) then
-      return math.floor((INFLATION_MOD * (EXPONENTIAL_MOD^((itemLevel / 26) + (itemRarity - 4))) * slotWeight) * NORMALIZER_MOD)
-    else
-      QUICKEPGP.error(format("QUICKEPGP::Item %s has no valid slot weight (%s)", itemId, slot))
-    end
-  else
-    QUICKEPGP.error("QUICKEPGP::Invalid itemId, returning 0")
   end
   return 0
 end

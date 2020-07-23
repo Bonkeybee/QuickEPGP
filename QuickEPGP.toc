@@ -38,3 +38,5 @@ Guild.lua
 Raid.lua
 Minimap.lua
 Utility.lua
+Tooltip.lua
+RaidStandings.lua

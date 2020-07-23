@@ -11,6 +11,20 @@ QUICKEPGP.MINIMUM_GP = 50
 QUICKEPGP.ADD = "+"
 QUICKEPGP.MINUS = "-"
 
+QUICKEPGP.SOUNDNAMES = {
+  None = "None",
+  WhatCanIDoForYa = "What can I do for ya?",
+  WhatAreYouBuyin = "What are you buyin'?",
+  AnAwesomeChoice = "An awesome choice, stranger!"
+}
+
+QUICKEPGP.SOUNDS = {
+  None = nil,
+  WhatCanIDoForYa = "Interface\\AddOns\\QuickEPGP\\Sounds\\whatcanidoforya.ogg",
+  WhatAreYouBuyin = "Interface\\AddOns\\QuickEPGP\\Sounds\\whatareyoubuyin.ogg",
+  AnAwesomeChoice = "Interface\\AddOns\\QuickEPGP\\Sounds\\anawesomechoice.ogg"
+}
+
 -- ############################################################
 -- ##### LOCAL FUNCTIONS ######################################
 -- ############################################################
@@ -33,9 +47,9 @@ local function epgpCommandMessage(message, name)
         if (operation == QUICKEPGP.MINUS) then
           amount = -amount
         end
-        if (type == EP) then
+        if (type == "EP") then
           QUICKEPGP.modifyEPGP(unit, amount, nil, reason)
-        elseif (type == GP) then
+        elseif (type == "GP") then
           QUICKEPGP.modifyEPGP(unit, nil, amount, reason)
         end
       end
@@ -151,6 +165,8 @@ SlashCmdList["EPGP"] = function(message)
     --   end
   elseif (command == "toggle" and arg1 == "master") then
     QUICKEPGP.toggleMasterFrame()
+  elseif command == "raid" then
+    QUICKEPGP.RaidStandings:ToggleFrame()
   else
     QUICKEPGP.error("invalid command - type `/epgp help` for a list of commands")
   end

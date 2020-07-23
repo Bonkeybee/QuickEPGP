@@ -4,14 +4,15 @@ local MODULE_NAME = "QuickEPGP-Options"
 local options = {
   type = "group",
   args = {
-    minimap = {
-      name = "Minimap",
+    general = {
+      name = "General",
       type = "group",
       order = 1,
       args = {
-        enable = {
+        minimap = {
           name = "Show Minimap Button",
           type = "toggle",
+          order = 1,
           set = function(info, val)
             if val then
               QUICKEPGP.MinimapIcon:Show(QUICKEPGP_ADDON_NAME)
@@ -22,6 +23,41 @@ local options = {
             end
           end,
           get = function(info) return not QUICKEPGP_OPTIONS.MINIMAP.hide end
+        },
+        rollSound = {
+          name = "Starting Rolls Sound",
+          type = "select",
+          order = 3,
+          values = QUICKEPGP.SOUNDNAMES,
+          set = function(info, val)
+            local soundFile = QUICKEPGP.SOUNDS[val]
+            if soundFile then
+              PlaySoundFile(soundFile, "Master")
+            end
+            QUICKEPGP_OPTIONS.ROLLING.openSound = val
+          end,
+          get = function(info) return QUICKEPGP_OPTIONS.ROLLING.openSound end
+        },
+        winSound = {
+          name = "Won Roll Sound",
+          type = "select",
+          order = 4,
+          values = QUICKEPGP.SOUNDNAMES,
+          set = function(info, val)
+            local soundFile = QUICKEPGP.SOUNDS[val]
+            if soundFile then
+              PlaySoundFile(soundFile, "Master")
+            end
+            QUICKEPGP_OPTIONS.ROLLING.winSound = val
+          end,
+          get = function(info) return QUICKEPGP_OPTIONS.ROLLING.winSound end
+        },
+        tooltips = {
+          name = "Show GP in tooltips",
+          type = "toggle",
+          order = 2,
+          set = function(info, val) QUICKEPGP_OPTIONS.TOOLTIP.enabled = val end,
+          get = function(info) return QUICKEPGP_OPTIONS.TOOLTIP.enabled end
         }
       }
     },
@@ -92,25 +128,7 @@ local options = {
           get = function(info) return QUICKEPGP_OPTIONS.LOOTING.otherrarity end
         },
       }
-    },
-    rolling = {
-      name = "Rolling",
-      type = "group",
-      order = 3,
-      args = {
-        enable = {
-          name = "Play RollFrame Sound",
-          type = "toggle",
-          set = function(info, val)
-            if val then
-              PlaySoundFile("Interface\\AddOns\\QuickEPGP\\Sounds\\whatcanidoforya.ogg", "Master")
-            end
-            QUICKEPGP_OPTIONS.ROLLING.sound = val
-          end,
-          get = function(info) return QUICKEPGP_OPTIONS.ROLLING.sound end
-        }
-      }
-    },
+    }
   },
 }
 LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable(QUICKEPGP_ADDON_NAME, options, SLASH_EPGP1)
@@ -164,6 +182,11 @@ QUICKEPGP.DefaultConfig = function(QUICKEPGP_OPTIONS)
   QUICKEPGP_OPTIONS.RollFrame.X = default(QUICKEPGP_OPTIONS.RollFrame.X, 0)
   QUICKEPGP_OPTIONS.RollFrame.Y = default(QUICKEPGP_OPTIONS.RollFrame.Y, 0)
   QUICKEPGP_OPTIONS.RollFrame.Point = default(QUICKEPGP_OPTIONS.RollFrame.Point, "CENTER")
+  QUICKEPGP_OPTIONS.TOOLTIP = default(QUICKEPGP_OPTIONS.tooltips, {})
+  QUICKEPGP_OPTIONS.TOOLTIP.enabled = default(QUICKEPGP_OPTIONS.TOOLTIP.enabled, true)
+  QUICKEPGP_OPTIONS.ROLLING.openSound = default(QUICKEPGP_OPTIONS.ROLLING.openSound, QUICKEPGP_OPTIONS.ROLLING.sound and "WhatAreYouBuyin" or "None")
+  QUICKEPGP_OPTIONS.ROLLING.winSound = default(QUICKEPGP_OPTIONS.ROLLING.winSound, QUICKEPGP_OPTIONS.ROLLING.sound and "AnAwesomeChoice" or "None")
+  QUICKEPGP_OPTIONS.RaidStandings = default(QUICKEPGP_OPTIONS.RaidStandings, {X = 0, Y = 0, Point = "CENTER"})
   return QUICKEPGP_OPTIONS
 end
 
