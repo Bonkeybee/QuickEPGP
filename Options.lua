@@ -1,6 +1,32 @@
 QUICKEPGP.OPTIONS_FRAME = CreateFrame("Frame")
 local MODULE_NAME = "QuickEPGP-Options"
 
+
+QUICKEPGP.SOUNDNAMES = {
+  [1] = "None",
+  [2] = "What can I do for ya?",
+  [3] = "Hey! Listen!",
+  [4] = "What are you buyin'?",
+  [5] = "An awesome choice, stranger!"
+}
+
+QUICKEPGP.SOUNDS = {
+  [1] = nil,
+  [2] = "Interface\\AddOns\\QuickEPGP\\Sounds\\whatcanidoforya.ogg",
+  [3] = "Interface\\AddOns\\QuickEPGP\\Sounds\\heylisten.ogg",
+  [4] = "Interface\\AddOns\\QuickEPGP\\Sounds\\whatareyoubuyin.ogg",
+  [5] = "Interface\\AddOns\\QuickEPGP\\Sounds\\anawesomechoice.ogg"
+}
+
+local LOOT_NAMES = {
+  [0] = QUICKEPGP.colorByRarity("Poor"),
+  [1] = QUICKEPGP.colorByRarity("Common"),
+  [2] = QUICKEPGP.colorByRarity("Uncommon"),
+  [3] = QUICKEPGP.colorByRarity("Rare"),
+  [4] = QUICKEPGP.colorByRarity("Epic"),
+  [5] = QUICKEPGP.colorByRarity("Legendary")
+}
+
 local options = {
   type = "group",
   args = {
@@ -66,68 +92,117 @@ local options = {
       type = "group",
       order = 2,
       args = {
+        break1 = {
+          order = 1,
+          name = "General Settings",
+          type = "header"
+        },
         enable = {
+          order = 3,
           name = "Enable",
           type = "toggle",
           set = function(info, val) QUICKEPGP_OPTIONS.LOOTING.enabled = val end,
           get = function(info) return QUICKEPGP_OPTIONS.LOOTING.enabled end
         },
         safe = {
+          order = 4,
           name = "Safe Mode",
           desc = "will only autoloot when it's safe to do so",
           type = "toggle",
           set = function(info, val) QUICKEPGP_OPTIONS.LOOTING.safe = val end,
           get = function(info) return QUICKEPGP_OPTIONS.LOOTING.safe end
         },
+        break2 = {
+          order = 5,
+          name = "Masterloot Settings",
+          type = "header"
+        },
+        automaster = {
+          order = 7,
+          name = "Auto-Masterloot",
+          desc = "enables masterloot when entering a raid instance",
+          type = "toggle",
+          set = function(info, val) QUICKEPGP_OPTIONS.LOOTING.automaster = val end,
+          get = function(info) return QUICKEPGP_OPTIONS.LOOTING.automaster end
+        },
+        masterthreshold = {
+          order = 8,
+          name = "Masterloot Threshold",
+          desc = "rarity threshold to set masterloot to",
+          type = "select",
+          values = LOOT_NAMES,
+          set = function(info, val) QUICKEPGP_OPTIONS.LOOTING.masterthreshold = val end,
+          get = function(info) return QUICKEPGP_OPTIONS.LOOTING.masterthreshold end
+        },
+        break3 = {
+          order = 9,
+          name = "Masterloot Settings (Equipment)",
+          type = "header"
+        },
         equiplootee = {
+          order = 11,
           name = "Equip Lootee",
           desc = "who to automatically send equippable items to",
           type = "select",
           values = {
             [1] = "Master Looter",
-            [2] = "Main Assist"
+            [2] = "Main Assist",
+            [3] = "Character"
           },
           set = function(info, val) QUICKEPGP_OPTIONS.LOOTING.equiplootee = val end,
           get = function(info) return QUICKEPGP_OPTIONS.LOOTING.equiplootee end
         },
+        equiplooteechar = {
+          order = 12,
+          name = "Equip Lootee",
+          desc = "who to automatically send equippable items to",
+          type = "input",
+          hidden = function() if (QUICKEPGP_OPTIONS.LOOTING.equiplootee ~= 3) then return true else return false end end,
+          set = function(info, val) QUICKEPGP_OPTIONS.LOOTING.equiplooteechar = val end,
+          get = function(info) return QUICKEPGP_OPTIONS.LOOTING.equiplooteechar end
+        },
         equiprarity = {
+          order = 13,
           name = "Equip Rarity",
           desc = "rarity threshold to apply equippable item looting behavior to",
           type = "select",
-          values = {
-            [0] = "|cff9d9d9dUncommon|r",
-            [1] = "|cffffffffCommon|r",
-            [2] = "|cff1eff00Uncommon|r",
-            [3] = "|cff0070ddRare|r",
-            [4] = "|cffa335eeEpic|r",
-            [5] = "|cffff8000Legendary|r"
-          },
+          values = LOOT_NAMES,
           set = function(info, val) QUICKEPGP_OPTIONS.LOOTING.equiprarity = val end,
           get = function(info) return QUICKEPGP_OPTIONS.LOOTING.equiprarity end
         },
+        break4 = {
+          order = 14,
+          name = "Masterloot Settings (Other)",
+          type = "header"
+        },
         otherlootee = {
+          order = 16,
           name = "Other Lootee",
           desc = "who to automatically send other items to",
           type = "select",
           values = {
             [1] = "Master Looter",
-            [2] = "Main Assist"
+            [2] = "Main Assist",
+            [3] = "Character"
           },
           set = function(info, val) QUICKEPGP_OPTIONS.LOOTING.otherlootee = val end,
           get = function(info) return QUICKEPGP_OPTIONS.LOOTING.otherlootee end
         },
+        otherlooteechar = {
+          order = 17,
+          name = "Other Lootee Character",
+          desc = "who to automatically send other items to",
+          type = "input",
+          hidden = function() if (QUICKEPGP_OPTIONS.LOOTING.otherlootee ~= 3) then return true else return false end end,
+          set = function(info, val) QUICKEPGP_OPTIONS.LOOTING.otherlooteechar = val end,
+          get = function(info) return QUICKEPGP_OPTIONS.LOOTING.otherlooteechar end
+        },
         otherrarity = {
+          order = 18,
           name = "Other Rarity",
-          desc = "rarity threshold to apply non-equippable item looting behavior to",
+          desc = "rarity threshold to apply other item looting behavior to",
           type = "select",
-          values = {
-            [0] = "|cff9d9d9dUncommon|r",
-            [1] = "|cffffffffCommon|r",
-            [2] = "|cff1eff00Uncommon|r",
-            [3] = "|cff0070ddRare|r",
-            [4] = "|cffa335eeEpic|r",
-            [5] = "|cffff8000Legendary|r"
-          },
+          values = LOOT_NAMES,
           set = function(info, val) QUICKEPGP_OPTIONS.LOOTING.otherrarity = val end,
           get = function(info) return QUICKEPGP_OPTIONS.LOOTING.otherrarity end
         },
@@ -175,9 +250,15 @@ QUICKEPGP.DefaultConfig = function(QUICKEPGP_OPTIONS)
   QUICKEPGP_OPTIONS.LOOTING.equiprarity = default(QUICKEPGP_OPTIONS.LOOTING.equiprarity, 3)
   QUICKEPGP_OPTIONS.LOOTING.otherlootee = default(QUICKEPGP_OPTIONS.LOOTING.otherlootee, 2)
   QUICKEPGP_OPTIONS.LOOTING.otherrarity = default(QUICKEPGP_OPTIONS.LOOTING.otherrarity, 1)
+  QUICKEPGP_OPTIONS.LOOTING.automaster = default(QUICKEPGP_OPTIONS.LOOTING.automaster, false)
+  QUICKEPGP_OPTIONS.LOOTING.masterthreshold = default(QUICKEPGP_OPTIONS.LOOTING.masterthreshold, 2)
   QUICKEPGP_OPTIONS.ROLLING = default(QUICKEPGP_OPTIONS.ROLLING, {})
   QUICKEPGP_OPTIONS.ROLLING.sound = default(QUICKEPGP_OPTIONS.ROLLING.sound, true)
+  QUICKEPGP_OPTIONS.ROLLING.openSound = default(QUICKEPGP_OPTIONS.ROLLING.openSound, QUICKEPGP_OPTIONS.ROLLING.sound and 4 or 1)
+  QUICKEPGP_OPTIONS.ROLLING.winSound = default(QUICKEPGP_OPTIONS.ROLLING.winSound, QUICKEPGP_OPTIONS.ROLLING.sound and 5 or 1)
   QUICKEPGP_OPTIONS.MINIMAP = default(QUICKEPGP_OPTIONS.MINIMAP, {hide = false})
+  QUICKEPGP_OPTIONS.TOOLTIP = default(QUICKEPGP_OPTIONS.tooltips, {})
+  QUICKEPGP_OPTIONS.TOOLTIP.enabled = default(QUICKEPGP_OPTIONS.TOOLTIP.enabled, true)
   QUICKEPGP_OPTIONS.MasterFrame = default(QUICKEPGP_OPTIONS.MasterFrame, {})
   QUICKEPGP_OPTIONS.MasterFrame.X = default(QUICKEPGP_OPTIONS.MasterFrame.X, 0)
   QUICKEPGP_OPTIONS.MasterFrame.Y = default(QUICKEPGP_OPTIONS.MasterFrame.Y, 0)
@@ -186,10 +267,6 @@ QUICKEPGP.DefaultConfig = function(QUICKEPGP_OPTIONS)
   QUICKEPGP_OPTIONS.RollFrame.X = default(QUICKEPGP_OPTIONS.RollFrame.X, 0)
   QUICKEPGP_OPTIONS.RollFrame.Y = default(QUICKEPGP_OPTIONS.RollFrame.Y, 0)
   QUICKEPGP_OPTIONS.RollFrame.Point = default(QUICKEPGP_OPTIONS.RollFrame.Point, "CENTER")
-  QUICKEPGP_OPTIONS.TOOLTIP = default(QUICKEPGP_OPTIONS.tooltips, {})
-  QUICKEPGP_OPTIONS.TOOLTIP.enabled = default(QUICKEPGP_OPTIONS.TOOLTIP.enabled, true)
-  QUICKEPGP_OPTIONS.ROLLING.openSound = default(QUICKEPGP_OPTIONS.ROLLING.openSound, QUICKEPGP_OPTIONS.ROLLING.sound and "WhatAreYouBuyin" or "None")
-  QUICKEPGP_OPTIONS.ROLLING.winSound = default(QUICKEPGP_OPTIONS.ROLLING.winSound, QUICKEPGP_OPTIONS.ROLLING.sound and "AnAwesomeChoice" or "None")
   QUICKEPGP_OPTIONS.RaidStandings = default(QUICKEPGP_OPTIONS.RaidStandings, {X = 0, Y = 0, Point = "CENTER"})
   return QUICKEPGP_OPTIONS
 end

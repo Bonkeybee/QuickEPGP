@@ -3,11 +3,12 @@
 ## Title: QuickEPGP
 ## Notes: QuickEPGP
 ## SavedVariables: QUICKEPGP_OPTIONS, QUICKEPGP_RAIDING_TIMESTAMP, QUICKEPGP_TIME_REWARDS
+## SavedVariablesPerCharacter:
 ## OptionalDeps: Ace3
 ## LoadOnDemand: 0
 ## DefaultState: enabled
 ## Author: Bonkeybee
-## Version: 11304.27
+## Version: 11304.28
 
 
 Libs\LibStub\LibStub.lua
@@ -30,6 +31,7 @@ Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
 Libs\LibDBIcon-1.0\lib.xml
 
 QuickEPGP.lua
+Utility.lua
 Options.lua
 EPGP.lua
 Looting.lua
@@ -37,6 +39,5 @@ Rolling.lua
 Guild.lua
 Raid.lua
 Minimap.lua
-Utility.lua
 Tooltip.lua
 RaidStandings.lua

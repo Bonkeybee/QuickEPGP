@@ -11,20 +11,6 @@ QUICKEPGP.MINIMUM_GP = 50
 QUICKEPGP.ADD = "+"
 QUICKEPGP.MINUS = "-"
 
-QUICKEPGP.SOUNDNAMES = {
-  None = "None",
-  WhatCanIDoForYa = "What can I do for ya?",
-  WhatAreYouBuyin = "What are you buyin'?",
-  AnAwesomeChoice = "An awesome choice, stranger!"
-}
-
-QUICKEPGP.SOUNDS = {
-  None = nil,
-  WhatCanIDoForYa = "Interface\\AddOns\\QuickEPGP\\Sounds\\whatcanidoforya.ogg",
-  WhatAreYouBuyin = "Interface\\AddOns\\QuickEPGP\\Sounds\\whatareyoubuyin.ogg",
-  AnAwesomeChoice = "Interface\\AddOns\\QuickEPGP\\Sounds\\anawesomechoice.ogg"
-}
-
 -- ############################################################
 -- ##### LOCAL FUNCTIONS ######################################
 -- ############################################################

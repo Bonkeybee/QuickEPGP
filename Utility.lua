@@ -58,6 +58,33 @@ end
 -- ##### GLOBAL FUNCTIONS #####################################
 -- ############################################################
 
+QUICKEPGP.isInRaidInstance = function()
+  local _, type, difficultyIndex, difficultyName, maxPlayers, _, _, instanceMapID, lfgID = GetInstanceInfo()
+  if (type == "raid") then
+    if (difficultyName == "40 Player" or difficultyName == "20 Player") then
+      return true
+    end
+  end
+  return false
+end
+
+QUICKEPGP.colorByRarity = function(name)
+  if (name == "Poor") then
+    return "|cff9d9d9d"..name.."|r"
+  elseif (name == "Common") then
+    return "|cffffffff"..name.."|r"
+  elseif (name == "Uncommon") then
+    return "|cff1eff00"..name.."|r"
+  elseif (name == "Rare") then
+    return "|cff0070dd"..name.."|r"
+  elseif (name == "Epic") then
+    return "|cffa335ee"..name.."|r"
+  elseif (name == "Legendary") then
+    return "|cffff8000"..name.."|r"
+  end
+  return name
+end
+
 QUICKEPGP.colorByClass = function(name, class)
   local _, _, _, hex = GetClassColor(class)
   return "|c"..hex..name.."|r"
@@ -164,22 +191,22 @@ QUICKEPGP.error = function(str)
 end
 
 QUICKEPGP.spairs = function(t, order)
-    local keys = {}
-    for k in pairs(t) do keys[#keys+1] = k end
+  local keys = {}
+  for k in pairs(t) do keys[#keys + 1] = k end
 
-    if order then
-        table.sort(keys, function(a,b) return order(t, a, b) end)
-    else
-        table.sort(keys)
-    end
+  if order then
+    table.sort(keys, function(a, b) return order(t, a, b) end)
+  else
+    table.sort(keys)
+  end
 
-    local i = 0
-    return function()
-        i = i + 1
-        if keys[i] then
-            return keys[i], t[keys[i]]
-        end
+  local i = 0
+  return function()
+    i = i + 1
+    if keys[i] then
+      return keys[i], t[keys[i]]
     end
+  end
 end
 
 QUICKEPGP.UTILITY:RegisterEvent("ADDON_LOADED")

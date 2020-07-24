@@ -3,6 +3,7 @@ local MODULE_NAME = "QuickEPGP-Looting"
 
 local TICK_RATE = 0.01
 
+local EMPTY = ""
 local INSTANCE_TYPE = "raid"
 local FREE_FOR_ALL = "freeforall"
 local ROUND_ROBIN = "roundrobin"
@@ -20,6 +21,7 @@ local looting = false
 -- ############################################################
 
 local function safeGiveMasterLoot(slot, playerIndex)
+  --TODO doesnt work in dungeons because untradeable
   local _, instanceType = GetInstanceInfo()
   if (not QUICKEPGP_OPTIONS.LOOTING.safe) then
     GiveMasterLoot(slot, playerIndex)
@@ -62,12 +64,20 @@ local function masterLootee(slot, type)
             safeGiveMasterLoot(slot, i)
             return
           end
+          if (QUICKEPGP_OPTIONS.LOOTING.equiplootee == 3 and (QUICKEPGP_OPTIONS.LOOTING.equiplooteechar or EMPTY) == name) then
+            safeGiveMasterLoot(slot, i)
+            return
+          end
         else
           if (QUICKEPGP_OPTIONS.LOOTING.otherlootee == 1 and QUICKEPGP.isMasterLooter(name)) then
             safeGiveMasterLoot(slot, i)
             return
           end
           if (QUICKEPGP_OPTIONS.LOOTING.otherlootee == 2 and QUICKEPGP.isMainAssist(name)) then
+            safeGiveMasterLoot(slot, i)
+            return
+          end
+          if (QUICKEPGP_OPTIONS.LOOTING.otherlootee == 3 and (QUICKEPGP_OPTIONS.LOOTING.otherlooteechar or EMPTY) == name) then
             safeGiveMasterLoot(slot, i)
             return
           end
@@ -80,7 +90,6 @@ local function masterLootee(slot, type)
     end
   end
   GiveMasterLoot(slot, masterlooterIndex)
-  --TODO print error
 end
 
 local function freeForAll(i)
@@ -159,7 +168,11 @@ local function getActualNumLootItems()
   return count
 end
 
-local function onEvent(_, event)
+local function setMasterLoot()
+  SetLootMethod("Master", UnitName("Player"), QUICKEPGP_OPTIONS.LOOTING.masterthreshold)
+end
+
+local function onEvent(_, event, arg1, arg2)
   if (QUICKEPGP_OPTIONS.LOOTING.enabled) then
     if (event == "LOOT_OPENED") then
       if (getActualNumLootItems() > 0) then
@@ -169,6 +182,14 @@ local function onEvent(_, event)
 
     if (event == "LOOT_CLOSED") then
       looting = false
+    end
+
+    if (event == "PLAYER_ENTERING_WORLD") then
+      local isInitialLogin = arg1
+      local isReloadingUi = arg2
+      if (not isInitialLogin and not isReloadingUi and QUICKEPGP.isInRaidInstance()) then
+        setMasterLoot()
+      end
     end
   end
 end
@@ -198,7 +219,6 @@ end
 
 QUICKEPGP.LOOTING:RegisterEvent("LOOT_OPENED")
 QUICKEPGP.LOOTING:RegisterEvent("LOOT_CLOSED")
-QUICKEPGP.LOOTING:RegisterEvent("LOOT_SLOT_CLEARED")
-QUICKEPGP.LOOTING:RegisterEvent("LOOT_SLOT_CHANGED")
+QUICKEPGP.LOOTING:RegisterEvent("PLAYER_ENTERING_WORLD")
 QUICKEPGP.LOOTING:SetScript("OnEvent", onEvent)
 QUICKEPGP.LOOTING:SetScript("OnUpdate", onUpdate)
