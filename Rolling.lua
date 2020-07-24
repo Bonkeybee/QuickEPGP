@@ -79,6 +79,7 @@ local function setCurrentItem(itemLink)
     end)
   else
     clearCurrentItem()
+    QUICKEPGP.error("QUICKEPGP::Invalid itemId "..(item or EMPTY))
   end
 end
 
