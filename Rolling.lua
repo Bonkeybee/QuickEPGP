@@ -52,36 +52,31 @@ local function clearCurrentItem()
   end
 end
 
-local function setCurrentItem(item)
-  currentItem = item
+local function setCurrentItem(itemLink)
+  if itemLink then
+    currentItem = itemLink
+    local item = Item:CreateFromItemLink(itemLink)
+    item:ContinueOnItemLoad(function()
+      local texture = item:GetItemIcon()
 
-  if item then
-    local name, link, _, _, _, _, _, _, _, texture = GetItemInfo(currentItem);
-
-    if not name then
-      QUICKEPGP.error("QUICKEPGP::Invalid itemId")
-      clearCurrentItem()
-      return
-    end
-
-    if QuickEPGProllFrame then
-      local str = "|cFFFFFF00Rolling|r"
-      if (iNeed) then
-        str = "|cFF00FF00Needing|r"
+      if QuickEPGProllFrame then
+        local str = "|cFFFFFF00Rolling|r"
+        if (iNeed) then
+          str = "|cFF00FF00Needing|r"
+        end
+        if (iPass) then
+          str = "|cFFFF0000Passing|r"
+        end
+        local cost = QUICKEPGP.getItemGP(QUICKEPGP.getItemId(currentItem))
+        QuickEPGProllFrame.Title:SetText(str.." on "..currentItem.." |cFFFFFF00("..cost.." GP)|r")
+        QuickEPGProllFrame.Picture.Texture:SetTexture(texture)
       end
-      if (iPass) then
-        str = "|cFFFF0000Passing|r"
-      end
-      local cost = QUICKEPGP.getItemGP(QUICKEPGP.getItemId(currentItem))
-      QuickEPGProllFrame.Title:SetText(str.." on "..currentItem.." |cFFFFFF00("..cost.." GP)|r")
-      local btn = QuickEPGProllFrame.LootButton
-      QuickEPGProllFrame.Picture.Texture:SetTexture(texture)
-    end
 
-    if (QuickEPGPMasterLootFrame and QuickEPGPMasterLootFrame.Dropper and QuickEPGPMasterLootFrame.Dropper.Texture) then
-      QuickEPGPMasterLootFrame.Dropper.Texture:SetTexture(texture)
-      QuickEPGPMasterLootFrame.Dropper.Text:Hide()
-    end
+      if (QuickEPGPMasterLootFrame and QuickEPGPMasterLootFrame.Dropper and QuickEPGPMasterLootFrame.Dropper.Texture) then
+        QuickEPGPMasterLootFrame.Dropper.Texture:SetTexture(texture)
+        QuickEPGPMasterLootFrame.Dropper.Text:Hide()
+      end
+    end)
   else
     clearCurrentItem()
   end
@@ -104,18 +99,6 @@ local function setHighestRoller(name)
       QuickEPGProllFrame.Status:SetText(QUICKEPGP.colorByClass(highestRoller, QUICKEPGP.raidMemberClass(highestRoller)).." |cFFFFFF00("..QUICKEPGP.guildMemberPR(highestRoller).." PR)|r |cFFFF0000["..QUICKEPGP.guildMemberPR(highestRoller, true, cost).." PR]|r")
     else
       clearHighestRoller()
-    end
-  end
-end
-
-local function updateRollFrame()
-  if QuickEPGProllFrame then
-
-    if (highestRoller and highestRoller ~= EMPTY) then
-      local cost = QUICKEPGP.getItemGP(QUICKEPGP.getItemId(currentItem))
-      QuickEPGProllFrame.Status:SetText(QUICKEPGP.colorByClass(highestRoller, QUICKEPGP.raidMemberClass(highestRoller)).." |cFFFFFF00("..QUICKEPGP.guildMemberPR(highestRoller).." PR)|r |cFFFF0000["..QUICKEPGP.guildMemberPR(highestRoller, true, cost).." PR]|r")
-    else
-      QuickEPGProllFrame.Status:SetText(nil)
     end
   end
 end
@@ -346,7 +329,6 @@ local handleRollFrameEvent = function(module, message, distribution, author)
     end
   end
 end
-
 
 local function onUpdate()
   local now = GetTime()
