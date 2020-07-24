@@ -6,13 +6,15 @@ do
     OnClick = function(self, button)
       if button == "RightButton" then
         QUICKEPGP.InterfaceOptionsFrame_OpenToCategory_Fix(QUICKEPGP.menu)
-      else
-        if IsShiftKeyDown() then
+      elseif button == "LeftButton" then
+        if IsAltKeyDown() then
           if CanEditOfficerNote() then
             QUICKEPGP.toggleMasterFrame()
           end
-        else
+        elseif IsShiftKeyDown() then
           QUICKEPGP.toggleRollFrame()
+        else
+          QUICKEPGP.RaidStandings:ToggleFrame()
         end
       end
     end,
@@ -24,9 +26,10 @@ do
       tooltip:AddLine(QUICKEPGP.getEPGPPRMessage(), NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1)
 
       tooltip:AddLine(" ")
-      tooltip:AddLine(GRAY_FONT_COLOR_CODE.."Left Click:|r Toggle roll window")
+      tooltip:AddLine(GRAY_FONT_COLOR_CODE.."Left Click:|r Show raid standings")
+      tooltip:AddLine(GRAY_FONT_COLOR_CODE.."Shift + Left Click:|r Show roll window")
       if CanEditOfficerNote() then
-        tooltip:AddLine(GRAY_FONT_COLOR_CODE.."Shift + Left Click:|r Toggle loot master window")
+        tooltip:AddLine(GRAY_FONT_COLOR_CODE.."Alt + Left Click:|r Show loot master window")
       end
       tooltip:AddLine(GRAY_FONT_COLOR_CODE.."Right Click:|r Show Options")
     end,
