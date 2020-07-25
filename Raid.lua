@@ -3,8 +3,13 @@ local loaded = false
 local valid = false
 local race = false
 
+local PLAYER = "player"
+local MASTER_LOOT = "master"
 local RAID_LEADER = 2
 local RAID_ASSIST = 1
+local MAIN_ASSIST = "MAINASSIST"
+local RAID = "RAID"
+local OFFICER = "OFFICER"
 
 local NUM_RAID_MEMBERS = 40
 local TIME_REWARDS_TEMPLATE = {}
@@ -25,7 +30,30 @@ local ISML_INDEX = 5
 
 local function updateRaidMemberTable()
   race = false
+
+  local groupMembers = GetHomePartyInfo()
+  local myName = UnitName(PLAYER)
+  tinsert(groupMembers, myName)
+  local lootmethod, masterlooterPartyID = GetLootMethod()
+
   QUICKEPGP.raidMemberTable = {}
+  for i = 1, #groupMembers do
+    local name = groupMembers[i]
+    local online = UnitIsConnected(name)
+    local rank = UnitIsGroupLeader(name)
+    local _, class = UnitClass(name)
+    local isML = nil
+    if (lootmethod == MASTER_LOOT) then
+      if (masterlooterPartyID == 0 and UnitIsUnit(name, PLAYER)) then
+        isML = 1
+      elseif (masterlooterPartyID == i) then
+        isML = 1
+      end
+    end
+    if (name) then
+      QUICKEPGP.raidMemberTable[name] = {online, (rank and 2 or 0), class, nil, isML}
+    end
+  end
   for i = 1, NUM_RAID_MEMBERS do
     local name, rank, _, _, _, class, _, online, _, role, isML = GetRaidRosterInfo(i)
     if (name) then
@@ -63,8 +91,8 @@ local function timeReward(index, value, reason)
     QUICKEPGP.modifyEPGP(name, value, nil, reason, true)
   end
   QUICKEPGP_TIME_REWARDS[index] = true
-  SendChatMessage(format("Adding %sEP to all raid members for %s.", value, reason), "RAID")
-  SendChatMessage(format("Adding %sEP to all raid members for %s.", value, reason), "OFFICER")
+  SendChatMessage(format("Adding %sEP to all raid members for %s.", value, reason), RAID)
+  SendChatMessage(format("Adding %sEP to all raid members for %s.", value, reason), OFFICER)
 end
 
 QUICKEPGP.ignoreRaidWarning = false
@@ -77,7 +105,7 @@ local function onEvent(_, event)
     race = true
   end
   if (event == "PLAYER_REGEN_DISABLED") then
-    if (not QUICKEPGP.ignoreRaidWarning and not QUICKEPGP_RAIDING_TIMESTAMP and UnitInRaid("player") and QUICKEPGP.isRaidLeader()) then
+    if (not QUICKEPGP.ignoreRaidWarning and not QUICKEPGP_RAIDING_TIMESTAMP and UnitInRaid(PLAYER) and QUICKEPGP.isRaidLeader()) then
       QUICKEPGP.error("Did you mean to start a raid? Type '/epgp start' to start a raid.")
       QUICKEPGP.error("Type '/epgp ignore' to stop this message until you reload.")
     end
@@ -167,20 +195,16 @@ QUICKEPGP.raidMember = function(name)
   if (name) then
     name = strlower(name)
   end
-  if (IsInRaid()) then
-    if (QUICKEPGP.raidMemberTable[name]) then
-      return QUICKEPGP.raidMemberTable[name]
-    else
-      QUICKEPGP.error(format("%s is not a raid member.", (name or "nil")))
-    end
+  if (QUICKEPGP.raidMemberTable[name]) then
+    return QUICKEPGP.raidMemberTable[name]
   else
-    QUICKEPGP.error("You are not in a raid group.")
+    QUICKEPGP.error(format("%s is not a raid member.", (name or "nil")))
   end
 end
 
 QUICKEPGP.isOnlineRaid = function(name)
   if (name == nil) then
-    name = UnitName("player")
+    name = UnitName(PLAYER)
   end
   local raidMember = QUICKEPGP.raidMember(name)
   if (raidMember and raidMember[ONLINE_INDEX]) then
@@ -191,7 +215,7 @@ end
 
 QUICKEPGP.raidMemberClass = function(name)
   if (name == nil) then
-    name = UnitName("player")
+    name = UnitName(PLAYER)
   end
   local raidMember = QUICKEPGP.raidMember(name)
   if (raidMember) then
@@ -202,7 +226,7 @@ end
 
 QUICKEPGP.isRaidLeader = function(name)
   if (name == nil) then
-    name = UnitName("player")
+    name = UnitName(PLAYER)
   end
   local raidMember = QUICKEPGP.raidMember(name)
   if (raidMember and raidMember[RANK_INDEX] == RAID_LEADER) then
@@ -213,7 +237,7 @@ end
 
 QUICKEPGP.isMasterLooter = function(name)
   if (name == nil) then
-    name = UnitName("player")
+    name = UnitName(PLAYER)
   end
   local raidMember = QUICKEPGP.raidMember(name)
   if (raidMember and raidMember[ISML_INDEX]) then
@@ -224,10 +248,10 @@ end
 
 QUICKEPGP.isMainAssist = function(name)
   if (name == nil) then
-    name = UnitName("player")
+    name = UnitName(PLAYER)
   end
   local raidMember = QUICKEPGP.raidMember(name)
-  if (raidMember and raidMember[ROLE_INDEX] == "MAINASSIST") then
+  if (raidMember and raidMember[ROLE_INDEX] == MAIN_ASSIST) then
     return true
   end
   return false

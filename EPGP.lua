@@ -34,9 +34,12 @@ local SLOTWEIGHTS = {
   ["EXCEPTION"] = 1
 }
 
---TODO AQ items
---TODO NAXX items
 local OVERRIDE = {
+  --WORLD DROP OVERRIDES
+  [18704] = 34, --Mature Blue Dragon Sinew
+  [18665] = 136, --The Eye Of Shadow
+  [20644] = 29, --Nightmare Engulfed Object
+
   --MOLTEN CORE OVERRIDES
   [18564] = 356, --Bindings of the Windseeker
   [18563] = 356, --Bindings of the Windseeker
@@ -45,13 +48,13 @@ local OVERRIDE = {
   [17204] = 712, --Eye of Sulfuras
 
   --ONYXIA'S LAIR OVERRIDES
-  [18422] = 32, --Head of Onyxia
-  [18423] = 32, --Head of Onyxia
+  [18422] = 32, --Head of Onyxia TODO FREE P5
+  [18423] = 32, --Head of Onyxia TODO FREE P5
   [18705] = 187, --Mature Black Dragon Sinew
 
   --BLACKWING LAIR OVERRIDES
-  [19002] = 53, --Head of Nefarian
-  [19003] = 53, --Head of Nefarian
+  [19002] = 53, --Head of Nefarian TODO FREE P6
+  [19003] = 53, --Head of Nefarian TODO FREE P6
 
   --ZUL'GURUB OVERRIDES
   [19717] = 16, --Primal Hakkari Armsplint
@@ -65,9 +68,54 @@ local OVERRIDE = {
   [19721] = 35, --Primal Hakkari Shawl
   [19802] = 35, --Heart of Hakkar
 
-  --TODO AQ20 OVERRIDES
+  --RUINS OF AHN'QIRAH OVERRIDES
+  [20890] = 52, --Qiraji Ornate Hilt
+  [20886] = 52, --Qiraji Spiked Hilt
+  [20889] = 22, --Qiraji Regal Drape
+  [20885] = 22, --Qiraji Martial Drape
+  [20888] = 20, --Qiraji Ceremonial Ring
+  [20884] = 20, --Qiraji Magisterial Ring
+  [21220] = 26, --Head Of Ossirian The Unscarred
+  [21294] = 20, --Book Of Healing Touch Xi
+  [21296] = 20, --Book Of Rejuvenation Xi
+  [21295] = 20, --Book Of Starfire Vii
+  [21307] = 20, --Guide Aspect Of The Hawk Vii
+  [21304] = 20, --Guide Multi Shot V
+  [21306] = 20, --Guide Serpent Sting Ix
+  [21280] = 20, --Tome Of Arcane Missiles Viii
+  [21279] = 20, --Tome Of Fireball Xii
+  [21214] = 20, --Tome Of Frostbolt Xi
+  [21289] = 20, --Libram Blessing Of Might Vii
+  [21288] = 20, --Libram Blessing Of Wisdom Vi
+  [21290] = 20, --Libram Holy Light Ix
+  [21284] = 20, --Codex Of Greater Heal V
+  [21287] = 20, --Codex Of Prayer Of Healing V
+  [21285] = 20, --Codex Of Renew X
+  [21300] = 20, --Handbook Of Backstab Ix
+  [21302] = 20, --Handbook Of Deadly Poison V
+  [21303] = 20, --Handbook Of Feint V
+  [21293] = 20, --Tablet Of Grace Of Air Totem Iii
+  [21291] = 20, --Tablet Of Healing Wave X
+  [21292] = 20, --Tablet Of Strength Of Earth Totem V
+  [21283] = 20, --Grimoire Of Corruption Vii
+  [21282] = 20, --Grimoire Of Immolate Viii
+  [21281] = 20, --Grimoire Of Shadow Bolt X
+  [21298] = 20, --Manual Of Battle Shout Vii
+  [21297] = 20, --Manual Of Heroic Strike Ix
+  [21299] = 20, --Manual Of Revenge Vi
 
-  --TODO AQ40 OVERRIDES
+  --TEMPLE OF AHN'QIRAH OVERRIDES
+  [21221] = 68, --Eye Of Cthun
+  [21232] = 84, --Imperial Qiraji Armaments
+  [21237] = 168, --Imperial Qiraji Regalia
+  [20926] = 93, --Veknilashs Circlet
+  [20927] = 93, --Ouros Intact Hide
+  [20928] = 60, --Qiraji Bindings Of Command
+  [20929] = 136, --Carapace Of The Old God
+  [20930] = 93, --Veklors Diadem
+  [20931] = 93, --Skin Of The Great Sandworm
+  [20932] = 60, --Qiraji Bindings Of Dominance
+  [20933] = 136, --Husk Of The Old God
 
   --TODO NAXXRAMAS OVERRIDES
 

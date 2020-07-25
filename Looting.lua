@@ -21,7 +21,6 @@ local looting = false
 -- ############################################################
 
 local function safeGiveMasterLoot(slot, playerIndex)
-  --TODO doesnt work in dungeons because untradeable
   local _, instanceType = GetInstanceInfo()
   if (not QUICKEPGP_OPTIONS.LOOTING.safe) then
     GiveMasterLoot(slot, playerIndex)
@@ -54,7 +53,7 @@ local function masterLootee(slot, type)
   for i = 1, MAX_PARTY_SIZE do
     local name = GetMasterLootCandidate(slot, i)
     if (name) then
-      if (QUICKEPGP.isOnlineRaid(name)) then --TODO doesnt work for parties
+      if (QUICKEPGP.isOnlineRaid(name)) then
         if (type == EQUIPPABLE) then
           if (QUICKEPGP_OPTIONS.LOOTING.equiplootee == 1 and QUICKEPGP.isMasterLooter(name)) then
             safeGiveMasterLoot(slot, i)

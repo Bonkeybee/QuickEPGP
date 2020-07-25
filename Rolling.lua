@@ -108,7 +108,6 @@ local function validateRoll(player)
     return false
   end
   if (not QUICKEPGP.guildMember(player)) then
-    --TODO can remove once EPGP is desegregated
     QUICKEPGP.error("Skipping "..(player or EMPTY).."'s need roll: not in guild")
     return false
   end

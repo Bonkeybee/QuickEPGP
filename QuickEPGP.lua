@@ -93,10 +93,6 @@ SlashCmdList["EPGP"] = function(message)
     QUICKEPGP.info("/epgp stop", " - stops an EPGP raid (will reward remaining time)")
     QUICKEPGP.info("/epgp status", " - shows status of an EPGP raid")
     QUICKEPGP.info("/epgp ignore", " - will turn off the EPGP start raid warning during this session")
-    QUICKEPGP.info("/epgp frame reset", " - will reset the roll frame")
-    --TODO add QUICKEPGP_OPTIONS.QuickEPGProllFrame reset
-    --QUICKEPGP.info("/epgp <add/remove> ITEMLINK PLAYER [, REASON]", " - adds/removes GP cost of ITEMLINK to/from PLAYER") --todo
-    --QUICKEPGP.info("/epgp <add/remove> AMOUNT <EP / GP> PLAYER [, REASON]", " - adds/removes AMOUNT EP/GP to/from PLAYER") --todo
   elseif (command == "about") then
     QUICKEPGP.info("installed version:", format(" %s", QUICKEPGP.VERSION))
   elseif (command == "pr") then
@@ -124,31 +120,6 @@ SlashCmdList["EPGP"] = function(message)
   elseif (command == "ignore") then
     QUICKEPGP.ignoreRaidWarning = true
     QUICKEPGP.info("Now ignoring raid start warnings until next reload")
-  elseif (command == "frame" and arg1 == "reset") then
-    QUICKEPGP_OPTIONS.QuickEPGProllFrame.OX = 0
-    QUICKEPGP_OPTIONS.QuickEPGProllFrame.OY = 0
-    QUICKEPGP.info("Position of the roll frame has been reset")
-    -- elseif (command == "+" or command == "add" or command == "-" or command == "remove") then
-    --   if (command == "add") then
-    --     prefix = "+"
-    --   elseif (command == "remove") then
-    --     prefix = "-"
-    --   end
-    --   local hasItemString = select(3, strfind(arg1, "|c(.+)|r"))
-    --   if (hasItemString and arg2) then
-    --     QUICKEPGP.distributeItem(command..arg2, prefix)
-    --   else
-    --     if (arg1 and arg2 and arg3) then
-    --       if (prefix == "-") then
-    --         arg1 = -arg1
-    --       end
-    --       if (arg2 == "EP") then
-    --         QUICKEPGP.modifyEPGP(arg3, arg1, nil, arg4)
-    --       elseif (arg2 == "GP") then
-    --         QUICKEPGP.modifyEPGP(arg3, nil, arg1, arg4)
-    --       end
-    --     end
-    --   end
   elseif (command == "toggle" and arg1 == "master") then
     QUICKEPGP.toggleMasterFrame()
   elseif command == "raid" then
