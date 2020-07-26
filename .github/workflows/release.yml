@@ -1,5 +1,5 @@
 name: Create Archive
-on: [release]
+on: [release, workflow_dispatch]
 jobs:
   build:
     runs-on: ubuntu-latest
