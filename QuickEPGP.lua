@@ -1,7 +1,6 @@
 QUICKEPGP_ADDON_NAME, QUICKEPGP = ...
 QUICKEPGP.VERSION = GetAddOnMetadata(QUICKEPGP_ADDON_NAME, "Version")
-QUICKEPGP.LIBS = LibStub("AceAddon-3.0"):NewAddon(QUICKEPGP_ADDON_NAME,
-"AceComm-3.0")
+QUICKEPGP.LIBS = LibStub("AceAddon-3.0"):NewAddon(QUICKEPGP_ADDON_NAME, "AceComm-3.0")
 QUICKEPGP.LIBS.GUI = LibStub("AceGUI-3.0")
 QUICKEPGP.LIBS.MinimapIcon = LibStub("LibDBIcon-1.0")
 QUICKEPGP.FRAME = CreateFrame("Frame")
@@ -63,7 +62,6 @@ local function onEvent(_, event, message, author)
       end
     end
   end
-
   QUICKEPGP.handleRolling(event, strlower(message), name)
 end
 
