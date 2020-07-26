@@ -8,8 +8,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Build project
-        run: |
-          zip --junk-paths QuickEPGP-classic README.md
+        run: zip -r QuickEPGP-classic .
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
