@@ -9,14 +9,18 @@ jobs:
         uses: actions/checkout@v2
       - name: Build project
         run: zip -r QuickEPGP-classic . -x "*.*"
+      - name: Parse WoW Addon Verions
+        uses: icbat/parse-wow-addon-version@v0.0.1
+        with:
+          tocfile: QuickEPGP.toc
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }}
+          tag_name: ${{ addon_version }}
+          release_name: ${{ addon_version }}
           draft: false
           prerelease: false
       - name: Upload Release Asset
