@@ -20,14 +20,19 @@ jobs:
         with:
           repository: Bonkeybee/QuickEPGP
           releases-only: true
-      - name: Checkout code
+      
+      - name: Checkout Code
         uses: actions/checkout@v2
+      
       - name: Parse TOC
         id: toc
         run: "echo ::set-output name=addon_version::$(cat QuickEPGP.toc | grep -oP '(?<=## Version: ).*')"
-      - name: Build project
-        run: zip -r QuickEPGP-classic . -x "*.*"
+      
+      - name: Archive Project
+        run: zip -r QuickEPGP-classic . -x ".*"
+      
       - name: Create Release
+        if: ${{ steps.latest_tag.outputs.tag != steps.toc.outputs.addon_version }}
         id: create_release
         uses: actions/create-release@v1
         env:
@@ -35,10 +40,9 @@ jobs:
         with:
           tag_name: ${{ steps.toc.outputs.addon_version }}
           release_name: ${{ steps.toc.outputs.addon_version }}
-          draft: false
-          prerelease: false
-        if: ${{ steps.latest_tag.outputs.tag != steps.toc.outputs.addon_version }}
+      
       - name: Upload Release Asset
+        if: ${{ steps.latest_tag.outputs.tag != steps.toc.outputs.addon_version }}
         id: upload-release-asset 
         uses: actions/upload-release-asset@v1
         env:
@@ -48,4 +52,3 @@ jobs:
           asset_path: ./QuickEPGP-classic.zip
           asset_name: QuickEPGP-classic.zip
           asset_content_type: application/zip
-        if: ${{ steps.latest_tag.outputs.tag != steps.toc.outputs.addon_version }}
