@@ -29,7 +29,7 @@ jobs:
         run: "echo ::set-output name=addon_version::$(cat QuickEPGP.toc | grep -oP '(?<=## Version: ).*')"
       
       - name: Archive Project
-        run: zip -r QuickEPGP-classic . -x .git .github .gitignore
+        run: zip -r QuickEPGP-classic . -x *.git*
       
       - name: Create Release
         if: ${{ steps.latest_tag.outputs.tag != steps.toc.outputs.addon_version }}
