@@ -11,9 +11,7 @@ jobs:
         run: zip -r QuickEPGP-classic . -x "*.*"
       - name: Parse TOC
         id: toc
-        uses: icbat/parse-wow-addon-version@v0.0.1
-        with:
-          tocfile: QuickEPGP.toc
+        run: "echo ::set-output name=addon_version::$(cat QuickEPGP.toc | grep -oP '(?<=## Version: ).*')"
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
