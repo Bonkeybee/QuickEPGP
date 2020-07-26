@@ -1,6 +1,4 @@
 QUICKEPGP.OPTIONS_FRAME = CreateFrame("Frame")
-local MODULE_NAME = "QuickEPGP-Options"
-
 
 QUICKEPGP.SOUNDNAMES = {
   [1] = "None",
@@ -39,7 +37,7 @@ local options = {
           name = "Show Minimap Button",
           type = "toggle",
           order = 1,
-          set = function(info, val)
+          set = function(_, val)
             if val then
               QUICKEPGP.MinimapIcon:Show(QUICKEPGP_ADDON_NAME)
               QUICKEPGP_OPTIONS.MINIMAP.hide = false
@@ -48,42 +46,52 @@ local options = {
               QUICKEPGP_OPTIONS.MINIMAP.hide = true
             end
           end,
-          get = function(info) return not QUICKEPGP_OPTIONS.MINIMAP.hide end
+          get = function(_)
+            return not QUICKEPGP_OPTIONS.MINIMAP.hide
+          end
         },
         rollSound = {
           name = "Starting Rolls Sound",
           type = "select",
           order = 3,
           values = QUICKEPGP.SOUNDNAMES,
-          set = function(info, val)
+          set = function(_, val)
             local soundFile = QUICKEPGP.SOUNDS[val]
             if soundFile then
               PlaySoundFile(soundFile, "Master")
             end
             QUICKEPGP_OPTIONS.ROLLING.openSound = val
           end,
-          get = function(info) return QUICKEPGP_OPTIONS.ROLLING.openSound end
+          get = function(_)
+            return QUICKEPGP_OPTIONS.ROLLING.openSound
+          end
         },
         winSound = {
           name = "Won Roll Sound",
           type = "select",
           order = 4,
           values = QUICKEPGP.SOUNDNAMES,
-          set = function(info, val)
+          set = function(_, val)
             local soundFile = QUICKEPGP.SOUNDS[val]
             if soundFile then
               PlaySoundFile(soundFile, "Master")
             end
             QUICKEPGP_OPTIONS.ROLLING.winSound = val
           end,
-          get = function(info) return QUICKEPGP_OPTIONS.ROLLING.winSound end
+          get = function(_)
+            return QUICKEPGP_OPTIONS.ROLLING.winSound
+          end
         },
         tooltips = {
           name = "Show GP in tooltips",
           type = "toggle",
           order = 2,
-          set = function(info, val) QUICKEPGP_OPTIONS.TOOLTIP.enabled = val end,
-          get = function(info) return QUICKEPGP_OPTIONS.TOOLTIP.enabled end
+          set = function(_, val)
+            QUICKEPGP_OPTIONS.TOOLTIP.enabled = val
+          end,
+          get = function(_)
+            return QUICKEPGP_OPTIONS.TOOLTIP.enabled
+          end
         }
       }
     },
@@ -101,16 +109,24 @@ local options = {
           order = 3,
           name = "Enable",
           type = "toggle",
-          set = function(info, val) QUICKEPGP_OPTIONS.LOOTING.enabled = val end,
-          get = function(info) return QUICKEPGP_OPTIONS.LOOTING.enabled end
+          set = function(_, val)
+            QUICKEPGP_OPTIONS.LOOTING.enabled = val
+          end,
+          get = function(_)
+            return QUICKEPGP_OPTIONS.LOOTING.enabled
+          end
         },
         safe = {
           order = 4,
           name = "Safe Mode",
           desc = "will only autoloot when it's safe to do so",
           type = "toggle",
-          set = function(info, val) QUICKEPGP_OPTIONS.LOOTING.safe = val end,
-          get = function(info) return QUICKEPGP_OPTIONS.LOOTING.safe end
+          set = function(_, val)
+            QUICKEPGP_OPTIONS.LOOTING.safe = val
+          end,
+          get = function(_)
+            return QUICKEPGP_OPTIONS.LOOTING.safe
+          end
         },
         break2 = {
           order = 5,
@@ -122,8 +138,12 @@ local options = {
           name = "Auto-Masterloot",
           desc = "enables masterloot when entering a raid instance",
           type = "toggle",
-          set = function(info, val) QUICKEPGP_OPTIONS.LOOTING.automaster = val end,
-          get = function(info) return QUICKEPGP_OPTIONS.LOOTING.automaster end
+          set = function(_, val)
+            QUICKEPGP_OPTIONS.LOOTING.automaster = val
+          end,
+          get = function(_)
+            return QUICKEPGP_OPTIONS.LOOTING.automaster
+          end
         },
         masterthreshold = {
           order = 8,
@@ -131,8 +151,13 @@ local options = {
           desc = "rarity threshold to set masterloot to",
           type = "select",
           values = LOOT_NAMES,
-          set = function(info, val) QUICKEPGP_OPTIONS.LOOTING.masterthreshold = val end,
-          get = function(info) return QUICKEPGP_OPTIONS.LOOTING.masterthreshold end
+          set = function(_, val)
+            QUICKEPGP_OPTIONS.LOOTING.masterthreshold = val
+            QUICKEPGP.setMasterLootThreshold()
+          end,
+          get = function(_)
+            return QUICKEPGP_OPTIONS.LOOTING.masterthreshold
+          end
         },
         break3 = {
           order = 9,
@@ -149,17 +174,31 @@ local options = {
             [2] = "Main Assist",
             [3] = "Character"
           },
-          set = function(info, val) QUICKEPGP_OPTIONS.LOOTING.equiplootee = val end,
-          get = function(info) return QUICKEPGP_OPTIONS.LOOTING.equiplootee end
+          set = function(_, val)
+            QUICKEPGP_OPTIONS.LOOTING.equiplootee = val
+          end,
+          get = function(_)
+            return QUICKEPGP_OPTIONS.LOOTING.equiplootee
+          end
         },
         equiplooteechar = {
           order = 12,
           name = "Equip Lootee",
           desc = "who to automatically send equippable items to",
           type = "input",
-          hidden = function() if (QUICKEPGP_OPTIONS.LOOTING.equiplootee ~= 3) then return true else return false end end,
-          set = function(info, val) QUICKEPGP_OPTIONS.LOOTING.equiplooteechar = val end,
-          get = function(info) return QUICKEPGP_OPTIONS.LOOTING.equiplooteechar end
+          hidden = function()
+            if (QUICKEPGP_OPTIONS.LOOTING.equiplootee ~= 3) then
+              return true
+            else
+              return false
+            end
+          end,
+          set = function(_, val)
+            QUICKEPGP_OPTIONS.LOOTING.equiplooteechar = val
+          end,
+          get = function(_)
+            return QUICKEPGP_OPTIONS.LOOTING.equiplooteechar
+          end
         },
         equiprarity = {
           order = 13,
@@ -167,8 +206,12 @@ local options = {
           desc = "rarity threshold to apply equippable item looting behavior to",
           type = "select",
           values = LOOT_NAMES,
-          set = function(info, val) QUICKEPGP_OPTIONS.LOOTING.equiprarity = val end,
-          get = function(info) return QUICKEPGP_OPTIONS.LOOTING.equiprarity end
+          set = function(_, val)
+            QUICKEPGP_OPTIONS.LOOTING.equiprarity = val
+          end,
+          get = function(_)
+            return QUICKEPGP_OPTIONS.LOOTING.equiprarity
+          end
         },
         break4 = {
           order = 14,
@@ -185,17 +228,31 @@ local options = {
             [2] = "Main Assist",
             [3] = "Character"
           },
-          set = function(info, val) QUICKEPGP_OPTIONS.LOOTING.otherlootee = val end,
-          get = function(info) return QUICKEPGP_OPTIONS.LOOTING.otherlootee end
+          set = function(_, val)
+            QUICKEPGP_OPTIONS.LOOTING.otherlootee = val
+          end,
+          get = function(_)
+            return QUICKEPGP_OPTIONS.LOOTING.otherlootee
+          end
         },
         otherlooteechar = {
           order = 17,
           name = "Other Lootee Character",
           desc = "who to automatically send other items to",
           type = "input",
-          hidden = function() if (QUICKEPGP_OPTIONS.LOOTING.otherlootee ~= 3) then return true else return false end end,
-          set = function(info, val) QUICKEPGP_OPTIONS.LOOTING.otherlooteechar = val end,
-          get = function(info) return QUICKEPGP_OPTIONS.LOOTING.otherlooteechar end
+          hidden = function()
+            if (QUICKEPGP_OPTIONS.LOOTING.otherlootee ~= 3) then
+              return true
+            else
+              return false
+            end
+          end,
+          set = function(_, val)
+            QUICKEPGP_OPTIONS.LOOTING.otherlooteechar = val
+          end,
+          get = function(_)
+            return QUICKEPGP_OPTIONS.LOOTING.otherlooteechar
+          end
         },
         otherrarity = {
           order = 18,
@@ -203,12 +260,16 @@ local options = {
           desc = "rarity threshold to apply other item looting behavior to",
           type = "select",
           values = LOOT_NAMES,
-          set = function(info, val) QUICKEPGP_OPTIONS.LOOTING.otherrarity = val end,
-          get = function(info) return QUICKEPGP_OPTIONS.LOOTING.otherrarity end
-        },
+          set = function(_, val)
+            QUICKEPGP_OPTIONS.LOOTING.otherrarity = val
+          end,
+          get = function(_)
+            return QUICKEPGP_OPTIONS.LOOTING.otherrarity
+          end
+        }
       }
     }
-  },
+  }
 }
 LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable(QUICKEPGP_ADDON_NAME, options, SLASH_EPGP1)
 QUICKEPGP.menu = LibStub("AceConfigDialog-3.0"):AddToBlizOptions(QUICKEPGP_ADDON_NAME, QUICKEPGP_ADDON_NAME)
@@ -233,7 +294,6 @@ local function onEvent(_, event)
       QUICKEPGP.MinimapIcon = LibStub("LibDBIcon-1.0")
       QUICKEPGP.MinimapIcon:Register(QUICKEPGP_ADDON_NAME, QUICKEPGP.MinimapButton, QUICKEPGP_OPTIONS.MINIMAP)
     end
-
   end
 end
 
@@ -274,55 +334,64 @@ end
 local hooked = false
 local doNotRun = false
 QUICKEPGP.InterfaceOptionsFrame_OpenToCategory_Fix = function(panel)
-  if InCombatLockdown() then return end
+  if InCombatLockdown() then
+    return
+  end
   if (doNotRun) then
     doNotRun = false
     return
   end
-  local cat = _G['INTERFACEOPTIONS_ADDONCATEGORIES']
-  local panelName;
-  if ( type(panel) == "string" ) then
-    for i, p in pairs(cat) do
+  local cat = _G["INTERFACEOPTIONS_ADDONCATEGORIES"]
+  local panelName
+  if (type(panel) == "string") then
+    for _, p in pairs(cat) do
       if p.name == panel then
         panelName = p.parent or panel
         break
       end
     end
   else
-    for i, p in pairs(cat) do
+    for _, p in pairs(cat) do
       if p == panel then
         panelName = p.parent or panel.name
         break
       end
     end
   end
-  if not panelName then return end
+  if not panelName then
+    return
+  end
   local noncollapsedHeaders = {}
   local shownpanels = 0
   local mypanel
-  for i, panel in ipairs(cat) do
-    if not panel.parent or noncollapsedHeaders[panel.parent] then
-      if panel.name == panelName then
-        panel.collapsed = true
+  for _, p in ipairs(cat) do
+    if not p.parent or noncollapsedHeaders[p.parent] then
+      if p.name == panelName then
+        p.collapsed = true
         local t = {}
-        t.element = panel
+        t.element = p
         InterfaceOptionsListButton_ToggleSubCategories(t)
-        noncollapsedHeaders[panel.name] = true
+        noncollapsedHeaders[p.name] = true
         mypanel = shownpanels + 1
       end
-      if not panel.collapsed then
-        noncollapsedHeaders[panel.name] = true
+      if not p.collapsed then
+        noncollapsedHeaders[p.name] = true
       end
       shownpanels = shownpanels + 1
     end
   end
-  local Smin, Smax = InterfaceOptionsFrameAddOnsListScrollBar:GetMinMaxValues()
+  local _, Smax = InterfaceOptionsFrameAddOnsListScrollBar:GetMinMaxValues()
   InterfaceOptionsFrameAddOnsListScrollBar:SetValue((Smax / (shownpanels - 15)) * (mypanel - 2))
   doNotRun = true
   InterfaceOptionsFrame_OpenToCategory(panel)
 end
 if not hooked then
-  hooksecurefunc("InterfaceOptionsFrame_OpenToCategory", function(panel) return QUICKEPGP.InterfaceOptionsFrame_OpenToCategory_Fix(panel) end)
+  hooksecurefunc(
+    "InterfaceOptionsFrame_OpenToCategory",
+    function(panel)
+      return QUICKEPGP.InterfaceOptionsFrame_OpenToCategory_Fix(panel)
+    end
+  )
   hooked = true
 end
 

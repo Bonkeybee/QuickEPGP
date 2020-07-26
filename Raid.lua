@@ -83,22 +83,14 @@ local function stepStatus(index, epStep, timeStep)
   end
   if (not QUICKEPGP_TIME_REWARDS[index]) then
     local remainingTime = QUICKEPGP.round(((QUICKEPGP_RAIDING_TIMESTAMP + timeStep) - time) / 60, 0)
-    QUICKEPGP.info(
-      format("%s EP:", epStep),
-      format(
-        " %s %s remaining (%s).",
-        remainingTime,
-        QUICKEPGP.pluralize("minute", "minutes", remainingTime),
-        date("%I:%M %p", QUICKEPGP_RAIDING_TIMESTAMP + timeStep)
-      )
-    )
+    QUICKEPGP.info(format("%s EP:", epStep), format(" %s %s remaining (%s).", remainingTime, QUICKEPGP.pluralize("minute", "minutes", remainingTime), date("%I:%M %p", QUICKEPGP_RAIDING_TIMESTAMP + timeStep)))
   else
     QUICKEPGP.info(format("%s EP:", epStep), format(" awarded"))
   end
 end
 
 local function timeReward(index, value, reason)
-  for name, data in pairs(QUICKEPGP.getRaidMembers()) do
+  for name, _ in pairs(QUICKEPGP.getRaidMembers()) do
     QUICKEPGP.modifyEPGP(name, value, nil, reason, true)
   end
   QUICKEPGP_TIME_REWARDS[index] = true
@@ -116,10 +108,7 @@ local function onEvent(_, event)
     race = true
   end
   if (event == "PLAYER_REGEN_DISABLED") then
-    if
-      (not QUICKEPGP.ignoreRaidWarning and not QUICKEPGP_RAIDING_TIMESTAMP and UnitInRaid(PLAYER) and
-        QUICKEPGP.isRaidLeader())
-     then
+    if (not QUICKEPGP.ignoreRaidWarning and not QUICKEPGP_RAIDING_TIMESTAMP and UnitInRaid(PLAYER) and QUICKEPGP.isRaidLeader()) then
       QUICKEPGP.error("Did you mean to start a raid? Type '/epgp start' to start a raid.")
       QUICKEPGP.error("Type '/epgp ignore' to stop this message until you reload.")
     end
@@ -157,14 +146,7 @@ QUICKEPGP.raidStatus = function()
   if (QUICKEPGP_RAIDING_TIMESTAMP) then
     local time = GetServerTime()
     local duration = QUICKEPGP.round((time - QUICKEPGP_RAIDING_TIMESTAMP) / 60, 0)
-    QUICKEPGP.info(
-      format(
-        "Raid started %s %s ago (%s).",
-        duration,
-        QUICKEPGP.pluralize("minute", "minutes", duration),
-        date("%I:%M %p", QUICKEPGP_RAIDING_TIMESTAMP)
-      )
-    )
+    QUICKEPGP.info(format("Raid started %s %s ago (%s).", duration, QUICKEPGP.pluralize("minute", "minutes", duration), date("%I:%M %p", QUICKEPGP_RAIDING_TIMESTAMP)))
     for index, data in pairs(TIME_REWARDS_TEMPLATE) do
       stepStatus(index, data[2], data[1])
     end
@@ -242,6 +224,17 @@ QUICKEPGP.raidMemberClass = function(name)
   if (raidMember) then
     return raidMember[CLASS_INDEX]
   end
+end
+
+QUICKEPGP.isRaidAssist = function(name)
+  if (name == nil) then
+    name = UnitName(PLAYER)
+  end
+  local raidMember = QUICKEPGP.raidMember(name)
+  if (raidMember and raidMember[RANK_INDEX] == RAID_ASSIST) then
+    return true
+  end
+  return false
 end
 
 QUICKEPGP.isRaidLeader = function(name)

@@ -1,6 +1,5 @@
 QUICKEPGP.UTILITY = CreateFrame("Frame")
 local loaded = false
-local DELIMITER = ","
 
 local officerNoteUpdateTable = {}
 
@@ -45,7 +44,7 @@ local function onUpdate()
               local ep = (QUICKEPGP.calculateChange(name, epgp[1], "EP") or QUICKEPGP.MINIMUM_EP)
               local gp = (QUICKEPGP.calculateChange(name, epgp[2], "GP") or QUICKEPGP.MINIMUM_GP)
               work[name] = {ep, gp}
-              GuildRosterSetOfficerNote(QUICKEPGP.guildMemberIndex(name), ep..","..gp)
+              GuildRosterSetOfficerNote(QUICKEPGP.guildMemberIndex(name), ep .. "," .. gp)
             end
           end
         end
@@ -59,8 +58,8 @@ end
 -- ############################################################
 
 QUICKEPGP.isInRaidInstance = function()
-  local _, type, difficultyIndex, difficultyName, maxPlayers, _, _, instanceMapID, lfgID = GetInstanceInfo()
-  if (type == "raid") then
+  local _, instanceType, _, difficultyName = GetInstanceInfo()
+  if (instanceType == "raid") then
     if (difficultyName == "40 Player" or difficultyName == "20 Player") then
       return true
     end
@@ -70,24 +69,24 @@ end
 
 QUICKEPGP.colorByRarity = function(name)
   if (name == "Poor") then
-    return "|cff9d9d9d"..name.."|r"
+    return "|cff9d9d9d" .. name .. "|r"
   elseif (name == "Common") then
-    return "|cffffffff"..name.."|r"
+    return "|cffffffff" .. name .. "|r"
   elseif (name == "Uncommon") then
-    return "|cff1eff00"..name.."|r"
+    return "|cff1eff00" .. name .. "|r"
   elseif (name == "Rare") then
-    return "|cff0070dd"..name.."|r"
+    return "|cff0070dd" .. name .. "|r"
   elseif (name == "Epic") then
-    return "|cffa335ee"..name.."|r"
+    return "|cffa335ee" .. name .. "|r"
   elseif (name == "Legendary") then
-    return "|cffff8000"..name.."|r"
+    return "|cffff8000" .. name .. "|r"
   end
   return name
 end
 
 QUICKEPGP.colorByClass = function(name, class)
   local _, _, _, hex = GetClassColor(class)
-  return "|c"..hex..name.."|r"
+  return "|c" .. hex .. name .. "|r"
 end
 
 QUICKEPGP.isMe = function(name)
@@ -136,18 +135,18 @@ QUICKEPGP.getCharacterString = function(level, class, name)
   if (name) then
     local str = ""
     if (level or class) then
-      str = str.."("
+      str = str .. "("
     end
     if (level) then
-      str = str..level
+      str = str .. level
     end
     if (class) then
-      str = str..strupper(strsub(class, 1, 4))
+      str = str .. strupper(strsub(class, 1, 4))
     end
     if (level or class) then
-      str = str..") "
+      str = str .. ") "
     end
-    return str..name
+    return str .. name
   end
   return nil
 end
@@ -178,24 +177,31 @@ end
 QUICKEPGP.info = function(str1, str2)
   local str = ""
   if (str1) then
-    str = str.."|cFFFFFF00"..str1.."|r"
+    str = str .. "|cFFFFFF00" .. str1 .. "|r"
   end
   if (str2) then
-    str = str.."|cFFFFFFFF"..str2.."|r"
+    str = str .. "|cFFFFFFFF" .. str2 .. "|r"
   end
   print(str)
 end
 
 QUICKEPGP.error = function(str)
-  print("|cFFFF0000"..str.."|r")
+  print("|cFFFF0000" .. str .. "|r")
 end
 
 QUICKEPGP.spairs = function(t, order)
   local keys = {}
-  for k in pairs(t) do keys[#keys + 1] = k end
+  for k in pairs(t) do
+    keys[#keys + 1] = k
+  end
 
   if order then
-    table.sort(keys, function(a, b) return order(t, a, b) end)
+    table.sort(
+      keys,
+      function(a, b)
+        return order(t, a, b)
+      end
+    )
   else
     table.sort(keys)
   end

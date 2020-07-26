@@ -1,5 +1,4 @@
 QUICKEPGP.LOOTING = CreateFrame("Frame")
-local MODULE_NAME = "QuickEPGP-Looting"
 
 local TICK_RATE = 0.01
 
@@ -48,7 +47,6 @@ local function safeLootSlot(slot)
 end
 
 local function masterLootee(slot, type)
-  local _, instanceType = GetInstanceInfo()
   local masterlooterIndex = nil
   for i = 1, MAX_PARTY_SIZE do
     local name = GetMasterLootCandidate(slot, i)
@@ -108,7 +106,7 @@ end
 local function masterLoot(i)
   if (GetLootMethod() == MASTER_LOOT) then
     if (QUICKEPGP.isMasterLooter()) then
-      local _, _, _, _, rarity, locked, isQuest, _, isActive = GetLootSlotInfo(i)
+      local _, _, _, _, rarity, _, isQuest, _, isActive = GetLootSlotInfo(i)
       if (not isQuest and not isActive) then
         if (rarity) then
           local itemLink = GetLootSlotLink(i)
@@ -132,21 +130,21 @@ end
 local function groupLoot(i)
   if (GetLootMethod() == GROUP_LOOT) then
     safeLootSlot(i)
-    --(roll frame)
+  --(roll frame)
   end
 end
 
 local function needBeforeGreed(i)
   if (GetLootMethod() == NEED_BEFORE_GREED) then
     safeLootSlot(i)
-    --(roll frame)
+  --(roll frame)
   end
 end
 
 local function getActualNumLootItems()
   local count = 0
   for i = 1, GetNumLootItems() do
-    local _, _, _, _, rarity, locked, isQuest, _, isActive = GetLootSlotInfo(i)
+    local _, _, _, _, rarity, _, isQuest, _, isActive = GetLootSlotInfo(i)
     if (not isQuest and not isActive) then
       if (rarity) then
         local itemLink = GetLootSlotLink(i)
@@ -190,6 +188,10 @@ local function onEvent(_, event, arg1, arg2)
         setMasterLoot()
       end
     end
+
+    if (event == "PARTY_LOOT_METHOD_CHANGED") then
+      QUICKEPGP.setMasterLootThreshold()
+    end
   end
 end
 
@@ -216,8 +218,23 @@ end
 -- ##### GLOBAL FUNCTIONS #####################################
 -- ############################################################
 
+QUICKEPGP.setMasterLootThreshold = function()
+  local lootmethod, masterlooterPartyID, masterlooterRaidID = GetLootMethod()
+  if (lootmethod == "master" and QUICKEPGP.isRaidLeader()) then
+    local name = UnitName("Player")
+    if (masterlooterPartyID and masterlooterPartyID > 0) then
+      name = UnitName("Party" .. masterlooterPartyID)
+    end
+    if (masterlooterRaidID) then
+      name = UnitName("Raid" .. masterlooterRaidID)
+    end
+    SetLootMethod("Master", name, QUICKEPGP_OPTIONS.LOOTING.masterthreshold)
+  end
+end
+
 QUICKEPGP.LOOTING:RegisterEvent("LOOT_OPENED")
 QUICKEPGP.LOOTING:RegisterEvent("LOOT_CLOSED")
 QUICKEPGP.LOOTING:RegisterEvent("PLAYER_ENTERING_WORLD")
+QUICKEPGP.LOOTING:RegisterEvent("PARTY_LOOT_METHOD_CHANGED")
 QUICKEPGP.LOOTING:SetScript("OnEvent", onEvent)
 QUICKEPGP.LOOTING:SetScript("OnUpdate", onUpdate)

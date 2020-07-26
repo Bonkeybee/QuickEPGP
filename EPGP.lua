@@ -39,23 +39,19 @@ local OVERRIDE = {
   [18704] = 34, --Mature Blue Dragon Sinew
   [18665] = 136, --The Eye Of Shadow
   [20644] = 29, --Nightmare Engulfed Object
-
   --MOLTEN CORE OVERRIDES
   [18564] = 356, --Bindings of the Windseeker
   [18563] = 356, --Bindings of the Windseeker
   [18703] = 187, --Ancient Petrified Leaf
   [18646] = 136, --The Eye of Divinity
   [17204] = 712, --Eye of Sulfuras
-
   --ONYXIA'S LAIR OVERRIDES
   [18422] = 32, --Head of Onyxia TODO FREE P5
   [18423] = 32, --Head of Onyxia TODO FREE P5
   [18705] = 187, --Mature Black Dragon Sinew
-
   --BLACKWING LAIR OVERRIDES
   [19002] = 53, --Head of Nefarian TODO FREE P6
   [19003] = 53, --Head of Nefarian TODO FREE P6
-
   --ZUL'GURUB OVERRIDES
   [19717] = 16, --Primal Hakkari Armsplint
   [19716] = 16, --Primal Hakkari Bindings
@@ -67,7 +63,6 @@ local OVERRIDE = {
   [19722] = 40, --Primal Hakkari Tabard
   [19721] = 35, --Primal Hakkari Shawl
   [19802] = 35, --Heart of Hakkar
-
   --RUINS OF AHN'QIRAH OVERRIDES
   [20890] = 52, --Qiraji Ornate Hilt
   [20886] = 52, --Qiraji Spiked Hilt
@@ -103,7 +98,6 @@ local OVERRIDE = {
   [21298] = 20, --Manual Of Battle Shout Vii
   [21297] = 20, --Manual Of Heroic Strike Ix
   [21299] = 20, --Manual Of Revenge Vi
-
   --TEMPLE OF AHN'QIRAH OVERRIDES
   [21221] = 68, --Eye Of Cthun
   [21232] = 84, --Imperial Qiraji Armaments
@@ -115,10 +109,9 @@ local OVERRIDE = {
   [20930] = 93, --Veklors Diadem
   [20931] = 93, --Skin Of The Great Sandworm
   [20932] = 60, --Qiraji Bindings Of Dominance
-  [20933] = 136, --Husk Of The Old God
+  [20933] = 136 --Husk Of The Old God
 
   --TODO NAXXRAMAS OVERRIDES
-
 }
 
 -- ############################################################
@@ -129,17 +122,17 @@ local function notifyEPGP(name, value, reason, type)
   if (name and value) then
     local message = ""
     if (value >= 0) then
-      message = message.."Adding "
+      message = message .. "Adding "
     else
-      message = message.."Removing "
+      message = message .. "Removing "
     end
     if (type == EP) then
-      message = message..value.."EP to "..name
+      message = message .. value .. "EP to " .. name
     elseif (type == GP) then
-      message = message..value.."GP to "..name
+      message = message .. value .. "GP to " .. name
     end
     if (reason) then
-      message = message.." for "..reason
+      message = message .. " for " .. reason
     end
     SendChatMessage(message, "OFFICER")
   end
@@ -150,17 +143,17 @@ end
 -- ############################################################
 
 QUICKEPGP.getEPGPPRMessage = function(name)
-  local name = (name or UnitName("player"))
-  local member = QUICKEPGP.guildMember(name, true)
+  local formattedName = (name or UnitName("player"))
+  local member = QUICKEPGP.guildMember(formattedName, true)
   if (member) then
-    local ep = QUICKEPGP.guildMemberEP(name, true)
-    local gp = QUICKEPGP.guildMemberGP(name, true)
-    local pr = QUICKEPGP.guildMemberPR(name, true)
+    local ep = QUICKEPGP.guildMemberEP(formattedName, true)
+    local gp = QUICKEPGP.guildMemberGP(formattedName, true)
+    local pr = QUICKEPGP.guildMemberPR(formattedName, true)
     if (ep and gp and pr) then
-      if (UnitIsUnit("player", name)) then
+      if (UnitIsUnit("player", formattedName)) then
         return format("You have %s PR; (%s EP / %s GP)", pr, ep, gp)
       else
-        return format("%s has %s PR; (%s EP / %s GP)", name, pr, ep, gp)
+        return format("%s has %s PR; (%s EP / %s GP)", formattedName, pr, ep, gp)
       end
     end
   end
@@ -175,7 +168,7 @@ QUICKEPGP.calculateChange = function(name, value, type)
       return max((QUICKEPGP.guildMemberGP(name) or QUICKEPGP.MINIMUM_GP) + value, QUICKEPGP.MINIMUM_GP)
     end
   else
-    QUICKEPGP.error("Skipping "..(name or EMPTY).."'s EPGP change: not in guild")
+    QUICKEPGP.error("Skipping " .. (name or EMPTY) .. "'s EPGP change: not in guild")
   end
 end
 
@@ -218,7 +211,9 @@ QUICKEPGP.getItemGP = function(itemId, silent)
       end
       local slotWeight = SLOTWEIGHTS[slot]
       if (slotWeight) then
-        return math.floor((INFLATION_MOD * (EXPONENTIAL_MOD^((itemLevel / 26) + (itemRarity - 4))) * slotWeight) * NORMALIZER_MOD)
+        return math.floor(
+          (INFLATION_MOD * (EXPONENTIAL_MOD ^ ((itemLevel / 26) + (itemRarity - 4))) * slotWeight) * NORMALIZER_MOD
+        )
       elseif not silent then
         QUICKEPGP.error(format("QUICKEPGP::Item %s has no valid slot weight (%s)", itemId, slot))
       end

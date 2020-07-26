@@ -78,8 +78,7 @@ QUICKEPGP.FRAME:SetScript("OnEvent", onEvent)
 
 SLASH_EPGP1 = "/epgp"
 SlashCmdList["EPGP"] = function(message)
-  local command, arg1, arg2, arg3 = strsplit(" ", message:lower())
-  local prefix = strsub(command, 1, 1)
+  local command, arg1 = strsplit(" ", message:lower())
   if (command == "") then
     QUICKEPGP.InterfaceOptionsFrame_OpenToCategory_Fix(QUICKEPGP.menu)
   elseif (command == "help") then
