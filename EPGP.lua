@@ -211,9 +211,7 @@ QUICKEPGP.getItemGP = function(itemId, silent)
       end
       local slotWeight = SLOTWEIGHTS[slot]
       if (slotWeight) then
-        return math.floor(
-          (INFLATION_MOD * (EXPONENTIAL_MOD ^ ((itemLevel / 26) + (itemRarity - 4))) * slotWeight) * NORMALIZER_MOD
-        )
+        return math.floor((INFLATION_MOD * (EXPONENTIAL_MOD ^ ((itemLevel / 26) + (itemRarity - 4))) * slotWeight) * NORMALIZER_MOD)
       elseif not silent then
         QUICKEPGP.error(format("QUICKEPGP::Item %s has no valid slot weight (%s)", itemId, slot))
       end

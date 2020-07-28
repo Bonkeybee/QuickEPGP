@@ -41,3 +41,4 @@ Raid.lua
 Minimap.lua
 Tooltip.lua
 RaidStandings.lua
+Inventory.lua
