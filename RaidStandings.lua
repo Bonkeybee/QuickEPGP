@@ -12,7 +12,7 @@ local function BuildFrame()
   local root = CreateFrame("Frame", "QuickEPGPRaidStandingsFrame", UIParent)
   tinsert(UISpecialFrames, root:GetName())
   root:SetFrameStrata("DIALOG")
-  root:SetSize(350, 500)
+  root:SetSize(380, 500)
   root:SetPoint(
     QUICKEPGP_OPTIONS.RaidStandings.Point,
     UIParent,
@@ -65,6 +65,7 @@ local function BuildFrame()
   root.prText:SetPoint("LEFT", root.nameText, "RIGHT", 5, 5)
 
   local closeButton = CreateFrame("Button", nil, root, "UIPanelButtonTemplate")
+  closeButton:SetWidth(60)
   closeButton:SetText("X")
   closeButton:SetPoint("TOPRIGHT", root, "TOPRIGHT", -3, -3)
   closeButton:Show()
@@ -76,23 +77,37 @@ local function BuildFrame()
   )
 
   function root:UpdateRaidStandings()
-    local raidMembers = {}
-    for i = 1, 40 do
-      local name, _ = UnitName("raid" .. i)
-      if name then
-        local member = QUICKEPGP.GUILD:GetMemberInfo(name, true)
-        if member then
-          raidMembers[name] = member
+    local standingMembers = {}
+
+    local function TryAddStandingMember(name)
+      local member = QUICKEPGP.GUILD:GetMemberInfo(name, true)
+      if member then
+        standingMembers[member.Name] = member
+        return true
+      end
+    end
+
+    if (IsInRaid("player")) then
+      for i = 1, 40 do
+        if not TryAddStandingMember("raid" .. i) then
+          break
         end
-      else
-        break
+      end
+    else
+      TryAddStandingMember("player")
+      if (IsInGroup("player")) then
+        for i = 1, 4 do
+          if not TryAddStandingMember("party" .. i) then
+            break
+          end
+        end
       end
     end
 
     local names = ""
     local prs = ""
 
-    for _, member in QUICKEPGP.spairs(raidMembers, compareMembersByPR) do
+    for _, member in QUICKEPGP.spairs(standingMembers, compareMembersByPR) do
       names = names .. QUICKEPGP.colorByClass(member.Name, member.InvariantClass) .. "\n"
       prs = prs .. member:GetEpGpPrMessage() .. "\n"
     end
@@ -100,6 +115,18 @@ local function BuildFrame()
     self.nameText:SetText(names)
     self.prText:SetText(prs)
   end
+
+  local refreshButton = CreateFrame("Button", nil, root, "UIPanelButtonTemplate")
+  refreshButton:SetText("Refresh")
+  refreshButton:SetWidth(60)
+  refreshButton:SetPoint("TOP", closeButton, "BOTTOM", 0, -3)
+  refreshButton:Show()
+  refreshButton:SetScript(
+    "OnClick",
+    function()
+      root:UpdateRaidStandings()
+    end
+  )
 
   return root
 end
