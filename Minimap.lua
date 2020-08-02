@@ -40,20 +40,26 @@ do
     }
   )
 
-  local playerMember = QUICKEPGP.GUILD:GetMemberInfo(UnitName("player"), true)
+  local function Init()
+    local member = QUICKEPGP.GUILD:GetMemberInfo("player", true)
+    if member then
+      local function SetText()
+        QUICKEPGP.MinimapButton.text = string.format("%.2f", member.EP / member.GP)
+      end
 
-  if playerMember then
-    playerMember:AddEventCallback(
-      QUICKEPGP_MEMBER_EVENTS.UPDATED,
-      function()
-        QUICKEPGP.MinimapButton.text = string.format("%.2f", playerMember.EP / playerMember.GP)
-      end
-    )
-    playerMember:AddEventCallback(
-      QUICKEPGP_MEMBER_EVENTS.LOST_CONFIDENCE,
-      function()
-        playerMember:TryRefresh()
-      end
-    )
+      SetText()
+      member:AddEventCallback(QUICKEPGP_MEMBER_EVENTS.UPDATED, SetText)
+      member:AddEventCallback(
+        QUICKEPGP_MEMBER_EVENTS.LOST_CONFIDENCE,
+        function()
+          member:TryRefresh()
+        end
+      )
+      return true
+    end
+  end
+
+  if not Init() then
+    QUICKEPGP.LIBS:ScheduleTimer(Init, 10)
   end
 end
