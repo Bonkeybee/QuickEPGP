@@ -1,45 +1,88 @@
 QUICKEPGP.GUILD = CreateFrame("Frame")
-local valid = false
-local race = false
-local check = nil
+QUICKEPGP.GUILD.Members = {}
 
-local INDEX_INDEX = 1
-local LEVEL_INDEX = 2
-local CLASS_INDEX = 3
-local EP_INDEX = 4
-local GP_INDEX = 5
+QUICKEPGP_MEMBER_EVENTS = {
+  LOST_CONFIDENCE = "LOST_CONFIDENCE",
+  UPDATED = "UPDATED"
+}
 
 -- ############################################################
 -- ##### LOCAL FUNCTIONS ######################################
 -- ############################################################
 
-local function updateGuildMemberTable()
-  race = false
-  QUICKEPGP.guildMemberTable = {}
-  for i = 1, GetNumGuildMembers() do
-    local name, _, _, level, class, _, _, officerNote, _, _, invariantClass = GetGuildRosterInfo(i)
-    if (name) then
-      name = QUICKEPGP.getSimpleCharacterName(name, true)
-      local ep, gp = strsplit(",", officerNote)
-      QUICKEPGP.guildMemberTable[name] = {i, level, class, tonumber(ep), tonumber(gp), invariantClass}
-    end
-  end
-  if (race) then
-    return check()
-  end
-  valid = true
+local Member = {}
+
+function Member:new(name)
+  return setmetatable(
+    {Confident = false, Name = name, EP = QUICKEPGP.MINIMUM_EP, GP = QUICKEPGP.MINIMUM_GP},
+    {__index = self}
+  )
 end
 
-check = function()
-  if (not valid) then
-    updateGuildMemberTable()
+function Member:Update(id, level, class, officerNote, invariantClass)
+  local ep, gp, _ = strsplit(",", officerNote)
+  self.Id = id
+  self.Level = level
+  self.Class = class
+  self.InvariantClass = invariantClass
+  self.EP = tonumber(ep) or QUICKEPGP.MINIMUM_EP
+  self.GP = tonumber(gp) or QUICKEPGP.MINIMUM_GP
+  self.Confident = true
+  self:RaiseEvent(QUICKEPGP_MEMBER_EVENTS.UPDATED)
+end
+
+function Member:TryRefresh()
+  if self.Confident then
+    return true
+  end
+
+  if (self.Id) then
+    local name, _, _, level, class, _, _, officerNote, _, _, invariantClass = GetGuildRosterInfo(self.Id)
+
+    if name == self.Name then
+      self:Update(self.Id, level, class, officerNote, invariantClass)
+      return true
+    end
+  end
+
+  return false
+end
+
+function Member:GetEpGpPrMessage()
+  return string.format("%.2f PR (%d ep / %d gp)", self.EP / self.GP, self.EP, self.GP)
+end
+
+function Member:AddEventCallback(event, callback)
+  local callbacks = self[event]
+  if not callbacks then
+    callbacks = {}
+    self[event] = callbacks
+  end
+  callbacks[callback] = callback
+end
+
+function Member:RemoveEventCallback(event, callback)
+  local callbacks = self[event]
+  if callbacks then
+    callbacks[callback] = nil
+  end
+end
+
+function Member:RaiseEvent(event, ...)
+  local callbacks = self[event]
+  if callbacks then
+    for callback in pairs(callbacks) do
+      callback(...)
+    end
   end
 end
 
 local function onEvent(_, event)
   if (event == "GUILD_ROSTER_UPDATE") then
-    valid = false
-    race = true
+    for _, member in pairs(QUICKEPGP.GUILD.Members) do
+      member.Confident = false
+      member:RaiseEvent(QUICKEPGP_MEMBER_EVENTS.LOST_CONFIDENCE)
+    end
   end
 end
 
@@ -47,61 +90,87 @@ end
 -- ##### GLOBAL FUNCTIONS #####################################
 -- ############################################################
 
-QUICKEPGP.guildMember = function(name, silent)
-  check()
-  if (name) then
-    name = strlower(name)
-  end
-  if (QUICKEPGP.guildMemberTable[name]) then
-    return QUICKEPGP.guildMemberTable[name]
-  elseif (not silent) then
-    QUICKEPGP.error(format("%s is not a guild member", (name or "nil")))
+function QUICKEPGP.GUILD:RefreshAll()
+  for i = 1, GetNumGuildMembers() do
+    local name, _, _, level, class, _, _, officerNote, _, _, invariantClass = GetGuildRosterInfo(i)
+
+    if name then
+      name = strsplit("-", name)
+      local member = self.Members[name]
+      if not member then
+        member = Member:new(name)
+        self.Members[name] = member
+      end
+      member:Update(i, level, class, officerNote, invariantClass)
+    end
   end
 end
+
+function QUICKEPGP.GUILD:GetMemberInfo(name, silent)
+  local member = self.Members[UnitName(name)]
+
+  if not member then
+    -- scan not run or member invited after last scan
+    self:RefreshAll()
+    member = self.Members[UnitName(name)]
+    if not member and not silent then
+      QUICKEPGP.error(format("%s is not a guild member", (name or "nil")))
+    end
+    return member
+  end
+
+  if not member:TryRefresh() then
+    -- Couldn't refresh using the existing id. Refresh all entries before returning the member object.
+    self:RefreshAll()
+  end
+
+  return member
+end
+
 QUICKEPGP.guildMemberIndex = function(name, silent)
-  local guildMemberData = QUICKEPGP.guildMember(name, silent)
-  if (guildMemberData) then
-    return guildMemberData[INDEX_INDEX]
-  elseif (not silent) then
+  local member = QUICKEPGP.GUILD:GetMemberInfo(name, silent)
+  if member then
+    return member.Id
+  elseif not silent then
     QUICKEPGP.error("Cannot get guild member " .. (name or "") .. " index")
   end
 end
 QUICKEPGP.guildMemberLevel = function(name, silent)
-  local guildMemberData = QUICKEPGP.guildMember(name, silent)
-  if (guildMemberData) then
-    return guildMemberData[LEVEL_INDEX]
+  local member = QUICKEPGP.GUILD:GetMemberInfo(name, silent)
+  if member then
+    return member.Level
   elseif (not silent) then
     QUICKEPGP.error("Cannot get guild member " .. (name or "") .. " level")
   end
 end
 QUICKEPGP.guildMemberClass = function(name, silent)
-  local guildMemberData = QUICKEPGP.guildMember(name, silent)
-  if (guildMemberData) then
-    return guildMemberData[CLASS_INDEX]
+  local member = QUICKEPGP.GUILD:GetMemberInfo(name, silent)
+  if (member) then
+    return member.Class
   elseif (not silent) then
     QUICKEPGP.error("Cannot get guild member " .. (name or "") .. " class")
   end
 end
 QUICKEPGP.guildMemberEP = function(name, silent)
-  local guildMemberData = QUICKEPGP.guildMember(name, silent)
-  if (guildMemberData) then
-    return guildMemberData[EP_INDEX]
+  local member = QUICKEPGP.GUILD:GetMemberInfo(name, silent)
+  if (member) then
+    return member.EP
   elseif (not silent) then
     QUICKEPGP.error("Cannot get guild member " .. (name or "") .. " EP")
   end
 end
 QUICKEPGP.guildMemberGP = function(name, silent)
-  local guildMemberData = QUICKEPGP.guildMember(name, silent)
-  if (guildMemberData) then
-    return guildMemberData[GP_INDEX]
+  local member = QUICKEPGP.GUILD:GetMemberInfo(name, silent)
+  if (member) then
+    return member.GP
   elseif (not silent) then
     QUICKEPGP.error("Cannot get guild member " .. (name or "") .. " GP")
   end
 end
 QUICKEPGP.guildMemberPR = function(name, silent, gp)
-  local guildMemberData = QUICKEPGP.guildMember(name, silent)
-  if (guildMemberData and guildMemberData[EP_INDEX] and guildMemberData[GP_INDEX]) then
-    return QUICKEPGP.round(guildMemberData[EP_INDEX] / (guildMemberData[GP_INDEX] + (gp or 0)), 2)
+  local member = QUICKEPGP.GUILD:GetMemberInfo(name, silent)
+  if (member) then
+    return QUICKEPGP.round(member.EP / (member.GP + (gp or 0)), 2)
   elseif (not silent) then
     QUICKEPGP.error("Cannot get guild member " .. (name or "") .. " PR")
   end

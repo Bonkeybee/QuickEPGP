@@ -40,14 +40,20 @@ do
     }
   )
 
-  local f = CreateFrame("frame")
-  f:RegisterEvent("GUILD_ROSTER_UPDATE")
-  f:SetScript(
-    "OnEvent",
-    function(_, event, _, _)
-      if (event == "GUILD_ROSTER_UPDATE") then
-        QUICKEPGP.MinimapButton.text = QUICKEPGP.guildMemberPR(UnitName("player"), true)
+  local playerMember = QUICKEPGP.GUILD:GetMemberInfo(UnitName("player"), true)
+
+  if playerMember then
+    playerMember:AddEventCallback(
+      QUICKEPGP_MEMBER_EVENTS.UPDATED,
+      function()
+        QUICKEPGP.MinimapButton.text = string.format("%.2f", playerMember.EP / playerMember.GP)
       end
-    end
-  )
+    )
+    playerMember:AddEventCallback(
+      QUICKEPGP_MEMBER_EVENTS.LOST_CONFIDENCE,
+      function()
+        playerMember:TryRefresh()
+      end
+    )
+  end
 end

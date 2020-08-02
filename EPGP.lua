@@ -143,29 +143,19 @@ end
 -- ############################################################
 
 QUICKEPGP.getEPGPPRMessage = function(name)
-  local formattedName = (name or UnitName("player"))
-  local member = QUICKEPGP.guildMember(formattedName, true)
+  local member = QUICKEPGP.GUILD:GetMemberInfo(name or UnitName("player"), true)
   if (member) then
-    local ep = QUICKEPGP.guildMemberEP(formattedName, true)
-    local gp = QUICKEPGP.guildMemberGP(formattedName, true)
-    local pr = QUICKEPGP.guildMemberPR(formattedName, true)
-    if (ep and gp and pr) then
-      if (UnitIsUnit("player", formattedName)) then
-        return format("You have %s PR; (%s EP / %s GP)", pr, ep, gp)
-      else
-        return format("%s has %s PR; (%s EP / %s GP)", formattedName, pr, ep, gp)
-      end
-    end
+    return ((not name or UnitIsUnit("player", name)) and "You have " or (name .. " has ")) .. member:GetEpGpPrMessage()
   end
 end
 
 QUICKEPGP.calculateChange = function(name, value, type)
-  value = (value or 0)
-  if (QUICKEPGP.guildMember(name)) then
-    if (type == EP) then --TODO DOES NOT ALWAYS PRODUCE NON-NIL
-      return max((QUICKEPGP.guildMemberEP(name) or QUICKEPGP.MINIMUM_EP) + value, QUICKEPGP.MINIMUM_EP)
-    elseif (type == GP) then
-      return max((QUICKEPGP.guildMemberGP(name) or QUICKEPGP.MINIMUM_GP) + value, QUICKEPGP.MINIMUM_GP)
+  local member = QUICKEPGP.GUILD:GetMemberInfo(name)
+  if member then
+    if type == EP then
+      return max(member.EP + (value or 0), QUICKEPGP.MINIMUM_EP)
+    elseif type == GP then
+      return max(member.GP + (value or 0), QUICKEPGP.MINIMUM_GP)
     end
   else
     QUICKEPGP.error("Skipping " .. (name or EMPTY) .. "'s EPGP change: not in guild")
@@ -225,7 +215,7 @@ QUICKEPGP.getItemGP = function(itemId, silent)
 end
 
 QUICKEPGP.modifyEPGP = function(name, dep, dgp, reason, mass)
-  if (QUICKEPGP.guildMember(name)) then
+  if (QUICKEPGP.GUILD:GetMemberInfo(name)) then
     if (not mass) then
       notifyEPGP(name, dep, reason, EP)
       notifyEPGP(name, dgp, reason, GP)

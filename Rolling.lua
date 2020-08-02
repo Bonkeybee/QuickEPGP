@@ -99,7 +99,12 @@ local function setHighestRoller(name)
   if QuickEPGProllFrame then
     if (name and name ~= EMPTY) then
       local cost = QUICKEPGP.getItemGP(QUICKEPGP.getItemId(currentItem))
-      QuickEPGProllFrame.Status:SetText(QUICKEPGP.colorByClass(highestRoller, QUICKEPGP.raidMemberClass(highestRoller)) .. " |cFFFFFF00(" .. QUICKEPGP.guildMemberPR(highestRoller) .. " PR)|r |cFFFF0000[" .. QUICKEPGP.guildMemberPR(highestRoller, true, cost) .. " PR]|r")
+      QuickEPGProllFrame.Status:SetText(
+        QUICKEPGP.colorByClass(highestRoller, QUICKEPGP.raidMemberClass(highestRoller)) ..
+          " |cFFFFFF00(" ..
+            QUICKEPGP.guildMemberPR(highestRoller) ..
+              " PR)|r |cFFFF0000[" .. QUICKEPGP.guildMemberPR(highestRoller, true, cost) .. " PR]|r"
+      )
     else
       clearHighestRoller()
     end
@@ -111,7 +116,7 @@ local function validateRoll(player)
     QUICKEPGP.error("Skipping " .. (player or EMPTY) .. "'s need roll: not in raid")
     return false
   end
-  if (not QUICKEPGP.guildMember(player)) then
+  if (not QUICKEPGP.GUILD:GetMemberInfo(player)) then
     QUICKEPGP.error("Skipping " .. (player or EMPTY) .. "'s need roll: not in guild")
     return false
   end
@@ -121,23 +126,53 @@ end
 local function handleNeeding(player)
   if (validateRoll(player)) then
     if (not rollTable[player]) then
-      SendChatMessage(format("%s needed (%s PR)", QUICKEPGP.getCharacterString(QUICKEPGP.guildMemberLevel(player), QUICKEPGP.guildMemberClass(player), player), QUICKEPGP.guildMemberPR(player)), "RAID")
+      SendChatMessage(
+        format(
+          "%s needed (%s PR)",
+          QUICKEPGP.getCharacterString(QUICKEPGP.guildMemberLevel(player), QUICKEPGP.guildMemberClass(player), player),
+          QUICKEPGP.guildMemberPR(player)
+        ),
+        "RAID"
+      )
     end
-    rollTable[player] = {QUICKEPGP.guildMemberLevel(player), QUICKEPGP.guildMemberClass(player), QUICKEPGP.guildMemberEP(player), QUICKEPGP.guildMemberGP(player)}
+    rollTable[player] = {
+      QUICKEPGP.guildMemberLevel(player),
+      QUICKEPGP.guildMemberClass(player),
+      QUICKEPGP.guildMemberEP(player),
+      QUICKEPGP.guildMemberGP(player)
+    }
     setHighestRoller(QUICKEPGP.comparePR(highestRoller, player, rollTable))
   end
-  QUICKEPGP.LIBS:SendCommMessage(MODULE_NAME, "URF" .. DELIMITER .. (currentItem or EMPTY) .. DELIMITER .. (highestRoller or EMPTY), "RAID", nil, "ALERT")
+  QUICKEPGP.LIBS:SendCommMessage(
+    MODULE_NAME,
+    "URF" .. DELIMITER .. (currentItem or EMPTY) .. DELIMITER .. (highestRoller or EMPTY),
+    "RAID",
+    nil,
+    "ALERT"
+  )
 end
 
 local function handlePassing(player)
   if (validateRoll(player)) then
     if (rollTable[player]) then
-      SendChatMessage(format("%s passed", QUICKEPGP.getCharacterString(QUICKEPGP.guildMemberLevel(player), QUICKEPGP.guildMemberClass(player), player)), "RAID")
+      SendChatMessage(
+        format(
+          "%s passed",
+          QUICKEPGP.getCharacterString(QUICKEPGP.guildMemberLevel(player), QUICKEPGP.guildMemberClass(player), player)
+        ),
+        "RAID"
+      )
     end
     rollTable[player] = nil
     setHighestRoller(findHighestRoller(rollTable))
   end
-  QUICKEPGP.LIBS:SendCommMessage(MODULE_NAME, "URF" .. DELIMITER .. (currentItem or EMPTY) .. DELIMITER .. (highestRoller or EMPTY), "RAID", nil, "ALERT")
+  QUICKEPGP.LIBS:SendCommMessage(
+    MODULE_NAME,
+    "URF" .. DELIMITER .. (currentItem or EMPTY) .. DELIMITER .. (highestRoller or EMPTY),
+    "RAID",
+    nil,
+    "ALERT"
+  )
 end
 
 local function clearRollData()
@@ -164,16 +199,52 @@ local function endRolling(cancel)
         SendChatMessage(format("Cancelled rolls on %s(%s GP)", currentItem, cost), "RAID_WARNING")
         clearHighestRoller()
       elseif (highestRoller) then
-        SendChatMessage(format("%s (%s PR) wins %s(%s GP)", QUICKEPGP.getCharacterString(QUICKEPGP.guildMemberLevel(highestRoller), QUICKEPGP.guildMemberClass(highestRoller), highestRoller), QUICKEPGP.guildMemberPR(highestRoller), currentItem, cost), "RAID_WARNING")
-        SendChatMessage(format("%s (%s PR) wins %s(%s GP)", QUICKEPGP.getCharacterString(QUICKEPGP.guildMemberLevel(highestRoller), QUICKEPGP.guildMemberClass(highestRoller), highestRoller), QUICKEPGP.guildMemberPR(highestRoller), currentItem, cost), "OFFICER")
-        GuildRosterSetOfficerNote(QUICKEPGP.guildMemberIndex(highestRoller), (QUICKEPGP.guildMemberEP(highestRoller) or QUICKEPGP.MINIMUM_EP) .. "," .. ((QUICKEPGP.guildMemberGP(highestRoller) + cost) or QUICKEPGP.MINIMUM_GP))
+        SendChatMessage(
+          format(
+            "%s (%s PR) wins %s(%s GP)",
+            QUICKEPGP.getCharacterString(
+              QUICKEPGP.guildMemberLevel(highestRoller),
+              QUICKEPGP.guildMemberClass(highestRoller),
+              highestRoller
+            ),
+            QUICKEPGP.guildMemberPR(highestRoller),
+            currentItem,
+            cost
+          ),
+          "RAID_WARNING"
+        )
+        SendChatMessage(
+          format(
+            "%s (%s PR) wins %s(%s GP)",
+            QUICKEPGP.getCharacterString(
+              QUICKEPGP.guildMemberLevel(highestRoller),
+              QUICKEPGP.guildMemberClass(highestRoller),
+              highestRoller
+            ),
+            QUICKEPGP.guildMemberPR(highestRoller),
+            currentItem,
+            cost
+          ),
+          "OFFICER"
+        )
+        GuildRosterSetOfficerNote(
+          QUICKEPGP.guildMemberIndex(highestRoller),
+          (QUICKEPGP.guildMemberEP(highestRoller) or QUICKEPGP.MINIMUM_EP) ..
+            "," .. ((QUICKEPGP.guildMemberGP(highestRoller) + cost) or QUICKEPGP.MINIMUM_GP)
+        )
       else
         SendChatMessage(format("Everyone passed on %s(%s GP)", currentItem, cost), "RAID_WARNING")
         SendChatMessage(format("Everyone passed on %s(%s GP)", currentItem, cost), "OFFICER")
       end
     end
   end
-  QUICKEPGP.LIBS:SendCommMessage(MODULE_NAME, "CRF" .. DELIMITER .. (currentItem or EMPTY) .. DELIMITER .. (highestRoller or EMPTY), "RAID", nil, "ALERT")
+  QUICKEPGP.LIBS:SendCommMessage(
+    MODULE_NAME,
+    "CRF" .. DELIMITER .. (currentItem or EMPTY) .. DELIMITER .. (highestRoller or EMPTY),
+    "RAID",
+    nil,
+    "ALERT"
+  )
 end
 
 local function openRollFrame(automatic)
@@ -201,7 +272,13 @@ local function openRollFrame(automatic)
     }
   )
   local width = 231
-  rollFrame:SetPoint(QUICKEPGP_OPTIONS.RollFrame.Point, UIParent, QUICKEPGP_OPTIONS.RollFrame.Point, QUICKEPGP_OPTIONS.RollFrame.X, QUICKEPGP_OPTIONS.RollFrame.Y)
+  rollFrame:SetPoint(
+    QUICKEPGP_OPTIONS.RollFrame.Point,
+    UIParent,
+    QUICKEPGP_OPTIONS.RollFrame.Point,
+    QUICKEPGP_OPTIONS.RollFrame.X,
+    QUICKEPGP_OPTIONS.RollFrame.Y
+  )
   rollFrame:SetSize(width, 46)
   rollFrame:SetClampedToScreen(true)
   rollFrame:EnableMouse(true)
@@ -375,7 +452,20 @@ local function onUpdate()
     if (rolling and currentItem) then
       local cost = QUICKEPGP.getItemGP(QUICKEPGP.getItemId(currentItem))
       if (highestRoller) then
-        SendChatMessage(format("...still rolling on %s(%s GP) [%s (%s PR)]", currentItem, cost, QUICKEPGP.getCharacterString(QUICKEPGP.guildMemberLevel(highestRoller), QUICKEPGP.guildMemberClass(highestRoller), highestRoller), QUICKEPGP.guildMemberPR(highestRoller)), "RAID")
+        SendChatMessage(
+          format(
+            "...still rolling on %s(%s GP) [%s (%s PR)]",
+            currentItem,
+            cost,
+            QUICKEPGP.getCharacterString(
+              QUICKEPGP.guildMemberLevel(highestRoller),
+              QUICKEPGP.guildMemberClass(highestRoller),
+              highestRoller
+            ),
+            QUICKEPGP.guildMemberPR(highestRoller)
+          ),
+          "RAID"
+        )
       else
         SendChatMessage(format("...still rolling on %s(%s GP)", currentItem, cost), "RAID")
       end
@@ -402,7 +492,7 @@ QUICKEPGP.handleRolling = function(event, command, author)
       end
     end
     if (event == "CHAT_MSG_WHISPER") then
-      if (QUICKEPGP.guildMember(author)) then
+      if (QUICKEPGP.GUILD:GetMemberInfo(author)) then
         if (command == "need") then
           return handleNeeding(author)
         end
@@ -431,7 +521,13 @@ QUICKEPGP.startRolling = function(itemId, itemLink)
         openRollFrame(true)
         setCurrentItem(itemLink)
         clearHighestRoller()
-        QUICKEPGP.LIBS:SendCommMessage(MODULE_NAME, "ORF" .. DELIMITER .. itemLink .. DELIMITER .. (highestRoller or EMPTY), "RAID", nil, "ALERT")
+        QUICKEPGP.LIBS:SendCommMessage(
+          MODULE_NAME,
+          "ORF" .. DELIMITER .. itemLink .. DELIMITER .. (highestRoller or EMPTY),
+          "RAID",
+          nil,
+          "ALERT"
+        )
       end
     end
   end
@@ -464,7 +560,13 @@ QUICKEPGP.openMasterFrame = function()
     QuickEPGPMasterLootFrame = CreateFrame("Frame", "QuickEPGPMasterLootFrame", UIParent)
     QuickEPGPMasterLootFrame:SetFrameStrata("DIALOG")
     QuickEPGPMasterLootFrame:SetSize(72, 150)
-    QuickEPGPMasterLootFrame:SetPoint(QUICKEPGP_OPTIONS.MasterFrame.Point, UIParent, QUICKEPGP_OPTIONS.MasterFrame.Point, QUICKEPGP_OPTIONS.MasterFrame.X, QUICKEPGP_OPTIONS.MasterFrame.Y)
+    QuickEPGPMasterLootFrame:SetPoint(
+      QUICKEPGP_OPTIONS.MasterFrame.Point,
+      UIParent,
+      QUICKEPGP_OPTIONS.MasterFrame.Point,
+      QUICKEPGP_OPTIONS.MasterFrame.X,
+      QUICKEPGP_OPTIONS.MasterFrame.Y
+    )
     QuickEPGPMasterLootFrame:SetClampedToScreen(true)
     QuickEPGPMasterLootFrame:EnableMouse(true)
     QuickEPGPMasterLootFrame:SetToplevel(true)
