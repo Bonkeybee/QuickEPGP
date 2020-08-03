@@ -1,4 +1,6 @@
-QUICKEPGP.Items = {Array = {}}
+local MODULE_NAME = "QEPGP-Items"
+
+QUICKEPGP.Items = {Array = {}, Deserializing = false}
 
 local function NotifyChanged()
   if QUICKEPGP.Items.ChangeHandlers then
@@ -66,23 +68,14 @@ function QUICKEPGP.Items:Track(itemIdOrLink, expiration, winner, skipNotify)
         QUICKEPGP.ROLLING.TrackedItem = self
       end
 
-      local index = 0
-      for i = 1, #self.Array do
-        index = i
-        if item.Expiration < self.Array[i].Expiration then
-          break
+      self.Array[#self.Array + 1] = item
+
+      table.sort(
+        self.Array,
+        function(a, b)
+          return a.Expiration < b.Expiration
         end
-      end
-
-      index = index + 1
-
-      local next = item
-      repeat
-        local current = self.Array[index]
-        self.Array[index] = next
-        next = current
-        index = index + 1
-      until not next
+      )
 
       if not skipNotify then
         NotifyChanged()
@@ -106,19 +99,89 @@ function QUICKEPGP.Items:Untrack(item)
 end
 
 function QUICKEPGP.Items:Deserialize()
-  if QUICKEPGP_LOOT then
+  if QUICKEPGP_LOOT and not self.Serializing then
+    self.Deserializing = true
+    QUICKEPGP.Items.Array = {}
     for _, v in pairs(QUICKEPGP_LOOT) do
       QUICKEPGP.Items:Track(v.Id, v.Expiration, v.Winner, true)
     end
     NotifyChanged()
+    self.Deserializing = false
   end
 end
 
 local function Serialize()
-  QUICKEPGP_LOOT = {}
-  for k, v in pairs(QUICKEPGP.Items.Array) do
-    QUICKEPGP_LOOT[k] = {Id = v.Id, Winner = v.Winner, Expiration = v.Expiration}
+  if not QUICKEPGP.Items.Deserializing then
+    QUICKEPGP.Items.Serializing = true
+    QUICKEPGP_LOOT = {}
+    for k, v in pairs(QUICKEPGP.Items.Array) do
+      QUICKEPGP_LOOT[k] = {Id = v.Id, Winner = v.Winner, Expiration = v.Expiration}
+    end
+    QUICKEPGP.Items.Serializing = false
+  end
+end
+
+local function IsLootMaster()
+  local method, partyId, _ = GetLootMethod()
+  return method == "master" and partyId == 0
+end
+
+local function Share()
+  if IsLootMaster() then
+    local message = ""
+
+    for _, v in pairs(QUICKEPGP.Items.Array) do
+      message = string.format("%s%s:%s:%s;", message, v.Id, v.Winner, v.Expiration)
+    end
+
+    QUICKEPGP.LIBS:SendCommMessage(MODULE_NAME, message, "RAID", nil, "BULK")
+  end
+end
+
+local function FindRef(table, id, expiration)
+  for _, v in pairs(table) do
+    if v.Id == id and v.Expiration == expiration then
+      return v
+    end
+  end
+end
+
+local function Receive(prefix, message, _, sender)
+  if prefix == MODULE_NAME and not UnitIsUnit(sender, "player") then
+    local entries = {strsplit(";", message)}
+
+    local oldItems = QUICKEPGP.Items.Array
+    QUICKEPGP.Items.Array = {}
+
+    for _, v in pairs(entries) do
+      local id, winner, expiration = strsplit(":", v)
+      id = tonumber(id)
+      expiration = tonumber(expiration)
+      if id then
+        local existing = FindRef(oldItems, id, expiration)
+        if existing then
+          existing.Winner = winner
+          QUICKEPGP.Items.Array[#QUICKEPGP.Items.Array + 1] = existing
+        else
+          QUICKEPGP.Items:Track(id, expiration, winner, true)
+        end
+      end
+    end
+
+    table.sort(
+      QUICKEPGP.Items.Array,
+      function(a, b)
+        return a.Expiration < b.Expiration
+      end
+    )
+
+    NotifyChanged()
   end
 end
 
 QUICKEPGP.Items:AddChangeHandler(Serialize)
+QUICKEPGP.Items:AddChangeHandler(Share)
+
+if CanEditOfficerNote() then
+  QUICKEPGP.LIBS:RegisterComm(MODULE_NAME, Receive)
+end
