@@ -98,15 +98,17 @@ function QUICKEPGP.Items:Untrack(item)
   end
 end
 
-function QUICKEPGP.Items:Deserialize()
-  if QUICKEPGP_LOOT and not self.Serializing then
-    self.Deserializing = true
+local function Deserialize()
+  if QUICKEPGP_LOOT and not QUICKEPGP.Items.Serializing then
+    QUICKEPGP.Items.Deserializing = true
     QUICKEPGP.Items.Array = {}
     for _, v in pairs(QUICKEPGP_LOOT) do
-      QUICKEPGP.Items:Track(v.Id, v.Expiration, v.Winner, true)
+      if v and v.Item then
+        QUICKEPGP.Items:Track(v.Id, v.Expiration, v.Winner, true)
+      end
     end
     NotifyChanged()
-    self.Deserializing = false
+    QUICKEPGP.Items.Deserializing = false
   end
 end
 
@@ -179,9 +181,11 @@ local function Receive(prefix, message, _, sender)
   end
 end
 
-QUICKEPGP.Items:AddChangeHandler(Serialize)
-QUICKEPGP.Items:AddChangeHandler(Share)
-
-if CanEditOfficerNote() then
-  QUICKEPGP.LIBS:RegisterComm(MODULE_NAME, Receive)
+function QUICKEPGP.Items:Initialize()
+  Deserialize()
+  QUICKEPGP.Items:AddChangeHandler(Serialize)
+  QUICKEPGP.Items:AddChangeHandler(Share)
+  if CanEditOfficerNote() then
+    QUICKEPGP.LIBS:RegisterComm(MODULE_NAME, Receive)
+  end
 end
