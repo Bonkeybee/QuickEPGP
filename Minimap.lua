@@ -15,7 +15,7 @@ do
               QUICKEPGP.toggleMasterFrame()
             end
           elseif IsShiftKeyDown() then
-            QUICKEPGP.toggleRollFrame()
+            QUICKEPGP:ToggleRollFrame()
           else
             QUICKEPGP.RaidStandings:ToggleFrame()
           end
@@ -60,6 +60,12 @@ do
   end
 
   if not Init() then
-    QUICKEPGP.LIBS:ScheduleTimer(Init, 10)
+    local timerId
+    local function RepeatInit()
+      if Init() then
+        QUICKEPGP.LIBS:CancelTimer(timerId)
+      end
+    end
+    timerId = QUICKEPGP.LIBS:ScheduleRepeatingTimer(RepeatInit, 5)
   end
 end

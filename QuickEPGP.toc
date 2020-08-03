@@ -36,6 +36,9 @@ Options.lua
 EPGP.lua
 Looting.lua
 Rolling.lua
+Items.lua
+MasterLooter.lua
+RollFrame.lua
 Guild.lua
 Raid.lua
 Minimap.lua

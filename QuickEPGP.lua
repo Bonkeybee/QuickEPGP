@@ -123,6 +123,8 @@ SlashCmdList["EPGP"] = function(message)
     QUICKEPGP.RaidStandings:ToggleFrame()
   elseif command == "award" and arg1 == "raid" and tonumber(arg2) then
     QUICKEPGP.RaidReward(tonumber(arg2), arg3)
+  elseif command == "track" then
+    QUICKEPGP.Items:Track(string.sub(message, 7))
   else
     QUICKEPGP.error("invalid command - type `/epgp help` for a list of commands")
   end
