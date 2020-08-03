@@ -86,6 +86,21 @@ local function onEvent(_, event)
   end
 end
 
+local function NormalizeName(name)
+  local normalized = UnitName(name)
+
+  if normalized then
+    return normalized
+  end
+
+  return name:gsub(
+    "(%a)([%w_']*)",
+    function(first, rest)
+      return first:upper() .. rest:lower()
+    end
+  )
+end
+
 -- ############################################################
 -- ##### GLOBAL FUNCTIONS #####################################
 -- ############################################################
@@ -107,14 +122,16 @@ function QUICKEPGP.GUILD:RefreshAll()
 end
 
 function QUICKEPGP.GUILD:GetMemberInfo(name, silent)
-  local member = self.Members[UnitName(name)]
+  local normalizedName = NormalizeName(name)
+
+  local member = self.Members[normalizedName]
 
   if not member then
     -- scan not run or member invited after last scan
     self:RefreshAll()
-    member = self.Members[UnitName(name)]
+    member = self.Members[normalizedName]
     if not member and not silent then
-      QUICKEPGP.error(format("%s is not a guild member", (name or "nil")))
+      QUICKEPGP.error(format("%s is not a guild member", (normalizedName or "nil")))
     end
     return member
   end
