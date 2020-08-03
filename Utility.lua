@@ -11,6 +11,7 @@ local function onEvent(_, event)
   if (event == "ADDON_LOADED") then
     loaded = true
     QUICKEPGP:InitializeTooltip()
+    QUICKEPGP.Items:Deserialize()
   end
 end
 

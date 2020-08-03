@@ -25,7 +25,7 @@ function QUICKEPGP.Items:TrackFromBagSlot(bagId, slotId)
   print("Not implemented.", bagId, slotId)
 end
 
-function QUICKEPGP.Items:Track(itemIdOrLink, expiration)
+function QUICKEPGP.Items:Track(itemIdOrLink, expiration, winner, skipNotify)
   local itemInfo = Item:CreateFromItemID(tonumber(itemIdOrLink) or QUICKEPGP.itemIdFromLink(itemIdOrLink))
   itemInfo:ContinueOnItemLoad(
     function()
@@ -38,7 +38,8 @@ function QUICKEPGP.Items:Track(itemIdOrLink, expiration)
         Expiration = expiration or (GetServerTime() + 7200),
         Link = itemInfo:GetItemLink(),
         Id = itemInfo:GetItemID(),
-        Icon = itemInfo:GetItemIcon()
+        Icon = itemInfo:GetItemIcon(),
+        Winner = winner
       }
 
       function item:GetWinner()
@@ -83,7 +84,9 @@ function QUICKEPGP.Items:Track(itemIdOrLink, expiration)
         index = index + 1
       until not next
 
-      NotifyChanged()
+      if not skipNotify then
+        NotifyChanged()
+      end
     end
   )
 end
@@ -101,3 +104,21 @@ function QUICKEPGP.Items:Untrack(item)
     end
   end
 end
+
+function QUICKEPGP.Items:Deserialize()
+  if QUICKEPGP_LOOT then
+    for _, v in pairs(QUICKEPGP_LOOT) do
+      QUICKEPGP.Items:Track(v.Id, v.Expiration, v.Winner, true)
+    end
+    NotifyChanged()
+  end
+end
+
+local function Serialize()
+  QUICKEPGP_LOOT = {}
+  for k, v in pairs(QUICKEPGP.Items.Array) do
+    QUICKEPGP_LOOT[k] = {Id = v.Id, Winner = v.Winner, Expiration = v.Expiration}
+  end
+end
+
+QUICKEPGP.Items:AddChangeHandler(Serialize)

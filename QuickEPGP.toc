@@ -3,7 +3,7 @@
 ## Title: QuickEPGP
 ## Notes: QuickEPGP
 ## SavedVariables: QUICKEPGP_OPTIONS, QUICKEPGP_RAIDING_TIMESTAMP, QUICKEPGP_TIME_REWARDS
-## SavedVariablesPerCharacter:
+## SavedVariablesPerCharacter: QUICKEPGP_LOOT
 ## OptionalDeps: Ace3
 ## LoadOnDemand: 0
 ## DefaultState: enabled
