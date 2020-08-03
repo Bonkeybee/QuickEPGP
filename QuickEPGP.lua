@@ -78,7 +78,7 @@ QUICKEPGP.FRAME:SetScript("OnEvent", onEvent)
 
 SLASH_EPGP1 = "/epgp"
 SlashCmdList["EPGP"] = function(message)
-  local command, arg1 = strsplit(" ", message:lower())
+  local command, arg1, arg2, arg3 = strsplit(" ", message:lower())
   if (command == "") then
     QUICKEPGP.InterfaceOptionsFrame_OpenToCategory_Fix(QUICKEPGP.menu)
   elseif (command == "help") then
@@ -121,6 +121,8 @@ SlashCmdList["EPGP"] = function(message)
     QUICKEPGP.toggleMasterFrame()
   elseif command == "raid" then
     QUICKEPGP.RaidStandings:ToggleFrame()
+  elseif command == "award" and arg1 == "raid" and tonumber(arg2) then
+    QUICKEPGP.RaidReward(tonumber(arg2), arg3)
   else
     QUICKEPGP.error("invalid command - type `/epgp help` for a list of commands")
   end
