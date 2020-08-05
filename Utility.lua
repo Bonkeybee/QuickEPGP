@@ -8,9 +8,10 @@ local officerNoteUpdateTable = {}
 -- ############################################################
 
 local function onEvent(_, event)
-  if (event == "ADDON_LOADED") then
+  if (event == "ADDON_LOADED" and not loaded) then
     loaded = true
     QUICKEPGP:InitializeTooltip()
+    QUICKEPGP.Items:Initialize()
   end
 end
 

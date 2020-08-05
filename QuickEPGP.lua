@@ -1,6 +1,6 @@
 QUICKEPGP_ADDON_NAME, QUICKEPGP = ...
 QUICKEPGP.VERSION = GetAddOnMetadata(QUICKEPGP_ADDON_NAME, "Version")
-QUICKEPGP.LIBS = LibStub("AceAddon-3.0"):NewAddon(QUICKEPGP_ADDON_NAME, "AceComm-3.0")
+QUICKEPGP.LIBS = LibStub("AceAddon-3.0"):NewAddon(QUICKEPGP_ADDON_NAME, "AceComm-3.0", "AceTimer-3.0")
 QUICKEPGP.LIBS.GUI = LibStub("AceGUI-3.0")
 QUICKEPGP.LIBS.MinimapIcon = LibStub("LibDBIcon-1.0")
 QUICKEPGP.FRAME = CreateFrame("Frame")
@@ -78,7 +78,7 @@ QUICKEPGP.FRAME:SetScript("OnEvent", onEvent)
 
 SLASH_EPGP1 = "/epgp"
 SlashCmdList["EPGP"] = function(message)
-  local command, arg1 = strsplit(" ", message:lower())
+  local command, arg1, arg2, arg3 = strsplit(" ", message:lower())
   if (command == "") then
     QUICKEPGP.InterfaceOptionsFrame_OpenToCategory_Fix(QUICKEPGP.menu)
   elseif (command == "help") then
@@ -121,6 +121,10 @@ SlashCmdList["EPGP"] = function(message)
     QUICKEPGP.toggleMasterFrame()
   elseif command == "raid" then
     QUICKEPGP.RaidStandings:ToggleFrame()
+  elseif command == "award" and arg1 == "raid" and tonumber(arg2) then
+    QUICKEPGP.RaidReward(tonumber(arg2), arg3)
+  elseif command == "track" then
+    QUICKEPGP.Items:Track(string.sub(message, 7))
   else
     QUICKEPGP.error("invalid command - type `/epgp help` for a list of commands")
   end

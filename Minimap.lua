@@ -15,7 +15,7 @@ do
               QUICKEPGP.toggleMasterFrame()
             end
           elseif IsShiftKeyDown() then
-            QUICKEPGP.toggleRollFrame()
+            QUICKEPGP:ToggleRollFrame()
           else
             QUICKEPGP.RaidStandings:ToggleFrame()
           end
@@ -40,14 +40,32 @@ do
     }
   )
 
-  local f = CreateFrame("frame")
-  f:RegisterEvent("GUILD_ROSTER_UPDATE")
-  f:SetScript(
-    "OnEvent",
-    function(_, event, _, _)
-      if (event == "GUILD_ROSTER_UPDATE") then
-        QUICKEPGP.MinimapButton.text = QUICKEPGP.guildMemberPR(UnitName("player"), true)
+  local function Init()
+    local member = QUICKEPGP.GUILD:GetMemberInfo("player", true)
+    if member then
+      local function SetText()
+        QUICKEPGP.MinimapButton.text = string.format("%.2f", member.EP / member.GP)
+      end
+
+      SetText()
+      member:AddEventCallback(QUICKEPGP_MEMBER_EVENTS.UPDATED, SetText)
+      member:AddEventCallback(
+        QUICKEPGP_MEMBER_EVENTS.LOST_CONFIDENCE,
+        function()
+          member:TryRefresh()
+        end
+      )
+      return true
+    end
+  end
+
+  if not Init() then
+    local timerId
+    local function RepeatInit()
+      if Init() then
+        QUICKEPGP.LIBS:CancelTimer(timerId)
       end
     end
-  )
+    timerId = QUICKEPGP.LIBS:ScheduleRepeatingTimer(RepeatInit, 5)
+  end
 end
