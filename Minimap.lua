@@ -49,12 +49,13 @@ do
 
       SetText()
       member:AddEventCallback(QUICKEPGP_MEMBER_EVENTS.UPDATED, SetText)
-      member:AddEventCallback(
-        QUICKEPGP_MEMBER_EVENTS.LOST_CONFIDENCE,
+      QUICKEPGP.LIBS:ScheduleRepeatingTimer(
         function()
           member:TryRefresh()
-        end
+        end,
+        30
       )
+
       return true
     end
   end
