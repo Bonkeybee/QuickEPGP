@@ -36,7 +36,7 @@ local function CreateTrackingRow(parent, scroller)
         if root.Item.Winner then
           root.Item:RevertWinner()
         else
-          root.Item:startRolling()
+          root.Item:StartRolling()
         end
       end
     end
