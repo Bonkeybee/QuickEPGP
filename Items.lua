@@ -1,6 +1,8 @@
 local MODULE_NAME = "QEPGP-Items"
 
-QUICKEPGP.Items = {Array = {}, Deserializing = false}
+QUICKEPGP.Items = CreateFrame("Frame")
+--{Array = {}, Deserializing = false}
+QUICKEPGP.Items.Array = {}
 
 local function NotifyChanged()
   if QUICKEPGP.Items.ChangeHandlers then
@@ -27,7 +29,7 @@ function QUICKEPGP.Items:TrackFromBagSlot(bagId, slotId)
   print("Not implemented.", bagId, slotId)
 end
 
-function QUICKEPGP.Items:Track(itemIdOrLink, expiration, winner, skipNotify)
+function QUICKEPGP.Items:Track(itemIdOrLink, expiration, winner, skipNotify, onlyIfBoP)
   local itemInfo = Item:CreateFromItemID(tonumber(itemIdOrLink) or QUICKEPGP.itemIdFromLink(itemIdOrLink))
   itemInfo:ContinueOnItemLoad(
     function()
@@ -36,11 +38,18 @@ function QUICKEPGP.Items:Track(itemIdOrLink, expiration, winner, skipNotify)
         return
       end
 
+      local id = itemInfo:GetItemID()
+      local _, link, _, _, _, _, _, _, _, icon, _, _, _, bindType = GetItemInfo(id)
+
+      if onlyIfBoP and not bindType == 1 then
+        return
+      end
+
       local item = {
         Expiration = expiration or (GetServerTime() + 7200),
-        Link = itemInfo:GetItemLink(),
-        Id = itemInfo:GetItemID(),
-        Icon = itemInfo:GetItemIcon(),
+        Link = link,
+        Id = id,
+        Icon = icon,
         Winner = winner
       }
 
@@ -189,3 +198,24 @@ function QUICKEPGP.Items:Initialize()
     QUICKEPGP.LIBS:RegisterComm(MODULE_NAME, Receive)
   end
 end
+
+local function onEvent(self, event, ...)
+  if QUICKEPGP_OPTIONS.LOOTING.autotrack and event == "CHAT_MSG_LOOT" and IsLootMaster() then
+    local text, _, _, _, playerName2 = ...
+    local member = QUICKEPGP.GUILD:GetMemberInfo(playerName2)
+    if
+      member and
+        ((QUICKEPGP_OPTIONS.LOOTING.equiplootee == 1 and QUICKEPGP.isMasterLooter(member.Name)) or
+          (QUICKEPGP_OPTIONS.LOOTING.equiplootee == 2 and QUICKEPGP.isMainAssist(member.Name)) or
+          (QUICKEPGP_OPTIONS.LOOTING.equiplootee == 3 and QUICKEPGP_OPTIONS.LOOTING.equiplooteechar == member.Name))
+     then
+      local itemId = tonumber(text:match("|Hitem:(%d+):"))
+      if itemId then
+        self:Track(itemId, nil, nil, false, true)
+      end
+    end
+  end
+end
+
+QUICKEPGP.Items:RegisterEvent("CHAT_MSG_LOOT")
+QUICKEPGP.Items:SetScript("OnEvent", onEvent)
