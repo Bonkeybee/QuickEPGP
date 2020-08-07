@@ -103,7 +103,7 @@ local function Deserialize()
     QUICKEPGP.Items.Deserializing = true
     QUICKEPGP.Items.Array = {}
     for _, v in pairs(QUICKEPGP_LOOT) do
-      if v and v.Item then
+      if v and v.Id then
         QUICKEPGP.Items:Track(v.Id, v.Expiration, v.Winner, true)
       end
     end
