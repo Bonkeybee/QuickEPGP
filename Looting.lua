@@ -130,14 +130,14 @@ end
 local function groupLoot(i)
   if (GetLootMethod() == GROUP_LOOT) then
     safeLootSlot(i)
-  --(roll frame)
+    --(roll frame)
   end
 end
 
 local function needBeforeGreed(i)
   if (GetLootMethod() == NEED_BEFORE_GREED) then
     safeLootSlot(i)
-  --(roll frame)
+    --(roll frame)
   end
 end
 
@@ -184,7 +184,7 @@ local function onEvent(_, event, arg1, arg2)
     if (event == "PLAYER_ENTERING_WORLD") then
       local isInitialLogin = arg1
       local isReloadingUi = arg2
-      if (not isInitialLogin and not isReloadingUi and QUICKEPGP.isInRaidInstance()) then
+      if (QUICKEPGP_OPTIONS.LOOTING.automaster and not isInitialLogin and not isReloadingUi and QUICKEPGP.isInRaidInstance()) then
         setMasterLoot()
       end
     end

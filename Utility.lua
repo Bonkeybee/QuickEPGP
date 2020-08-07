@@ -20,9 +20,9 @@ local work = {}
 local function onUpdate()
   if (loaded) then
     local now = GetTime()
-    local delay = 1
+    local delay = 5
     if (QUICKEPGP.count(officerNoteUpdateTable) > 0) then
-      delay = 0.1
+      delay = 1
     end
 
     if (now - lastUpdate >= delay) then

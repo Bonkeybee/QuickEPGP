@@ -46,8 +46,8 @@ local OVERRIDE = {
   [18646] = 136, --The Eye of Divinity
   [17204] = 712, --Eye of Sulfuras
   --ONYXIA'S LAIR OVERRIDES
-  [18422] = 32, --Head of Onyxia TODO FREE P5
-  [18423] = 32, --Head of Onyxia TODO FREE P5
+  [18422] = 0, --Head of Onyxia
+  [18423] = 0, --Head of Onyxia
   [18705] = 187, --Mature Black Dragon Sinew
   --BLACKWING LAIR OVERRIDES
   [19002] = 53, --Head of Nefarian TODO FREE P6
