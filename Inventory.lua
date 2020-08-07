@@ -24,7 +24,6 @@ local function EnumerateTooltipLines(bagId, slotId)
       if (text) then
         local hours, minutes = getTradableTime(text)
         if (hours or minutes) then
-
           return hours, minutes
         end
       end
@@ -55,7 +54,7 @@ end
 local function onEvent(_, event, arg1)
   if (QUICKEPGP_OPTIONS.LOOTING.enabled) then
     if (event == "PLAYER_ENTERING_WORLD" or event == "BAG_UPDATE") then
-      recordAllItems()
+    --recordAllItems()
     end
   end
 end
