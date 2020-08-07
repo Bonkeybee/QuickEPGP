@@ -47,7 +47,12 @@ local function CreateTrackingRow(parent, scroller)
     if item then
       self.ItemText:SetText(item.Link)
       if item.Winner then
-        self.DetailText:SetText(item.Winner)
+        local winnerMember = QUICKEPGP.GUILD:GetMemberInfo(item.Winner, true)
+        if winnerMember then
+          self.DetailText:SetText(QUICKEPGP.colorByClass(item.Winner, winnerMember.InvariantClass))
+        else
+          self.DetailText:SetText(item.Winner)
+        end
         self.RollButton:SetText("Revert")
       else
         self.RollButton:SetText("Roll")
