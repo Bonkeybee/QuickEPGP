@@ -133,7 +133,7 @@ local function Share()
     local message = ""
 
     for _, v in pairs(QUICKEPGP.Items.Array) do
-      message = string.format("%s%s:%s:%s;", message, v.Id, v.Winner, v.Expiration)
+      message = string.format("%s%s:%s:%s;", message, v.Id, v.Winner or "", v.Expiration)
     end
 
     QUICKEPGP.LIBS:SendCommMessage(MODULE_NAME, message, "RAID", nil, "BULK")
