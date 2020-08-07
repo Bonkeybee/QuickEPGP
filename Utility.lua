@@ -68,23 +68,6 @@ QUICKEPGP.isInRaidInstance = function()
   return false
 end
 
-QUICKEPGP.colorByRarity = function(name)
-  if (name == "Poor") then
-    return "|cff9d9d9d" .. name .. "|r"
-  elseif (name == "Common") then
-    return "|cffffffff" .. name .. "|r"
-  elseif (name == "Uncommon") then
-    return "|cff1eff00" .. name .. "|r"
-  elseif (name == "Rare") then
-    return "|cff0070dd" .. name .. "|r"
-  elseif (name == "Epic") then
-    return "|cffa335ee" .. name .. "|r"
-  elseif (name == "Legendary") then
-    return "|cffff8000" .. name .. "|r"
-  end
-  return name
-end
-
 QUICKEPGP.colorByClass = function(name, class)
   local _, _, _, hex = GetClassColor(class)
   return "|c" .. hex .. name .. "|r"

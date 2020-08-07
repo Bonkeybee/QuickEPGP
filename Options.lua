@@ -16,14 +16,11 @@ QUICKEPGP.SOUNDS = {
   [5] = "Interface\\AddOns\\QuickEPGP\\Sounds\\anawesomechoice.ogg"
 }
 
-local LOOT_NAMES = {
-  [0] = QUICKEPGP.colorByRarity("Poor"),
-  [1] = QUICKEPGP.colorByRarity("Common"),
-  [2] = QUICKEPGP.colorByRarity("Uncommon"),
-  [3] = QUICKEPGP.colorByRarity("Rare"),
-  [4] = QUICKEPGP.colorByRarity("Epic"),
-  [5] = QUICKEPGP.colorByRarity("Legendary")
-}
+local LOOT_NAMES = {}
+
+for i = 0, 5 do
+  LOOT_NAMES[i] = ITEM_QUALITY_COLORS[i].hex .. _G["ITEM_QUALITY" .. i .. "_DESC"] .. "|r"
+end
 
 local options = {
   type = "group",
@@ -314,8 +311,10 @@ QUICKEPGP.DefaultConfig = function(QUICKEPGP_OPTIONS)
   QUICKEPGP_OPTIONS.LOOTING.masterthreshold = default(QUICKEPGP_OPTIONS.LOOTING.masterthreshold, 2)
   QUICKEPGP_OPTIONS.ROLLING = default(QUICKEPGP_OPTIONS.ROLLING, {})
   QUICKEPGP_OPTIONS.ROLLING.sound = default(QUICKEPGP_OPTIONS.ROLLING.sound, true)
-  QUICKEPGP_OPTIONS.ROLLING.openSound = default(QUICKEPGP_OPTIONS.ROLLING.openSound, QUICKEPGP_OPTIONS.ROLLING.sound and 4 or 1)
-  QUICKEPGP_OPTIONS.ROLLING.winSound = default(QUICKEPGP_OPTIONS.ROLLING.winSound, QUICKEPGP_OPTIONS.ROLLING.sound and 5 or 1)
+  QUICKEPGP_OPTIONS.ROLLING.openSound =
+    default(QUICKEPGP_OPTIONS.ROLLING.openSound, QUICKEPGP_OPTIONS.ROLLING.sound and 4 or 1)
+  QUICKEPGP_OPTIONS.ROLLING.winSound =
+    default(QUICKEPGP_OPTIONS.ROLLING.winSound, QUICKEPGP_OPTIONS.ROLLING.sound and 5 or 1)
   QUICKEPGP_OPTIONS.MINIMAP = default(QUICKEPGP_OPTIONS.MINIMAP, {hide = false})
   QUICKEPGP_OPTIONS.TOOLTIP = default(QUICKEPGP_OPTIONS.tooltips, {})
   QUICKEPGP_OPTIONS.TOOLTIP.enabled = default(QUICKEPGP_OPTIONS.TOOLTIP.enabled, true)
