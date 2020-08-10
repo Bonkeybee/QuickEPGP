@@ -17,18 +17,21 @@ end
 
 local delay = 0.250
 local lastUpdate = 0
+local lastIndex = nil
 local function onUpdate()
   if (loaded) then
     local now = GetTime()
-    local name, delta = next(officerNoteUpdateTable)
+    local name, delta = next(officerNoteUpdateTable, lastIndex)
 
     if name and delta and now - lastUpdate >= delay then
       local member = QUICKEPGP.GUILD:GetMemberInfo(name)
 
       if not member then
         officerNoteUpdateTable[name] = nil -- remove non-guild members
+        lastIndex = nil
       elseif not member.OldEP and not member.OldGP then
         officerNoteUpdateTable[name] = nil
+        lastIndex = nil
         if delta.EP > 0 or delta.GP > 0 then
           local ep = member:CalculateChange(delta.EP, "EP") or QUICKEPGP.MINIMUM_EP
           local gp = member:CalculateChange(delta.GP, "GP") or QUICKEPGP.MINIMUM_GP
@@ -36,6 +39,8 @@ local function onUpdate()
           GuildRosterSetOfficerNote(member.Id, ep .. "," .. gp)
           lastUpdate = now
         end
+      else
+        lastIndex = name -- Can't update this member yet. Move on to the next one.
       end
     end
   end
