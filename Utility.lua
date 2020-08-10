@@ -37,9 +37,13 @@ local function onUpdate()
             if (QUICKEPGP.count(officerNoteUpdateTable[name]) <= 0) then
               officerNoteUpdateTable[name] = nil
             end
-            local ep = (QUICKEPGP.calculateChange(name, epgp[1], "EP") or QUICKEPGP.MINIMUM_EP)
-            local gp = (QUICKEPGP.calculateChange(name, epgp[2], "GP") or QUICKEPGP.MINIMUM_GP)
-            GuildRosterSetOfficerNote(QUICKEPGP.guildMemberIndex(name), ep .. "," .. gp)
+            local member = QUICKEPGP.GUILD:GetMemberInfo(name)
+            if member then
+              local ep = member:CalculateChange(epgp[1], "EP") or QUICKEPGP.MINIMUM_EP
+              local gp = member:CalculateChange(epgp[2], "GP") or QUICKEPGP.MINIMUM_GP
+              member:OverrideEpGp(ep, gp)
+              GuildRosterSetOfficerNote(member.Id, ep .. "," .. gp)
+            end
           end
         end
         break
