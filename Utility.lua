@@ -15,38 +15,27 @@ local function onEvent(_, event)
   end
 end
 
-local delay = 1
-local lastUpdate = GetTime()
+local delay = 0.250
+local lastUpdate = 0
 local function onUpdate()
   if (loaded) then
     local now = GetTime()
-    if (QUICKEPGP.count(officerNoteUpdateTable) > 0) then
-      delay = 0.250
-    else
-      delay = min(delay * 2, 60)
-    end
+    local name, delta = next(officerNoteUpdateTable)
 
-    if (now - lastUpdate >= delay) then
-      lastUpdate = now
-      print("updating")
-      for name, epgpTable in pairs(officerNoteUpdateTable) do
-        if (QUICKEPGP.count(epgpTable) > 0) then
-          local index, epgp = next(epgpTable)
-          if (epgp ~= nil) then
-            epgpTable[index] = nil
-            if (QUICKEPGP.count(officerNoteUpdateTable[name]) <= 0) then
-              officerNoteUpdateTable[name] = nil
-            end
-            local member = QUICKEPGP.GUILD:GetMemberInfo(name)
-            if member then
-              local ep = member:CalculateChange(epgp[1], "EP") or QUICKEPGP.MINIMUM_EP
-              local gp = member:CalculateChange(epgp[2], "GP") or QUICKEPGP.MINIMUM_GP
-              member:OverrideEpGp(ep, gp)
-              GuildRosterSetOfficerNote(member.Id, ep .. "," .. gp)
-            end
-          end
+    if name and delta and now - lastUpdate >= delay then
+      local member = QUICKEPGP.GUILD:GetMemberInfo(name)
+
+      if not member then
+        officerNoteUpdateTable[name] = nil -- remove non-guild members
+      elseif not member.OldEP and not member.OldGP then
+        officerNoteUpdateTable[name] = nil
+        if delta.EP > 0 or delta.GP > 0 then
+          local ep = member:CalculateChange(delta.EP, "EP") or QUICKEPGP.MINIMUM_EP
+          local gp = member:CalculateChange(delta.GP, "GP") or QUICKEPGP.MINIMUM_GP
+          member:OverrideEpGp(ep, gp)
+          GuildRosterSetOfficerNote(member.Id, ep .. "," .. gp)
+          lastUpdate = now
         end
-        break
       end
     end
   end
@@ -149,7 +138,7 @@ function QUICKEPGP.NormalizeName(name)
   end
 
   local index = name:find("%-")
-  if index > 0 then
+  if index and index > 0 then
     name = name:sub(1, index - 1)
   end
 
@@ -164,11 +153,14 @@ function QUICKEPGP.NormalizeName(name)
 end
 
 QUICKEPGP.SafeSetOfficerNote = function(name, dep, dgp)
-  if (not officerNoteUpdateTable[name]) then
-    officerNoteUpdateTable[name] = {}
+  local delta = officerNoteUpdateTable[name]
+
+  if delta then
+    delta.EP = delta.EP + (dep or 0)
+    delta.GP = delta.GP + (dgp or 0)
+  else
+    officerNoteUpdateTable[name] = {EP = dep or 0, GP = dgp or 0}
   end
-  print(name .. " : " .. (dep or 0) .. " , " .. (dgp or 0))
-  tinsert(officerNoteUpdateTable[name], {dep, dgp})
 end
 
 QUICKEPGP.pluralize = function(single, plural, number)
