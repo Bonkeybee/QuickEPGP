@@ -20,13 +20,22 @@ function Member:new(name)
 end
 
 function Member:Update(id, level, class, officerNote, invariantClass)
-  local ep, gp, _ = strsplit(",", officerNote)
   self.Id = id
   self.Level = level
   self.Class = class
   self.InvariantClass = invariantClass
-  self.EP = tonumber(ep) or QUICKEPGP.MINIMUM_EP
-  self.GP = tonumber(gp) or QUICKEPGP.MINIMUM_GP
+
+  local ep, gp, _ = strsplit(",", officerNote)
+  ep = tonumber(ep) or QUICKEPGP.MINIMUM_EP
+  gp = tonumber(gp) or QUICKEPGP.MINIMUM_GP
+
+  if (ep ~= self.OldEP or gp ~= self.OldGP) then
+    self.EP = ep
+    self.GP = gp
+    self.OldEP = nil
+    self.OldGP = nil
+  end
+
   self.Confident = true
   self:RaiseEvent(QUICKEPGP_MEMBER_EVENTS.UPDATED)
 end
@@ -50,6 +59,21 @@ end
 
 function Member:GetEpGpPrMessage()
   return string.format("%.2f PR (%d ep / %d gp)", self.EP / self.GP, self.EP, self.GP)
+end
+
+function Member:OverrideEpGp(ep, gp)
+  self.OldEP = self.OldEP or self.EP
+  self.OldGP = self.OldGP or self.GP
+  self.EP = tonumber(ep)
+  self.GP = tonumber(gp)
+end
+
+function Member:CalculateChange(value, type)
+  if type == "EP" then
+    return max(self.EP + (value or 0), QUICKEPGP.MINIMUM_EP)
+  elseif type == "GP" then
+    return max(self.GP + (value or 0), QUICKEPGP.MINIMUM_GP)
+  end
 end
 
 function Member:AddEventCallback(event, callback)
@@ -86,21 +110,6 @@ local function onEvent(_, event)
   end
 end
 
-local function NormalizeName(name)
-  local normalized = UnitName(name)
-
-  if normalized then
-    return normalized
-  end
-
-  return name:gsub(
-    "(%a)([%w_']*)",
-    function(first, rest)
-      return first:upper() .. rest:lower()
-    end
-  )
-end
-
 -- ############################################################
 -- ##### GLOBAL FUNCTIONS #####################################
 -- ############################################################
@@ -122,7 +131,7 @@ function QUICKEPGP.GUILD:RefreshAll()
 end
 
 function QUICKEPGP.GUILD:GetMemberInfo(name, silent)
-  local normalizedName = NormalizeName(name)
+  local normalizedName = QUICKEPGP.NormalizeName(name)
 
   local member = self.Members[normalizedName]
 
