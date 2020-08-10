@@ -20,9 +20,9 @@ local work = {}
 local function onUpdate()
   if (loaded) then
     local now = GetTime()
-    local delay = 5
+    local delay = 1
     if (QUICKEPGP.count(officerNoteUpdateTable) > 0) then
-      delay = 1
+      delay = 0.250
     end
 
     if (now - lastUpdate >= delay) then
@@ -48,6 +48,7 @@ local function onUpdate()
               GuildRosterSetOfficerNote(QUICKEPGP.guildMemberIndex(name), ep .. "," .. gp)
             end
           end
+          break
         end
       end
     end
