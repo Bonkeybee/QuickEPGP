@@ -15,41 +15,34 @@ local function onEvent(_, event)
   end
 end
 
+local delay = 1
 local lastUpdate = GetTime()
-local work = {}
 local function onUpdate()
   if (loaded) then
     local now = GetTime()
-    local delay = 1
     if (QUICKEPGP.count(officerNoteUpdateTable) > 0) then
       delay = 0.250
+    else
+      delay = min(delay * 2, 60)
     end
 
     if (now - lastUpdate >= delay) then
       lastUpdate = now
-      if (QUICKEPGP.count(work) > 0) then
-        for name, epgp in pairs(work) do
-          if (QUICKEPGP.guildMemberEP(name) == epgp[1] and QUICKEPGP.guildMemberGP(name) == epgp[2]) then
-            work[name] = nil
-          end
-        end
-      else
-        for name, epgpTable in pairs(officerNoteUpdateTable) do
-          if (QUICKEPGP.count(epgpTable) > 0) then
-            local index, epgp = next(epgpTable)
-            if (epgp ~= nil) then
-              epgpTable[index] = nil
-              if (QUICKEPGP.count(officerNoteUpdateTable[name]) <= 0) then
-                officerNoteUpdateTable[name] = nil
-              end
-              local ep = (QUICKEPGP.calculateChange(name, epgp[1], "EP") or QUICKEPGP.MINIMUM_EP)
-              local gp = (QUICKEPGP.calculateChange(name, epgp[2], "GP") or QUICKEPGP.MINIMUM_GP)
-              work[name] = {ep, gp}
-              GuildRosterSetOfficerNote(QUICKEPGP.guildMemberIndex(name), ep .. "," .. gp)
+      print("updating")
+      for name, epgpTable in pairs(officerNoteUpdateTable) do
+        if (QUICKEPGP.count(epgpTable) > 0) then
+          local index, epgp = next(epgpTable)
+          if (epgp ~= nil) then
+            epgpTable[index] = nil
+            if (QUICKEPGP.count(officerNoteUpdateTable[name]) <= 0) then
+              officerNoteUpdateTable[name] = nil
             end
+            local ep = (QUICKEPGP.calculateChange(name, epgp[1], "EP") or QUICKEPGP.MINIMUM_EP)
+            local gp = (QUICKEPGP.calculateChange(name, epgp[2], "GP") or QUICKEPGP.MINIMUM_GP)
+            GuildRosterSetOfficerNote(QUICKEPGP.guildMemberIndex(name), ep .. "," .. gp)
           end
-          break
         end
+        break
       end
     end
   end
@@ -144,10 +137,33 @@ QUICKEPGP.getSimpleCharacterName = function(name, tolower)
   return simpleName
 end
 
+function QUICKEPGP.NormalizeName(name)
+  local normalized = UnitName(name)
+
+  if normalized then
+    return normalized
+  end
+
+  local index = name:find("%-")
+  if index > 0 then
+    name = name:sub(1, index - 1)
+  end
+
+  name =
+    name:gsub(
+    "(%a)([%w_']*)",
+    function(first, rest)
+      return first:upper() .. rest:lower()
+    end
+  )
+  return name
+end
+
 QUICKEPGP.SafeSetOfficerNote = function(name, dep, dgp)
   if (not officerNoteUpdateTable[name]) then
     officerNoteUpdateTable[name] = {}
   end
+  print(name .. " : " .. (dep or 0) .. " , " .. (dgp or 0))
   tinsert(officerNoteUpdateTable[name], {dep, dgp})
 end
 

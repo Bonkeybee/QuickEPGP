@@ -213,11 +213,12 @@ QUICKEPGP.getItemGP = function(itemId, silent)
 end
 
 QUICKEPGP.modifyEPGP = function(name, dep, dgp, reason, mass)
-  if (QUICKEPGP.GUILD:GetMemberInfo(name)) then
+  local member = QUICKEPGP.GUILD:GetMemberInfo(name)
+  if (member) then
     if (not mass) then
-      notifyEPGP(name, dep, reason, EP)
-      notifyEPGP(name, dgp, reason, GP)
+      notifyEPGP(member.Name, dep, reason, EP)
+      notifyEPGP(member.Name, dgp, reason, GP)
     end
-    QUICKEPGP.SafeSetOfficerNote(name, dep, dgp)
+    QUICKEPGP.SafeSetOfficerNote(member.Name, dep, dgp)
   end
 end

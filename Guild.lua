@@ -13,10 +13,7 @@ QUICKEPGP_MEMBER_EVENTS = {
 local Member = {}
 
 function Member:new(name)
-  return setmetatable(
-    {Confident = false, Name = name, EP = QUICKEPGP.MINIMUM_EP, GP = QUICKEPGP.MINIMUM_GP},
-    {__index = self}
-  )
+  return setmetatable({Confident = false, Name = name, EP = QUICKEPGP.MINIMUM_EP, GP = QUICKEPGP.MINIMUM_GP}, {__index = self})
 end
 
 function Member:Update(id, level, class, officerNote, invariantClass)
@@ -86,21 +83,6 @@ local function onEvent(_, event)
   end
 end
 
-local function NormalizeName(name)
-  local normalized = UnitName(name)
-
-  if normalized then
-    return normalized
-  end
-
-  return name:gsub(
-    "(%a)([%w_']*)",
-    function(first, rest)
-      return first:upper() .. rest:lower()
-    end
-  )
-end
-
 -- ############################################################
 -- ##### GLOBAL FUNCTIONS #####################################
 -- ############################################################
@@ -122,7 +104,7 @@ function QUICKEPGP.GUILD:RefreshAll()
 end
 
 function QUICKEPGP.GUILD:GetMemberInfo(name, silent)
-  local normalizedName = NormalizeName(name)
+  local normalizedName = QUICKEPGP.NormalizeName(name)
 
   local member = self.Members[normalizedName]
 
