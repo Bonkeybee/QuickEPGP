@@ -139,7 +139,7 @@ end
 
 local function Share()
   if IsLootMaster() then
-    local message = ""
+    local message = "A"
 
     for _, v in pairs(QUICKEPGP.Items.Array) do
       message = string.format("%s%s:%s:%s;", message, v.Id, v.Winner or "", v.Expiration)
@@ -158,35 +158,41 @@ local function FindRef(table, id, expiration)
 end
 
 local function Receive(prefix, message, _, sender)
-  if prefix == MODULE_NAME and not UnitIsUnit(sender, "player") then
-    local entries = {strsplit(";", message)}
+  if prefix == MODULE_NAME and not UnitIsUnit(sender, "player") and message:len() > 0 then
+    local prefix2 = string.sub(message, 1, 1)
+    if prefix2 == "A" then
+      local entries = {strsplit(";", string.sub(message, 2))}
 
-    local oldItems = QUICKEPGP.Items.Array
-    QUICKEPGP.Items.Array = {}
+      local oldItems = QUICKEPGP.Items.Array
+      QUICKEPGP.Items.Array = {}
 
-    for _, v in pairs(entries) do
-      local id, winner, expiration = strsplit(":", v)
-      id = tonumber(id)
-      expiration = tonumber(expiration)
-      if id then
-        local existing = FindRef(oldItems, id, expiration)
-        if existing then
-          existing.Winner = winner
-          QUICKEPGP.Items.Array[#QUICKEPGP.Items.Array + 1] = existing
-        else
-          QUICKEPGP.Items:Track(id, expiration, winner, true)
+      for _, v in pairs(entries) do
+        local id, winner, expiration = strsplit(":", v)
+        id = tonumber(id)
+        expiration = tonumber(expiration)
+        if winner and winner:len() == 0 then
+          winner = nil
+        end
+        if id then
+          local existing = FindRef(oldItems, id, expiration)
+          if existing then
+            existing.Winner = winner
+            QUICKEPGP.Items.Array[#QUICKEPGP.Items.Array + 1] = existing
+          else
+            QUICKEPGP.Items:Track(id, expiration, winner, true)
+          end
         end
       end
+
+      table.sort(
+        QUICKEPGP.Items.Array,
+        function(a, b)
+          return a.Expiration < b.Expiration
+        end
+      )
+
+      NotifyChanged()
     end
-
-    table.sort(
-      QUICKEPGP.Items.Array,
-      function(a, b)
-        return a.Expiration < b.Expiration
-      end
-    )
-
-    NotifyChanged()
   end
 end
 
