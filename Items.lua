@@ -4,6 +4,23 @@ QUICKEPGP.Items = CreateFrame("Frame")
 --{Array = {}, Deserializing = false}
 QUICKEPGP.Items.Array = {}
 
+local function IsLootMaster()
+  local method, partyId, _ = GetLootMethod()
+  return method == "master" and partyId == 0
+end
+
+local function Share(force)
+  if force or IsLootMaster() then
+    local message = "A"
+
+    for _, v in pairs(QUICKEPGP.Items.Array) do
+      message = string.format("%s%s:%s:%s;", message, v.Id, v.Winner or "", v.Expiration)
+    end
+
+    QUICKEPGP.LIBS:SendCommMessage(MODULE_NAME, message, "RAID", nil, "BULK")
+  end
+end
+
 local function NotifyChanged()
   if QUICKEPGP.Items.ChangeHandlers then
     for callback in pairs(QUICKEPGP.Items.ChangeHandlers) do
@@ -58,8 +75,21 @@ function QUICKEPGP.Items:Track(itemIdOrLink, expiration, winner, skipNotify, onl
       end
 
       function item:SetWinner(name)
-        self.Winner = name
-        NotifyChanged()
+        local changed = false
+        if name and name:len() > 0 and name ~= self.Winner then
+          self.Winner = name
+          changed = true
+        elseif self.Winner then
+          self.Winner = nil
+          changed = true
+        end
+        if changed then
+          if IsLootMaster() then
+            NotifyChanged()
+          else
+            Share(true)
+          end
+        end
       end
 
       function item:RevertWinner()
@@ -129,23 +159,6 @@ local function Serialize()
       QUICKEPGP_LOOT[k] = {Id = v.Id, Winner = v.Winner, Expiration = v.Expiration}
     end
     QUICKEPGP.Items.Serializing = false
-  end
-end
-
-local function IsLootMaster()
-  local method, partyId, _ = GetLootMethod()
-  return method == "master" and partyId == 0
-end
-
-local function Share()
-  if IsLootMaster() then
-    local message = "A"
-
-    for _, v in pairs(QUICKEPGP.Items.Array) do
-      message = string.format("%s%s:%s:%s;", message, v.Id, v.Winner or "", v.Expiration)
-    end
-
-    QUICKEPGP.LIBS:SendCommMessage(MODULE_NAME, message, "RAID", nil, "BULK")
   end
 end
 

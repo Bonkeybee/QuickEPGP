@@ -214,13 +214,14 @@ local function endRolling(cancel)
       end
     end
   end
-  QUICKEPGP.LIBS:SendCommMessage(
-    MODULE_NAME,
-    "CRF" .. DELIMITER .. (currentItem or EMPTY) .. DELIMITER .. (highestRoller or EMPTY),
-    "RAID",
-    nil,
-    "ALERT"
-  )
+  local message = "CRF" .. DELIMITER .. (currentItem or EMPTY) .. DELIMITER .. (highestRoller or EMPTY)
+  QUICKEPGP.LIBS:SendCommMessage(MODULE_NAME, message, "RAID", nil, "ALERT")
+  if QUICKEPGP.ROLLING.TrackedItem and QUICKEPGP.ROLLING.TrackedItem.Link == currentItem then
+    QUICKEPGP.ROLLING.TrackedItem:SetWinner(highestRoller)
+  end
+  QUICKEPGP.ROLLING.TrackedItem = nil
+  QUICKEPGP:CloseRollFrame()
+  clearRollData()
 end
 
 local handleRollFrameEvent = function(module, message, distribution, _)
@@ -240,11 +241,10 @@ local handleRollFrameEvent = function(module, message, distribution, _)
           PlaySoundFile(soundFile, "Master")
         end
       end
-      if QUICKEPGP.ROLLING.TrackedItem and QUICKEPGP.ROLLING.TrackedItem.Link == param1 then
-        QUICKEPGP.ROLLING.TrackedItem:SetWinner(param2)
+      if not rolling then
+        QUICKEPGP:CloseRollFrame()
+        clearRollData()
       end
-      QUICKEPGP:CloseRollFrame()
-      clearRollData()
     elseif (event == "URF" and not rolling) then
       setCurrentItem(param1)
       setHighestRoller(param2)
