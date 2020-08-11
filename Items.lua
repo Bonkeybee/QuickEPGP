@@ -41,7 +41,7 @@ function QUICKEPGP.Items:Track(itemIdOrLink, expiration, winner, skipNotify, onl
       local id = itemInfo:GetItemID()
       local _, link, _, _, _, _, _, _, _, icon, _, _, _, bindType = GetItemInfo(id)
 
-      if onlyIfBoP and not bindType == 1 then
+      if onlyIfBoP and bindType ~= 1 then
         return
       end
 
