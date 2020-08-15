@@ -156,8 +156,20 @@ local options = {
             return QUICKEPGP_OPTIONS.LOOTING.masterthreshold
           end
         },
-        break3 = {
+        autotrack = {
           order = 9,
+          name = "Auto-Track loot",
+          desc = "Automatically add Bind on Pickup loot to the tracker in the master loot window.",
+          type = "toggle",
+          set = function(_, val)
+            QUICKEPGP_OPTIONS.LOOTING.autotrack = val
+          end,
+          get = function()
+            return QUICKEPGP_OPTIONS.LOOTING.autotrack
+          end
+        },
+        break3 = {
+          order = 10,
           name = "Masterloot Settings (Equipment)",
           type = "header"
         },
@@ -308,6 +320,7 @@ QUICKEPGP.DefaultConfig = function(QUICKEPGP_OPTIONS)
   QUICKEPGP_OPTIONS.LOOTING.otherlootee = default(QUICKEPGP_OPTIONS.LOOTING.otherlootee, 2)
   QUICKEPGP_OPTIONS.LOOTING.otherrarity = default(QUICKEPGP_OPTIONS.LOOTING.otherrarity, 1)
   QUICKEPGP_OPTIONS.LOOTING.automaster = default(QUICKEPGP_OPTIONS.LOOTING.automaster, false)
+  QUICKEPGP_OPTIONS.LOOTING.autotrack = default(QUICKEPGP_OPTIONS.LOOTING.autotrack, true)
   QUICKEPGP_OPTIONS.LOOTING.masterthreshold = default(QUICKEPGP_OPTIONS.LOOTING.masterthreshold, 2)
   QUICKEPGP_OPTIONS.ROLLING = default(QUICKEPGP_OPTIONS.ROLLING, {})
   QUICKEPGP_OPTIONS.ROLLING.sound = default(QUICKEPGP_OPTIONS.ROLLING.sound, true)

@@ -1,6 +1,25 @@
 local MODULE_NAME = "QEPGP-Items"
 
-QUICKEPGP.Items = {Array = {}, Deserializing = false}
+QUICKEPGP.Items = CreateFrame("Frame")
+--{Array = {}, Deserializing = false}
+QUICKEPGP.Items.Array = {}
+
+local function IsLootMaster()
+  local method, partyId, _ = GetLootMethod()
+  return method == "master" and partyId == 0
+end
+
+local function Share(force)
+  if force or IsLootMaster() then
+    local message = "A"
+
+    for _, v in pairs(QUICKEPGP.Items.Array) do
+      message = string.format("%s%s:%s:%s;", message, v.Id, v.Winner or "", v.Expiration)
+    end
+
+    QUICKEPGP.LIBS:SendCommMessage(MODULE_NAME, message, "RAID", nil, "BULK")
+  end
+end
 
 local function NotifyChanged()
   if QUICKEPGP.Items.ChangeHandlers then
@@ -27,7 +46,7 @@ function QUICKEPGP.Items:TrackFromBagSlot(bagId, slotId)
   print("Not implemented.", bagId, slotId)
 end
 
-function QUICKEPGP.Items:Track(itemIdOrLink, expiration, winner, skipNotify)
+function QUICKEPGP.Items:Track(itemIdOrLink, expiration, winner, skipNotify, onlyIfBoP)
   local itemInfo = Item:CreateFromItemID(tonumber(itemIdOrLink) or QUICKEPGP.itemIdFromLink(itemIdOrLink))
   itemInfo:ContinueOnItemLoad(
     function()
@@ -36,11 +55,18 @@ function QUICKEPGP.Items:Track(itemIdOrLink, expiration, winner, skipNotify)
         return
       end
 
+      local id = itemInfo:GetItemID()
+      local _, link, _, _, _, _, _, _, _, icon, _, _, _, bindType = GetItemInfo(id)
+
+      if onlyIfBoP and bindType ~= 1 then
+        return
+      end
+
       local item = {
         Expiration = expiration or (GetServerTime() + 7200),
-        Link = itemInfo:GetItemLink(),
-        Id = itemInfo:GetItemID(),
-        Icon = itemInfo:GetItemIcon(),
+        Link = link,
+        Id = id,
+        Icon = icon,
         Winner = winner
       }
 
@@ -49,8 +75,21 @@ function QUICKEPGP.Items:Track(itemIdOrLink, expiration, winner, skipNotify)
       end
 
       function item:SetWinner(name)
-        self.Winner = name
-        NotifyChanged()
+        local changed = false
+        if name and name:len() > 0 and name ~= self.Winner then
+          self.Winner = name
+          changed = true
+        elseif self.Winner then
+          self.Winner = nil
+          changed = true
+        end
+        if changed then
+          if IsLootMaster() then
+            NotifyChanged()
+          else
+            Share(true)
+          end
+        end
       end
 
       function item:RevertWinner()
@@ -123,23 +162,6 @@ local function Serialize()
   end
 end
 
-local function IsLootMaster()
-  local method, partyId, _ = GetLootMethod()
-  return method == "master" and partyId == 0
-end
-
-local function Share()
-  if IsLootMaster() then
-    local message = ""
-
-    for _, v in pairs(QUICKEPGP.Items.Array) do
-      message = string.format("%s%s:%s:%s;", message, v.Id, v.Winner or "", v.Expiration)
-    end
-
-    QUICKEPGP.LIBS:SendCommMessage(MODULE_NAME, message, "RAID", nil, "BULK")
-  end
-end
-
 local function FindRef(table, id, expiration)
   for _, v in pairs(table) do
     if v.Id == id and v.Expiration == expiration then
@@ -149,35 +171,41 @@ local function FindRef(table, id, expiration)
 end
 
 local function Receive(prefix, message, _, sender)
-  if prefix == MODULE_NAME and not UnitIsUnit(sender, "player") then
-    local entries = {strsplit(";", message)}
+  if prefix == MODULE_NAME and not UnitIsUnit(sender, "player") and message:len() > 0 then
+    local prefix2 = string.sub(message, 1, 1)
+    if prefix2 == "A" then
+      local entries = {strsplit(";", string.sub(message, 2))}
 
-    local oldItems = QUICKEPGP.Items.Array
-    QUICKEPGP.Items.Array = {}
+      local oldItems = QUICKEPGP.Items.Array
+      QUICKEPGP.Items.Array = {}
 
-    for _, v in pairs(entries) do
-      local id, winner, expiration = strsplit(":", v)
-      id = tonumber(id)
-      expiration = tonumber(expiration)
-      if id then
-        local existing = FindRef(oldItems, id, expiration)
-        if existing then
-          existing.Winner = winner
-          QUICKEPGP.Items.Array[#QUICKEPGP.Items.Array + 1] = existing
-        else
-          QUICKEPGP.Items:Track(id, expiration, winner, true)
+      for _, v in pairs(entries) do
+        local id, winner, expiration = strsplit(":", v)
+        id = tonumber(id)
+        expiration = tonumber(expiration)
+        if winner and winner:len() == 0 then
+          winner = nil
+        end
+        if id then
+          local existing = FindRef(oldItems, id, expiration)
+          if existing then
+            existing.Winner = winner
+            QUICKEPGP.Items.Array[#QUICKEPGP.Items.Array + 1] = existing
+          else
+            QUICKEPGP.Items:Track(id, expiration, winner, true)
+          end
         end
       end
+
+      table.sort(
+        QUICKEPGP.Items.Array,
+        function(a, b)
+          return a.Expiration < b.Expiration
+        end
+      )
+
+      NotifyChanged()
     end
-
-    table.sort(
-      QUICKEPGP.Items.Array,
-      function(a, b)
-        return a.Expiration < b.Expiration
-      end
-    )
-
-    NotifyChanged()
   end
 end
 
@@ -189,3 +217,24 @@ function QUICKEPGP.Items:Initialize()
     QUICKEPGP.LIBS:RegisterComm(MODULE_NAME, Receive)
   end
 end
+
+local function onEvent(self, event, ...)
+  if QUICKEPGP_OPTIONS.LOOTING.autotrack and event == "CHAT_MSG_LOOT" and IsLootMaster() then
+    local text, _, _, _, playerName2 = ...
+    local member = QUICKEPGP.GUILD:GetMemberInfo(playerName2)
+    if
+      member and
+        ((QUICKEPGP_OPTIONS.LOOTING.equiplootee == 1 and QUICKEPGP.isMasterLooter(member.Name)) or
+          (QUICKEPGP_OPTIONS.LOOTING.equiplootee == 2 and QUICKEPGP.isMainAssist(member.Name)) or
+          (QUICKEPGP_OPTIONS.LOOTING.equiplootee == 3 and QUICKEPGP_OPTIONS.LOOTING.equiplooteechar == member.Name))
+     then
+      local itemId = tonumber(text:match("|Hitem:(%d+):"))
+      if itemId then
+        self:Track(itemId, nil, nil, false, true)
+      end
+    end
+  end
+end
+
+QUICKEPGP.Items:RegisterEvent("CHAT_MSG_LOOT")
+QUICKEPGP.Items:SetScript("OnEvent", onEvent)
