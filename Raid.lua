@@ -202,6 +202,25 @@ function QUICKEPGP.RaidReward(value, reason)
   end
 end
 
+function QUICKEPGP.ToggleOnTime(name)
+  if QUICKEPGP_RAIDING_TIMESTAMP then
+    local normalizedName = QUICKEPGP.NormalizeName(name)
+    if normalizedName then
+      if QUICKEPGP_STARTING_RAIDERS[normalizedName] == true then
+        QUICKEPGP_STARTING_RAIDERS[normalizedName] = nil
+        QUICKEPGP.info(format("%s is now marked as late."))
+      else
+        QUICKEPGP_STARTING_RAIDERS[normalizedName] = true
+        QUICKEPGP.info(format("%s is now marked as on-time."))
+      end
+    else
+      QUICKEPGP.error(format("Player '%s' not found.", name))
+    end
+  else
+    QUICKEPGP.error("You have not started a raid! Can't toggle player start status.")
+  end
+end
+
 QUICKEPGP.raidStatus = function()
   if (QUICKEPGP_RAIDING_TIMESTAMP) then
     local time = GetServerTime()

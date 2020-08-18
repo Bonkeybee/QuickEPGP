@@ -125,6 +125,8 @@ SlashCmdList["EPGP"] = function(message)
     QUICKEPGP.RaidReward(tonumber(arg2), arg3)
   elseif command == "track" then
     QUICKEPGP.Items:Track(string.sub(message, 7))
+  elseif command == "toggle" and arg1 == "ontime" then
+    QUICKEPGP.ToggleOnTime(arg2)
   else
     QUICKEPGP.error("invalid command - type `/epgp help` for a list of commands")
   end
