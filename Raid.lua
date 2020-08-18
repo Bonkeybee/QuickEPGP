@@ -13,10 +13,13 @@ local OFFICER = "OFFICER"
 
 local NUM_RAID_MEMBERS = 40
 local TIME_REWARDS_TEMPLATE = {}
-TIME_REWARDS_TEMPLATE[1] = {0, 100, "raid start"}
-TIME_REWARDS_TEMPLATE[2] = {3600, 100, "raid time"}
-TIME_REWARDS_TEMPLATE[3] = {7200, 200, "raid time"}
-TIME_REWARDS_TEMPLATE[4] = {10800, 300, "raid end"}
+TIME_REWARDS_TEMPLATE[1] = {Time = 1800 * 0, EP = 100, Reason = "raid start"}
+TIME_REWARDS_TEMPLATE[2] = {Time = 1800 * 1, EP = 150, Reason = "raid time"}
+TIME_REWARDS_TEMPLATE[3] = {Time = 1800 * 2, EP = 150, Reason = "raid time"}
+TIME_REWARDS_TEMPLATE[4] = {Time = 1800 * 3, EP = 150, Reason = "raid time"}
+TIME_REWARDS_TEMPLATE[5] = {Time = 1800 * 4, EP = 150, Reason = "raid time"}
+TIME_REWARDS_TEMPLATE[6] = {Time = 1800 * 5, EP = 150, Reason = "raid time"}
+TIME_REWARDS_TEMPLATE[7] = {Time = 1800 * 6, EP = 150, Reason = "raid end"}
 
 local ONLINE_INDEX = 1
 local RANK_INDEX = 2
@@ -142,8 +145,8 @@ local function onUpdate()
         QUICKEPGP_TIME_REWARDS = {}
       end
       for index, data in pairs(TIME_REWARDS_TEMPLATE) do
-        if (not QUICKEPGP_TIME_REWARDS[index] and time > QUICKEPGP_RAIDING_TIMESTAMP + data[1]) then
-          timeReward(index, data[2], data[3])
+        if (not QUICKEPGP_TIME_REWARDS[index] and time > QUICKEPGP_RAIDING_TIMESTAMP + data.Time) then
+          timeReward(index, data.EP, data.Reason)
           if (index == QUICKEPGP.count(TIME_REWARDS_TEMPLATE)) then
             QUICKEPGP.stopRaid()
           end
@@ -178,7 +181,7 @@ QUICKEPGP.raidStatus = function()
       )
     )
     for index, data in pairs(TIME_REWARDS_TEMPLATE) do
-      stepStatus(index, data[2], data[1])
+      stepStatus(index, data.EP, data.Time)
     end
   else
     QUICKEPGP.error("You have not started a raid! Type '/epgp start' to start a raid.")
@@ -211,7 +214,7 @@ QUICKEPGP.stopRaid = function()
     end
     for index, data in pairs(TIME_REWARDS_TEMPLATE) do
       if (not QUICKEPGP_TIME_REWARDS[index]) then
-        timeReward(index, data[2], data[3])
+        timeReward(index, data.EP, data.Reason)
       end
     end
     QUICKEPGP_RAIDING_TIMESTAMP = nil
