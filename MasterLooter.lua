@@ -1,21 +1,32 @@
-local function CreateTrackingRow(parent, scroller)
+local function CreateTrackingRow(parent, showBackdrop)
   local root = CreateFrame("Frame", nil, parent)
-  root:SetSize(scroller:GetWidth(), scroller:GetHeight() / 3)
+  root:SetHeight(48)
+
+  if showBackdrop then
+    root:SetBackdrop(
+      {
+        bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background", -- 131071
+        tile = true,
+        tileSize = 16
+      }
+    )
+  end
 
   root.ItemText = root:CreateFontString(nil, "OVERLAY", "GameTooltipText")
-  root.ItemText:SetSize(root:GetWidth() - 60, root:GetHeight() / 2)
   root.ItemText:SetPoint("TOPLEFT", root, "TOPLEFT")
+  root.ItemText:SetPoint("BOTTOMRIGHT", root, "BOTTOMRIGHT", -24, 24)
   root.ItemText:SetText("Item goes here")
 
   root.DetailText = root:CreateFontString(nil, "OVERLAY", "GameTooltipText")
-  root.DetailText:SetSize(root:GetWidth() - 60, root:GetHeight() / 2)
-  root.DetailText:SetPoint("TOP", root.ItemText, "BOTTOM")
+  root.DetailText:SetHeight(24)
+  root.DetailText:SetPoint("BOTTOMLEFT", root, "BOTTOMLEFT")
+  root.DetailText:SetPoint("TOPRIGHT", root, "TOPRIGHT", -60, -24)
   root.DetailText:SetText("Winner or time goes here")
 
   root.RemoveButton = CreateFrame("Button", nil, root, "UIPanelButtonTemplate")
-  root.RemoveButton:SetSize(60, root:GetHeight() / 2)
+  root.RemoveButton:SetSize(24, 24)
   root.RemoveButton:SetPoint("TOPRIGHT", root, "TOPRIGHT")
-  root.RemoveButton:SetText("Remove")
+  root.RemoveButton:SetText("X")
   root.RemoveButton:SetScript(
     "OnClick",
     function()
@@ -26,8 +37,8 @@ local function CreateTrackingRow(parent, scroller)
   )
 
   root.RollButton = CreateFrame("Button", nil, root, "UIPanelButtonTemplate")
-  root.RollButton:SetSize(60, root:GetHeight() / 2)
-  root.RollButton:SetPoint("TOP", root.RemoveButton, "BOTTOM")
+  root.RollButton:SetSize(60, 24)
+  root.RollButton:SetPoint("BOTTOMRIGHT", root, "BOTTOMRIGHT")
   root.RollButton:SetText("Roll")
   root.RollButton:SetScript(
     "OnClick",
@@ -78,36 +89,46 @@ end
 
 local function UpdateTimes()
   if QuickEPGPMasterLootFrame:IsShown() then
-    for i = 1, 3 do
-      QuickEPGPMasterLootFrame.Tracked["Row" .. i]:UpdateTime()
+    for i = 1, #QuickEPGPMasterLootFrame.Tracked do
+      QuickEPGPMasterLootFrame.Tracked[i]:UpdateTime()
     end
   end
 end
 
 local function UpdateTracked()
   local count = #QUICKEPGP.Items.Array
-  FauxScrollFrame_Update(
-    QuickEPGPMasterLootFrame.Tracked.Scroller,
-    count,
-    3,
-    QuickEPGPMasterLootFrame.Tracked.Row1:GetHeight()
-  )
-  for i = 1, 3 do
-    local lineplusoffset = i + FauxScrollFrame_GetOffset(QuickEPGPMasterLootFrame.Tracked.Scroller)
-    local row = QuickEPGPMasterLootFrame.Tracked["Row" .. i]
-    if lineplusoffset <= count then
-      row:Track(QUICKEPGP.Items.Array[lineplusoffset])
+  local existingRows = #QuickEPGPMasterLootFrame.Tracked
+
+  for i = count + 1, existingRows do
+    QuickEPGPMasterLootFrame.Tracked[i]:Hide()
+  end
+
+  for i = existingRows + 1, count do
+    local row = CreateTrackingRow(QuickEPGPMasterLootFrame.Tracked.ScrollChild, i % 2 == 0)
+    QuickEPGPMasterLootFrame.Tracked[i] = row
+    if i == 1 then
+      row:SetPoint("TOPLEFT", QuickEPGPMasterLootFrame.Tracked.ScrollChild, "TOPLEFT")
+      row:SetPoint("TOPRIGHT", QuickEPGPMasterLootFrame.Tracked.ScrollChild, "TOPRIGHT")
     else
-      row:Track(nil)
+      row:SetPoint("TOPLEFT", QuickEPGPMasterLootFrame.Tracked[i - 1], "BOTTOMLEFT")
+      row:SetPoint("TOPRIGHT", QuickEPGPMasterLootFrame.Tracked[i - 1], "BOTTOMRIGHT")
     end
   end
+
+  for i = 1, count do
+    local row = QuickEPGPMasterLootFrame.Tracked[i]
+    row:Show()
+    row:Track(QUICKEPGP.Items.Array[i])
+  end
+
+  QuickEPGPMasterLootFrame.Tracked.ScrollChild:SetHeight(48 * count)
 end
 
 QUICKEPGP.openMasterFrame = function()
   if not QuickEPGPMasterLootFrame then
     QuickEPGPMasterLootFrame = CreateFrame("Frame", "QuickEPGPMasterLootFrame", UIParent)
     QuickEPGPMasterLootFrame:SetFrameStrata("DIALOG")
-    QuickEPGPMasterLootFrame:SetSize(300, 150)
+    QuickEPGPMasterLootFrame:SetSize(QUICKEPGP_OPTIONS.MasterFrame.Width, QUICKEPGP_OPTIONS.MasterFrame.Height)
     QuickEPGPMasterLootFrame:SetPoint(
       QUICKEPGP_OPTIONS.MasterFrame.Point,
       UIParent,
@@ -119,6 +140,8 @@ QUICKEPGP.openMasterFrame = function()
     QuickEPGPMasterLootFrame:EnableMouse(true)
     QuickEPGPMasterLootFrame:SetToplevel(true)
     QuickEPGPMasterLootFrame:SetMovable(true)
+    QuickEPGPMasterLootFrame:SetResizable(true)
+    QuickEPGPMasterLootFrame:SetMinResize(300, 150)
     QuickEPGPMasterLootFrame:RegisterForDrag("LeftButton")
     QuickEPGPMasterLootFrame:SetBackdrop(
       {
@@ -141,6 +164,38 @@ QUICKEPGP.openMasterFrame = function()
         QUICKEPGP_OPTIONS.MasterFrame.X = x
         QUICKEPGP_OPTIONS.MasterFrame.Y = y
         QUICKEPGP_OPTIONS.MasterFrame.Point = point
+      end
+    )
+    QuickEPGPMasterLootFrame:SetScript(
+      "OnSizeChanged",
+      function(self)
+        if self.Tracked then
+          self.Tracked.ScrollChild:SetWidth(self.Tracked.ScrollFrame:GetWidth())
+        end
+        QUICKEPGP_OPTIONS.MasterFrame.Width = self:GetWidth()
+        QUICKEPGP_OPTIONS.MasterFrame.Height = self:GetHeight()
+      end
+    )
+
+    local resizeButton = CreateFrame("Button", nil, QuickEPGPMasterLootFrame)
+    resizeButton:SetSize(16, 16)
+    resizeButton:SetPoint("BOTTOMRIGHT")
+    resizeButton:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up")
+    resizeButton:SetHighlightTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Highlight")
+    resizeButton:SetPushedTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Down")
+
+    resizeButton:SetScript(
+      "OnMouseDown",
+      function()
+        QuickEPGPMasterLootFrame:StartSizing("BOTTOMRIGHT")
+        QuickEPGPMasterLootFrame:SetUserPlaced(true)
+      end
+    )
+
+    resizeButton:SetScript(
+      "OnMouseUp",
+      function()
+        QuickEPGPMasterLootFrame:StopMovingOrSizing()
       end
     )
 
@@ -391,33 +446,17 @@ QUICKEPGP.openMasterFrame = function()
       }
     )
 
-    local trackScroll = CreateFrame("ScrollFrame", nil, QuickEPGPMasterLootFrame.Tracked, "FauxScrollFrameTemplate")
-    QuickEPGPMasterLootFrame.Tracked.Scroller = trackScroll
-    trackScroll:SetPoint("TOPLEFT", 6, -4)
-    trackScroll:SetPoint("BOTTOMRIGHT", -26, 4)
-    trackScroll:SetScript("OnShow", UpdateTracked)
-    trackScroll:SetScript(
-      "OnVerticalScroll",
-      function(self, offset)
-        FauxScrollFrame_OnVerticalScroll(self, offset, 16, UpdateTracked)
-      end
-    )
-
-    QuickEPGPMasterLootFrame.Tracked.Row1 = CreateTrackingRow(QuickEPGPMasterLootFrame.Tracked, trackScroll)
-    QuickEPGPMasterLootFrame.Tracked.Row2 = CreateTrackingRow(QuickEPGPMasterLootFrame.Tracked, trackScroll)
-    QuickEPGPMasterLootFrame.Tracked.Row3 = CreateTrackingRow(QuickEPGPMasterLootFrame.Tracked, trackScroll)
-
-    QuickEPGPMasterLootFrame.Tracked.Row1:SetPoint("TOP", QuickEPGPMasterLootFrame.Tracked.Scroller, "TOP")
-    QuickEPGPMasterLootFrame.Tracked.Row2:SetPoint("TOP", QuickEPGPMasterLootFrame.Tracked.Row1, "BOTTOM")
-    QuickEPGPMasterLootFrame.Tracked.Row3:SetPoint("TOP", QuickEPGPMasterLootFrame.Tracked.Row2, "BOTTOM")
-
-    QuickEPGPMasterLootFrame.Tracked.Row2:SetBackdrop(
-      {
-        bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background", -- 131071
-        tile = true,
-        tileSize = 16
-      }
-    )
+    local trackedRoot = QuickEPGPMasterLootFrame.Tracked
+    local scrollFrame =
+      CreateFrame("ScrollFrame", "EPGPMasterLootScrollFrame", trackedRoot, "UIPanelScrollFrameTemplate")
+    local scrollChild = CreateFrame("Frame")
+    trackedRoot.ScrollFrame = scrollFrame
+    trackedRoot.ScrollChild = scrollChild
+    trackedRoot:SetScript("OnShow", UpdateTracked)
+    scrollFrame:SetScrollChild(scrollChild)
+    scrollFrame:SetPoint("TOPLEFT", 6, -4)
+    scrollFrame:SetPoint("BOTTOMRIGHT", -26, 4)
+    scrollChild:SetSize(scrollFrame:GetWidth(), 48)
 
     function QuickEPGPMasterLootFrame:SetItem(itemLink, icon)
       self.Item = itemLink
