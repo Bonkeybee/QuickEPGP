@@ -32,7 +32,7 @@ local function onUpdate()
       elseif not member.OldEP and not member.OldGP then
         officerNoteUpdateTable[name] = nil
         lastIndex = nil
-        if delta.EP > 0 or delta.GP > 0 then
+        if delta.EP ~= 0 or delta.GP ~= 0 then
           local ep = member:CalculateChange(delta.EP, "EP") or QUICKEPGP.MINIMUM_EP
           local gp = member:CalculateChange(delta.GP, "GP") or QUICKEPGP.MINIMUM_GP
           member:OverrideEpGp(ep, gp)
