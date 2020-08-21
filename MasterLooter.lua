@@ -76,8 +76,8 @@ local function CreateTrackingRow(parent, showBackdrop)
       else
         self.RollButton:SetText("Roll")
         self.DetailText:SetText(item.Winner == "x" and "|cFF646464Everyone Passed|r" or "")
-        self:UpdateTime()
       end
+      self:UpdateTime()
       self:Show()
     else
       self:Hide()
@@ -100,7 +100,7 @@ local function CreateTrackingRow(parent, showBackdrop)
         color = "|cFFFF0000"
       end
 
-      self.TimeText:SetText(color .. hours .. ":" .. minutes .. " remaining|r")
+      self.TimeText:SetText(string.format("%s%d:%02d remaining|r", color, hours, minutes))
     end
   end
 
