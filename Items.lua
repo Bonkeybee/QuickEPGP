@@ -9,16 +9,14 @@ local function IsLootMaster()
   return method == "master" and partyId == 0
 end
 
-local function Share(force)
-  if force or IsLootMaster() then
-    local message = "A"
+local function Share()
+  local message = "A"
 
-    for _, v in pairs(QUICKEPGP.Items.Array) do
-      message = string.format("%s%s:%s:%s;", message, v.Id, v.Winner or "", v.Expiration)
-    end
-
-    QUICKEPGP.LIBS:SendCommMessage(MODULE_NAME, message, "RAID", nil, "BULK")
+  for _, v in pairs(QUICKEPGP.Items.Array) do
+    message = string.format("%s%s:%s:%s;", message, v.Id, v.Winner or "", v.Expiration)
   end
+
+  QUICKEPGP.LIBS:SendCommMessage(MODULE_NAME, message, "RAID", nil, "BULK")
 end
 
 local function NotifyChanged()
@@ -62,8 +60,23 @@ function QUICKEPGP.Items:Track(itemIdOrLink, expiration, winner, skipNotify, onl
         return
       end
 
+      expiration = expiration or (GetServerTime() + 7200)
+
+      -- Ensure tracked items are unique wrt item id and expiration time.
+      local unique = true
+      repeat
+        for i = 1, #self.Array do
+          local existing = self.Array[i]
+          if existing.Id == id and existing.Expiration == expiration then
+            expiration = expiration + 1
+            unique = false
+            break
+          end
+        end
+      until unique
+
       local item = {
-        Expiration = expiration or (GetServerTime() + 7200),
+        Expiration = expiration,
         Link = link,
         Id = id,
         Icon = icon,
@@ -84,11 +97,8 @@ function QUICKEPGP.Items:Track(itemIdOrLink, expiration, winner, skipNotify, onl
           changed = true
         end
         if changed then
-          if IsLootMaster() then
-            NotifyChanged()
-          else
-            Share(true)
-          end
+          NotifyChanged()
+          Share()
         end
       end
 
@@ -118,12 +128,41 @@ function QUICKEPGP.Items:Track(itemIdOrLink, expiration, winner, skipNotify, onl
 
       if not skipNotify then
         NotifyChanged()
+        Share()
       end
     end
   )
 end
 
-function QUICKEPGP.Items:Untrack(item)
+local function FindRef(table, id, expiration)
+  for _, v in pairs(table) do
+    if v.Id == id and v.Expiration == expiration then
+      return v
+    end
+  end
+end
+
+function QUICKEPGP.Items:TrackOrUpdate(id, winner, expiration, skipNotify)
+  id = tonumber(id)
+  expiration = tonumber(expiration)
+  if winner and winner:len() == 0 then
+    winner = nil
+  end
+  if id then
+    local existing = FindRef(self.Array, id, expiration)
+    if existing then
+      if skipNotify then
+        existing.Winner = winner
+      else
+        existing:SetWinner(winner)
+      end
+    else
+      QUICKEPGP.Items:Track(id, expiration, winner, skipNotify)
+    end
+  end
+end
+
+function QUICKEPGP.Items:Untrack(item, skipNotify)
   for i = 1, #self.Array do
     if item == self.Array[i] then
       local nextIndex = i
@@ -131,7 +170,28 @@ function QUICKEPGP.Items:Untrack(item)
         self.Array[nextIndex] = self.Array[nextIndex + 1]
         nextIndex = nextIndex + 1
       until not self.Array[nextIndex]
-      NotifyChanged()
+      if not skipNotify then
+        NotifyChanged()
+        Share()
+      end
+      break
+    end
+  end
+end
+
+function QUICKEPGP.Items:UntrackById(id, expiration, skipNotify)
+  for i = 1, #self.Array do
+    local item = self.Array[i]
+    if item.Id == id and item.Expiration == expiration then
+      local nextIndex = i
+      repeat
+        self.Array[nextIndex] = self.Array[nextIndex + 1]
+        nextIndex = nextIndex + 1
+      until not self.Array[nextIndex]
+      if not skipNotify then
+        NotifyChanged()
+        Share()
+      end
       break
     end
   end
@@ -159,14 +219,6 @@ local function Serialize()
       QUICKEPGP_LOOT[k] = {Id = v.Id, Winner = v.Winner, Expiration = v.Expiration}
     end
     QUICKEPGP.Items.Serializing = false
-  end
-end
-
-local function FindRef(table, id, expiration)
-  for _, v in pairs(table) do
-    if v.Id == id and v.Expiration == expiration then
-      return v
-    end
   end
 end
 
@@ -205,6 +257,14 @@ local function Receive(prefix, message, _, sender)
       )
 
       NotifyChanged()
+    elseif prefix2 == "+" then
+      local id, winner, expiration = strsplit(":", string.sub(message, 2))
+      QUICKEPGP.Items:TrackOrUpdate(id, winner, expiration, true)
+      NotifyChanged()
+    elseif prefix2 == "-" then
+      local id, _, expiration = strsplit(":", string.sub(message, 2))
+      QUICKEPGP.Items:UntrackById(id, expiration, true)
+      NotifyChanged()
     end
   end
 end
@@ -212,7 +272,7 @@ end
 function QUICKEPGP.Items:Initialize()
   Deserialize()
   QUICKEPGP.Items:AddChangeHandler(Serialize)
-  QUICKEPGP.Items:AddChangeHandler(Share)
+  --QUICKEPGP.Items:AddChangeHandler(Share)
   if CanEditOfficerNote() then
     QUICKEPGP.LIBS:RegisterComm(MODULE_NAME, Receive)
   end

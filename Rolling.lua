@@ -217,7 +217,7 @@ local function endRolling(cancel)
   local message = "CRF" .. DELIMITER .. (currentItem or EMPTY) .. DELIMITER .. (highestRoller or EMPTY)
   QUICKEPGP.LIBS:SendCommMessage(MODULE_NAME, message, "RAID", nil, "ALERT")
   if QUICKEPGP.ROLLING.TrackedItem and QUICKEPGP.ROLLING.TrackedItem.Link == currentItem then
-    QUICKEPGP.ROLLING.TrackedItem:SetWinner(highestRoller)
+    QUICKEPGP.ROLLING.TrackedItem:SetWinner((highestRoller or EMPTY):len() == 0 and "x" or highestRoller)
   end
   QUICKEPGP.ROLLING.TrackedItem = nil
   QUICKEPGP:CloseRollFrame()

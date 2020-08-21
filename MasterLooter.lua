@@ -12,17 +12,6 @@ local function CreateTrackingRow(parent, showBackdrop)
     )
   end
 
-  root.ItemText = root:CreateFontString(nil, "OVERLAY", "GameTooltipText")
-  root.ItemText:SetPoint("TOPLEFT", root, "TOPLEFT")
-  root.ItemText:SetPoint("BOTTOMRIGHT", root, "BOTTOMRIGHT", -24, 24)
-  root.ItemText:SetText("Item goes here")
-
-  root.DetailText = root:CreateFontString(nil, "OVERLAY", "GameTooltipText")
-  root.DetailText:SetHeight(24)
-  root.DetailText:SetPoint("BOTTOMLEFT", root, "BOTTOMLEFT")
-  root.DetailText:SetPoint("TOPRIGHT", root, "TOPRIGHT", -60, -24)
-  root.DetailText:SetText("Winner or time goes here")
-
   root.RemoveButton = CreateFrame("Button", nil, root, "UIPanelButtonTemplate")
   root.RemoveButton:SetSize(24, 24)
   root.RemoveButton:SetPoint("TOPRIGHT", root, "TOPRIGHT")
@@ -44,7 +33,7 @@ local function CreateTrackingRow(parent, showBackdrop)
     "OnClick",
     function()
       if root.Item then
-        if root.Item.Winner then
+        if root.Item.Winner and root.Item.Winner ~= "x" then
           root.Item:RevertWinner()
         else
           root.Item:StartRolling()
@@ -53,11 +42,30 @@ local function CreateTrackingRow(parent, showBackdrop)
     end
   )
 
+  root.ItemText = root:CreateFontString(nil, "OVERLAY", "GameTooltipText")
+  root.ItemText:SetHeight(16)
+  root.ItemText:SetPoint("TOPLEFT", root, "TOPLEFT")
+  root.ItemText:SetPoint("TOPRIGHT", root.RemoveButton, "TOPLEFT")
+  root.ItemText:SetText("Item goes here")
+
+  root.DetailText = root:CreateFontString(nil, "OVERLAY", "GameTooltipText")
+  root.DetailText:SetHeight(16)
+  root.DetailText:SetPoint("BOTTOMLEFT", root, "BOTTOMLEFT")
+  root.DetailText:SetPoint("TOPRIGHT", root.RollButton, "TOPLEFT", 0, -8)
+  root.DetailText:SetText("Winner goes here")
+
+  root.TimeText = root:CreateFontString(nil, "OVERLAY", "GameTooltipText")
+  root.TimeText:SetHeight(16)
+  root.TimeText:SetPoint("TOPLEFT", root.ItemText, "BOTTOMLEFT")
+  root.TimeText:SetPoint("BOTTOMLEFT", root.DetailText, "TOPLEFT")
+  root.TimeText:SetPoint("BOTTOMRIGHT", root.DetailText, "TOPRIGHT")
+  root.TimeText:SetText("Time goes here")
+
   function root:Track(item)
     self.Item = item
     if item then
       self.ItemText:SetText(item.Link)
-      if item.Winner then
+      if item.Winner and item.Winner ~= "x" then
         local winnerMember = QUICKEPGP.GUILD:GetMemberInfo(item.Winner, true)
         if winnerMember then
           self.DetailText:SetText(QUICKEPGP.colorByClass(item.Winner, winnerMember.InvariantClass))
@@ -67,6 +75,7 @@ local function CreateTrackingRow(parent, showBackdrop)
         self.RollButton:SetText("Revert")
       else
         self.RollButton:SetText("Roll")
+        self.DetailText:SetText(item.Winner == "x" and "|cFF646464Everyone Passed|r" or "")
         self:UpdateTime()
       end
       self:Show()
@@ -76,11 +85,22 @@ local function CreateTrackingRow(parent, showBackdrop)
   end
 
   function root:UpdateTime()
-    if self.Item and not self.Item.Winner then
-      local seconds = self.Item.Expiration - GetServerTime()
+    if self.Item then
+      local seconds = math.max(0, self.Item.Expiration - GetServerTime())
       local hours = math.floor(seconds / (60 * 60))
       local minutes = math.floor(seconds / 60) - (hours * 60)
-      self.DetailText:SetText(hours .. ":" .. minutes .. " remaining")
+      local color
+      if seconds > 5400 then
+        color = "|cFF00FF00"
+      elseif seconds > 3600 then
+        color = "|cFFFFFFFF"
+      elseif seconds > 1800 then
+        color = "|cFFFFFF00"
+      else
+        color = "|cFFFF0000"
+      end
+
+      self.TimeText:SetText(color .. hours .. ":" .. minutes .. " remaining|r")
     end
   end
 
