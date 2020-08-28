@@ -132,8 +132,7 @@ local function timeReward(index, value, pastEnd)
 
   local message
   if pastEnd and QUICKEPGP.count(QUICKEPGP_STARTING_RAIDERS) > 0 then
-    message =
-      format("Adding %sEP to on-time raid members and %sEP to late raid members for %s", value, value / 2, reason)
+    message = format("Adding %sEP to raid members. (%sEP to late members)", value, value / 2)
   else
     message = format("Adding %sEP to all raid members for %s.", value, reason)
   end
