@@ -489,10 +489,11 @@ QUICKEPGP.openMasterFrame = function()
     end
     QUICKEPGP.LIBS:ScheduleRepeatingTimer(UpdateTimes, 60)
     QUICKEPGP.Items:AddChangeHandler(UpdateTracked)
-    UpdateTracked()
   end
 
   QuickEPGPMasterLootFrame:Show()
+  UpdateTracked()
+  UpdateTimes()
 end
 
 QUICKEPGP.closeMasterFrame = function()
