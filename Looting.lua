@@ -1,6 +1,6 @@
 QUICKEPGP.LOOTING = CreateFrame("Frame")
 
-local TICK_RATE = 0.01
+local TICK_RATE = 0.1
 
 local EMPTY = ""
 local INSTANCE_TYPE = "raid"
@@ -130,14 +130,14 @@ end
 local function groupLoot(i)
   if (GetLootMethod() == GROUP_LOOT) then
     safeLootSlot(i)
-    --(roll frame)
+  --(roll frame)
   end
 end
 
 local function needBeforeGreed(i)
   if (GetLootMethod() == NEED_BEFORE_GREED) then
     safeLootSlot(i)
-    --(roll frame)
+  --(roll frame)
   end
 end
 
