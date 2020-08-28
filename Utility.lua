@@ -147,14 +147,9 @@ function QUICKEPGP.NormalizeName(name)
     name = name:sub(1, index - 1)
   end
 
-  name =
-    name:gsub(
-    "(%a)([%w_']*)",
-    function(first, rest)
-      return first:upper() .. rest:lower()
-    end
-  )
-  return name
+  local f = string.sub(name, 1, 1)
+  local r = string.sub(name, 2, #name)
+  return f:upper() .. r:lower()
 end
 
 QUICKEPGP.SafeSetOfficerNote = function(name, dep, dgp)
