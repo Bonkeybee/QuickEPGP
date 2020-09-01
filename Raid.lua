@@ -12,11 +12,16 @@ local RAID = "RAID"
 local OFFICER = "OFFICER"
 
 local NUM_RAID_MEMBERS = 40
-local TIME_REWARDS_TEMPLATE = {}
-TIME_REWARDS_TEMPLATE[1] = {0, 100, "raid start"}
-TIME_REWARDS_TEMPLATE[2] = {3600, 100, "raid time"}
-TIME_REWARDS_TEMPLATE[3] = {7200, 200, "raid time"}
-TIME_REWARDS_TEMPLATE[4] = {10800, 300, "raid end"}
+local TIME_REWARDS_TEMPLATE = {
+  {Time = 1800 * 0, EP = 100},
+  {Time = 1800 * 1, EP = 150},
+  {Time = 1800 * 2, EP = 150},
+  {Time = 1800 * 3, EP = 150},
+  {Time = 1800 * 4, EP = 150},
+  {Time = 1800 * 5, EP = 150},
+  {Time = 1800 * 6, EP = 150}
+}
+local TIME_REWARDS_TEMPLATE_COUNT = QUICKEPGP.count(TIME_REWARDS_TEMPLATE)
 
 local ONLINE_INDEX = 1
 local RANK_INDEX = 2
@@ -99,15 +104,41 @@ local function stepStatus(index, epStep, timeStep)
   end
 end
 
-local function timeReward(index, value, reason)
+local function timeReward(index, value, pastEnd)
+  local reason
+
+  if index == 1 then
+    reason = "raid start"
+  elseif index == TIME_REWARDS_TEMPLATE_COUNT then
+    reason = "raid end"
+  elseif pastEnd then
+    reason = "early raid end"
+  else
+    reason = "raid time"
+  end
+
   for name, _ in pairs(QUICKEPGP.getRaidMembers()) do
-    QUICKEPGP.modifyEPGP(name, value, nil, reason, true)
+    local ep = value
+
+    if pastEnd and not QUICKEPGP_STARTING_RAIDERS[name] then
+      ep = ep / 2
+    end
+
+    QUICKEPGP.modifyEPGP(name, ep, nil, reason, true)
   end
   if index then
     QUICKEPGP_TIME_REWARDS[index] = true
   end
-  SendChatMessage(format("Adding %sEP to all raid members for %s.", value, reason), RAID)
-  SendChatMessage(format("Adding %sEP to all raid members for %s.", value, reason), OFFICER)
+
+  local message
+  if pastEnd and QUICKEPGP.count(QUICKEPGP_STARTING_RAIDERS) > 0 then
+    message = format("Adding %sEP to raid members. (%sEP to late members)", value, value / 2)
+  else
+    message = format("Adding %sEP to all raid members for %s.", value, reason)
+  end
+
+  SendChatMessage(message, RAID)
+  SendChatMessage(message, OFFICER)
 end
 
 QUICKEPGP.ignoreRaidWarning = not CanEditOfficerNote() -- Don't ask users to start epgp when they aren't capable of doing it
@@ -142,9 +173,9 @@ local function onUpdate()
         QUICKEPGP_TIME_REWARDS = {}
       end
       for index, data in pairs(TIME_REWARDS_TEMPLATE) do
-        if (not QUICKEPGP_TIME_REWARDS[index] and time > QUICKEPGP_RAIDING_TIMESTAMP + data[1]) then
-          timeReward(index, data[2], data[3])
-          if (index == QUICKEPGP.count(TIME_REWARDS_TEMPLATE)) then
+        if (not QUICKEPGP_TIME_REWARDS[index] and time > QUICKEPGP_RAIDING_TIMESTAMP + data.Time) then
+          timeReward(index, data.EP)
+          if (index == TIME_REWARDS_TEMPLATE_COUNT) then
             QUICKEPGP.stopRaid()
           end
         end
@@ -159,9 +190,33 @@ end
 
 function QUICKEPGP.RaidReward(value, reason)
   if CanEditOfficerNote() then
-    timeReward(nil, value, reason)
+    for name, _ in pairs(QUICKEPGP.getRaidMembers()) do
+      QUICKEPGP.modifyEPGP(name, value, nil, reason, true)
+    end
+    local message = format("Adding %sEP to all raid members for %s.", value, reason)
+    SendChatMessage(message, RAID)
+    SendChatMessage(message, OFFICER)
   else
     QUICKEPGP.error("You do not have permisson to do that.")
+  end
+end
+
+function QUICKEPGP.ToggleOnTime(name)
+  if QUICKEPGP_RAIDING_TIMESTAMP then
+    local normalizedName = QUICKEPGP.NormalizeName(name)
+    if normalizedName then
+      if QUICKEPGP_STARTING_RAIDERS[normalizedName] == true then
+        QUICKEPGP_STARTING_RAIDERS[normalizedName] = nil
+        QUICKEPGP.info(format("%s is now marked as late."))
+      else
+        QUICKEPGP_STARTING_RAIDERS[normalizedName] = true
+        QUICKEPGP.info(format("%s is now marked as on-time."))
+      end
+    else
+      QUICKEPGP.error(format("Player '%s' not found.", name))
+    end
+  else
+    QUICKEPGP.error("You have not started a raid! Can't toggle player start status.")
   end
 end
 
@@ -178,7 +233,7 @@ QUICKEPGP.raidStatus = function()
       )
     )
     for index, data in pairs(TIME_REWARDS_TEMPLATE) do
-      stepStatus(index, data[2], data[1])
+      stepStatus(index, data.EP, data.Time)
     end
   else
     QUICKEPGP.error("You have not started a raid! Type '/epgp start' to start a raid.")
@@ -194,6 +249,17 @@ QUICKEPGP.startRaid = function()
     if (not QUICKEPGP_RAIDING_TIMESTAMP) then
       QUICKEPGP_RAIDING_TIMESTAMP = GetServerTime()
       QUICKEPGP_TIME_REWARDS = {}
+      QUICKEPGP_STARTING_RAIDERS = {}
+
+      for i = 1, 40 do
+        local name = UnitName("raid" .. i)
+        if name then
+          QUICKEPGP_STARTING_RAIDERS[name] = true
+        else
+          break
+        end
+      end
+
       QUICKEPGP.info("Raid started. Type '/epgp stop' to stop a raid.")
       QUICKEPGP.raidStatus()
     else
@@ -209,12 +275,20 @@ QUICKEPGP.stopRaid = function()
     if (not QUICKEPGP_TIME_REWARDS) then
       QUICKEPGP_TIME_REWARDS = {}
     end
+    local lastReward = TIME_REWARDS_TEMPLATE[TIME_REWARDS_TEMPLATE_COUNT]
+
+    if not QUICKEPGP_TIME_REWARDS[TIME_REWARDS_TEMPLATE_COUNT] then
+      -- Ending EP should be awarded in full to everyone.
+      timeReward(TIME_REWARDS_TEMPLATE_COUNT, lastReward.EP)
+    end
+
     for index, data in pairs(TIME_REWARDS_TEMPLATE) do
       if (not QUICKEPGP_TIME_REWARDS[index]) then
-        timeReward(index, data[2], data[3])
+        timeReward(index, data.EP, true)
       end
     end
     QUICKEPGP_RAIDING_TIMESTAMP = nil
+    QUICKEPGP_STARTING_RAIDERS = nil
     QUICKEPGP_TIME_REWARDS = {}
     QUICKEPGP.info("Raid ended. Type '/epgp start' to start a new raid.")
   else
