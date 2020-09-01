@@ -39,7 +39,7 @@ local function NotifyChanged(serialize, share)
     Serialize()
   end
   if share then
-    Share()
+    QUICKEPGP.Items.PendingShare = true
   end
 end
 
@@ -270,14 +270,7 @@ local function Receive(prefix, message, _, sender)
   end
 end
 
-function QUICKEPGP.Items:Initialize()
-  Deserialize()
-  if CanEditOfficerNote() then
-    QUICKEPGP.LIBS:RegisterComm(MODULE_NAME, Receive)
-  end
-end
-
-local function onEvent(self, event, ...)
+function QUICKEPGP.Items:OnEvent(event, ...)
   if QUICKEPGP_OPTIONS.LOOTING.autotrack and event == "CHAT_MSG_LOOT" and IsLootMaster() then
     local text, _, _, _, playerName2 = ...
     local member = QUICKEPGP.GUILD:GetMemberInfo(playerName2)
@@ -295,5 +288,30 @@ local function onEvent(self, event, ...)
   end
 end
 
-QUICKEPGP.Items:RegisterEvent("CHAT_MSG_LOOT")
-QUICKEPGP.Items:SetScript("OnEvent", onEvent)
+local function ProcessQueue()
+  if QUICKEPGP.Items.PendingShare then
+    QUICKEPGP.Items.PendingShare = false
+    Share()
+  end
+end
+
+function QUICKEPGP.Items:Initialize()
+  Deserialize()
+
+  local function RegisterSendAndReceive()
+    local guild = GetGuildInfo("player")
+    if guild then
+      if CanEditOfficerNote() then
+        QUICKEPGP.LIBS:RegisterComm(MODULE_NAME, Receive)
+        QUICKEPGP.Items:RegisterEvent("CHAT_MSG_LOOT")
+        QUICKEPGP.Items:SetScript("OnEvent", self.OnEvent)
+        QUICKEPGP.LIBS:ScheduleRepeatingTimer(ProcessQueue, 3)
+      end
+      return true
+    end
+  end
+
+  -- On initial login the player is "not in a guild". Retry the CanEditOfficerNote check on login until it works.
+  -- Or until we've tried for a minute and still get no affirmative answer.
+  QUICKEPGP:TryUntil(RegisterSendAndReceive, 5, 12)
+end

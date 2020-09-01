@@ -212,6 +212,21 @@ QUICKEPGP.spairs = function(t, order)
   end
 end
 
+function QUICKEPGP:TryUntil(callback, interval, maxAttempts)
+  if not callback() then
+    local timerId
+    local attempts = 0
+    local function Repeat()
+      if callback() or (attempts ~= nil and attempts == maxAttempts) then
+        QUICKEPGP.LIBS:CancelTimer(timerId)
+      else
+        attempts = attempts + 1
+      end
+    end
+    timerId = self.LIBS:ScheduleRepeatingTimer(Repeat, interval or 5)
+  end
+end
+
 QUICKEPGP.UTILITY:RegisterEvent("ADDON_LOADED")
 QUICKEPGP.UTILITY:SetScript("OnEvent", onEvent)
 QUICKEPGP.UTILITY:SetScript("OnUpdate", onUpdate)
