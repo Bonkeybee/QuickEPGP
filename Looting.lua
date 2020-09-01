@@ -1,6 +1,6 @@
 QUICKEPGP.LOOTING = CreateFrame("Frame")
 
-local TICK_RATE = 0.1
+local TICK_RATE = 0.5
 
 local EMPTY = ""
 local INSTANCE_TYPE = "raid"
