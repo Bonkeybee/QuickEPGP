@@ -89,17 +89,13 @@ local function BuildFrame()
 
     if (IsInRaid("player")) then
       for i = 1, 40 do
-        if not TryAddStandingMember("raid" .. i) then
-          break
-        end
+        TryAddStandingMember("raid" .. i)
       end
     else
       TryAddStandingMember("player")
       if (IsInGroup("player")) then
         for i = 1, 4 do
-          if not TryAddStandingMember("party" .. i) then
-            break
-          end
+          TryAddStandingMember("party" .. i)
         end
       end
     end
