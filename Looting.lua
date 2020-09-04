@@ -61,7 +61,9 @@ local function masterLootee(slot, type)
             safeGiveMasterLoot(slot, i)
             return
           end
-          if (QUICKEPGP_OPTIONS.LOOTING.equiplootee == 3 and (QUICKEPGP_OPTIONS.LOOTING.equiplooteechar or EMPTY) == name) then
+          if
+            (QUICKEPGP_OPTIONS.LOOTING.equiplootee == 3 and (QUICKEPGP_OPTIONS.LOOTING.equiplooteechar or EMPTY) == name)
+           then
             safeGiveMasterLoot(slot, i)
             return
           end
@@ -74,7 +76,9 @@ local function masterLootee(slot, type)
             safeGiveMasterLoot(slot, i)
             return
           end
-          if (QUICKEPGP_OPTIONS.LOOTING.otherlootee == 3 and (QUICKEPGP_OPTIONS.LOOTING.otherlooteechar or EMPTY) == name) then
+          if
+            (QUICKEPGP_OPTIONS.LOOTING.otherlootee == 3 and (QUICKEPGP_OPTIONS.LOOTING.otherlooteechar or EMPTY) == name)
+           then
             safeGiveMasterLoot(slot, i)
             return
           end
@@ -184,7 +188,11 @@ local function onEvent(_, event, arg1, arg2)
     if (event == "PLAYER_ENTERING_WORLD") then
       local isInitialLogin = arg1
       local isReloadingUi = arg2
-      if (QUICKEPGP_OPTIONS.LOOTING.automaster and not isInitialLogin and not isReloadingUi and QUICKEPGP.isInRaidInstance()) then
+      if
+        (QUICKEPGP_OPTIONS.LOOTING.automaster and not isInitialLogin and not isReloadingUi and
+          QUICKEPGP.isInRaidInstance() and
+          GetLootMethod() ~= MASTER_LOOT)
+       then
         setMasterLoot()
       end
     end
