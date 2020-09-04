@@ -74,7 +74,7 @@ function QUICKEPGP.Items:TrackFromBagSlot(bagId, slotId)
   print("Not implemented.", bagId, slotId)
 end
 
-function QUICKEPGP.Items:Track(itemIdOrLink, expiration, winner, skipNotify, onlyIfBoP)
+function QUICKEPGP.Items:Track(itemIdOrLink, expiration, winner, skipNotify, auto)
   local itemInfo = Item:CreateFromItemID(tonumber(itemIdOrLink) or QUICKEPGP.itemIdFromLink(itemIdOrLink))
   itemInfo:ContinueOnItemLoad(
     function()
@@ -84,9 +84,16 @@ function QUICKEPGP.Items:Track(itemIdOrLink, expiration, winner, skipNotify, onl
       end
 
       local id = itemInfo:GetItemID()
-      local _, link, _, _, _, _, _, _, _, icon, _, _, _, bindType = GetItemInfo(id)
+      local _, link, itemRarity, itemLevel, _, _, _, _, itemEquipLoc, icon, _, _, _, bindType = GetItemInfo(id)
 
-      if onlyIfBoP and bindType ~= 1 then
+      if auto and bindType ~= 1 then
+        return
+      end
+
+      local gp = QUICKEPGP.CalculateItemGP(id, itemRarity, itemLevel, itemEquipLoc, auto)
+
+      -- Don't auto-track items without gp.
+      if auto and gp == 0 then
         return
       end
 
@@ -109,6 +116,7 @@ function QUICKEPGP.Items:Track(itemIdOrLink, expiration, winner, skipNotify, onl
         Expiration = expiration,
         Link = link,
         Id = id,
+        GP = gp,
         Icon = icon,
         Winner = winner
       }

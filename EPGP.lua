@@ -182,32 +182,39 @@ QUICKEPGP.comparePR = function(name1, name2, rollTable)
   end
 end
 
-QUICKEPGP.getItemGP = function(itemId, silent)
-  if (itemId) then
-    itemId = tonumber(itemId)
-    if (OVERRIDE[itemId]) then
-      return OVERRIDE[itemId]
+function QUICKEPGP.CalculateItemGP(itemId, itemRarity, itemLevel, itemEquipLoc, silent)
+  if (OVERRIDE[itemId]) then
+    return OVERRIDE[itemId]
+  end
+  if itemRarity and itemLevel then
+    local slot = nil
+    if (itemEquipLoc == nil or itemEquipLoc == "") then
+      slot = "EXCEPTION"
+      if not silent then
+        QUICKEPGP.error(format("QUICKEPGP::Item %s has no itemEquipLoc (%s)", itemId, itemEquipLoc))
+      end
+    else
+      slot = strsub(itemEquipLoc, strfind(itemEquipLoc, "INVTYPE_") + 8, string.len(itemEquipLoc))
     end
-    local _, _, itemRarity, itemLevel, _, _, _, _, itemEquipLoc = GetItemInfo(itemId)
-    if itemRarity and itemLevel then
-      local slot = nil
-      if (itemEquipLoc == nil or itemEquipLoc == "") then
-        slot = "EXCEPTION"
-        if not silent then
-          QUICKEPGP.error(format("QUICKEPGP::Item %s has no itemEquipLoc (%s)", itemId, itemEquipLoc))
-        end
-      else
-        slot = strsub(itemEquipLoc, strfind(itemEquipLoc, "INVTYPE_") + 8, string.len(itemEquipLoc))
-      end
-      local slotWeight = SLOTWEIGHTS[slot]
-      if (slotWeight) then
-        return math.floor((INFLATION_MOD * (EXPONENTIAL_MOD ^ ((itemLevel / 26) + (itemRarity - 4))) * slotWeight) * NORMALIZER_MOD)
-      elseif not silent then
-        QUICKEPGP.error(format("QUICKEPGP::Item %s has no valid slot weight (%s)", itemId, slot))
-      end
+    local slotWeight = SLOTWEIGHTS[slot]
+    if (slotWeight) then
+      return math.floor(
+        (INFLATION_MOD * (EXPONENTIAL_MOD ^ ((itemLevel / 26) + (itemRarity - 4))) * slotWeight) * NORMALIZER_MOD
+      )
     elseif not silent then
-      QUICKEPGP.error("QUICKEPGP::Invalid itemId, returning 0")
+      QUICKEPGP.error(format("QUICKEPGP::Item %s has no valid slot weight (%s)", itemId, slot))
     end
+  elseif not silent then
+    QUICKEPGP.error("QUICKEPGP::Invalid itemId, returning 0")
+  end
+  return 0
+end
+
+QUICKEPGP.getItemGP = function(itemId, silent)
+  itemId = tonumber(itemId)
+  if (itemId) then
+    local _, _, itemRarity, itemLevel, _, _, _, _, itemEquipLoc = GetItemInfo(itemId)
+    return QUICKEPGP.CalculateItemGP(itemId, itemRarity, itemLevel, itemEquipLoc, silent)
   end
   return 0
 end
