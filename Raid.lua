@@ -29,6 +29,16 @@ local CLASS_INDEX = 3
 local ROLE_INDEX = 4
 local ISML_INDEX = 5
 
+StaticPopupDialogs["QEPGP_RELOADUI"] = {
+  text = "It's recommended to reload the UI to save the current raid settings. Would you like to reload now?",
+  button1 = "Reload",
+  button2 = "Cancel",
+  OnAccept = ReloadUI,
+  timeout = 0,
+  whileDead = true,
+  hideOnEscape = true
+}
+
 -- ############################################################
 -- ##### LOCAL FUNCTIONS ######################################
 -- ############################################################
@@ -106,6 +116,7 @@ end
 
 local function timeReward(index, value, pastEnd)
   local reason
+  local anyLate
 
   if index == 1 then
     reason = "raid start"
@@ -121,6 +132,7 @@ local function timeReward(index, value, pastEnd)
     local ep = value
 
     if pastEnd and not QUICKEPGP_STARTING_RAIDERS[name] then
+      anyLate = true
       ep = ep / 2
     end
 
@@ -131,7 +143,7 @@ local function timeReward(index, value, pastEnd)
   end
 
   local message
-  if pastEnd and QUICKEPGP.count(QUICKEPGP_STARTING_RAIDERS) > 0 then
+  if pastEnd and anyLate then
     message = format("Adding %sEP to raid members. (%sEP to late members)", value, value / 2)
   else
     message = format("Adding %sEP to all raid members for %s.", value, reason)
@@ -260,8 +272,11 @@ QUICKEPGP.startRaid = function()
         end
       end
 
-      QUICKEPGP.info("Raid started. Type '/epgp stop' to stop a raid.")
+      QUICKEPGP.info(
+        "Raid started. Type '/epgp stop' to stop a raid. It's recommended to reload your UI to save this raid's settings."
+      )
       QUICKEPGP.raidStatus()
+      StaticPopup_Show("QEPGP_RELOADUI")
     else
       QUICKEPGP.error("You have already started a raid! Type '/epgp stop' to stop a raid.")
     end
