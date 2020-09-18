@@ -99,6 +99,10 @@ local OVERRIDE = {
   [21297] = 20, --Manual Of Heroic Strike Ix
   [21299] = 20, --Manual Of Revenge Vi
   --TEMPLE OF AHN'QIRAH OVERRIDES
+  [21321] = 0, --Red Qiraji Resonating Crystal
+  [21218] = 0, --Blue Qiraji Resonating Crystal
+  [21323] = 0, --Green Qiraji Resonating Crystal
+  [21324] = 0, --Yellow Qiraji Resonating Crystal
   [21221] = 68, --Eye Of Cthun
   [21232] = 84, --Imperial Qiraji Armaments
   [21237] = 168, --Imperial Qiraji Regalia
@@ -198,9 +202,7 @@ function QUICKEPGP.CalculateItemGP(itemId, itemRarity, itemLevel, itemEquipLoc, 
     end
     local slotWeight = SLOTWEIGHTS[slot]
     if (slotWeight) then
-      return math.floor(
-        (INFLATION_MOD * (EXPONENTIAL_MOD ^ ((itemLevel / 26) + (itemRarity - 4))) * slotWeight) * NORMALIZER_MOD
-      )
+      return math.floor((INFLATION_MOD * (EXPONENTIAL_MOD ^ ((itemLevel / 26) + (itemRarity - 4))) * slotWeight) * NORMALIZER_MOD)
     elseif not silent then
       QUICKEPGP.error(format("QUICKEPGP::Item %s has no valid slot weight (%s)", itemId, slot))
     end

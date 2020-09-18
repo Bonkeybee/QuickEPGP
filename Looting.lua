@@ -1,7 +1,5 @@
 QUICKEPGP.LOOTING = CreateFrame("Frame")
 
-local TICK_RATE = 0.5
-
 local EMPTY = ""
 local INSTANCE_TYPE = "raid"
 local FREE_FOR_ALL = "freeforall"
@@ -11,9 +9,7 @@ local GROUP_LOOT = "group"
 local NEED_BEFORE_GREED = "needbeforegreed"
 local EQUIPPABLE = "EQUIPPABLE"
 local MAX_PARTY_SIZE = 40
-local MAX_NUM_LOOT = 12
-
-local looting = false
+local MAX_NUM_LOOT = 24
 
 -- ############################################################
 -- ##### LOCAL FUNCTIONS ######################################
@@ -61,9 +57,7 @@ local function masterLootee(slot, type)
             safeGiveMasterLoot(slot, i)
             return
           end
-          if
-            (QUICKEPGP_OPTIONS.LOOTING.equiplootee == 3 and (QUICKEPGP_OPTIONS.LOOTING.equiplooteechar or EMPTY) == name)
-           then
+          if (QUICKEPGP_OPTIONS.LOOTING.equiplootee == 3 and (QUICKEPGP_OPTIONS.LOOTING.equiplooteechar or EMPTY) == name) then
             safeGiveMasterLoot(slot, i)
             return
           end
@@ -76,17 +70,14 @@ local function masterLootee(slot, type)
             safeGiveMasterLoot(slot, i)
             return
           end
-          if
-            (QUICKEPGP_OPTIONS.LOOTING.otherlootee == 3 and (QUICKEPGP_OPTIONS.LOOTING.otherlooteechar or EMPTY) == name)
-           then
+          if (QUICKEPGP_OPTIONS.LOOTING.otherlootee == 3 and (QUICKEPGP_OPTIONS.LOOTING.otherlooteechar or EMPTY) == name) then
             safeGiveMasterLoot(slot, i)
             return
           end
         end
-
-        if (QUICKEPGP.isMasterLooter(name)) then
-          masterlooterIndex = i
-        end
+      end
+      if (QUICKEPGP.isMasterLooter(name)) then
+        masterlooterIndex = i
       end
     end
   end
@@ -177,47 +168,26 @@ local function onEvent(_, event, arg1, arg2)
   if (QUICKEPGP_OPTIONS.LOOTING.enabled) then
     if (event == "LOOT_OPENED") then
       if (getActualNumLootItems() > 0) then
-        looting = true
-      end
-    end
-
-    if (event == "LOOT_CLOSED") then
-      looting = false
-    end
-
-    if (event == "PLAYER_ENTERING_WORLD") then
-      local isInitialLogin = arg1
-      local isReloadingUi = arg2
-      if
-        (QUICKEPGP_OPTIONS.LOOTING.automaster and not isInitialLogin and not isReloadingUi and
-          QUICKEPGP.isInRaidInstance() and
-          GetLootMethod() ~= MASTER_LOOT)
-       then
-        setMasterLoot()
-      end
-    end
-
-    if (event == "PARTY_LOOT_METHOD_CHANGED") then
-      QUICKEPGP.setMasterLootThreshold()
-    end
-  end
-end
-
-local last = GetTime()
-local function onUpdate()
-  if (QUICKEPGP_OPTIONS.LOOTING.enabled) then
-    if (looting) then
-      local now = GetTime()
-      if (now - last >= TICK_RATE) then
-        for i = 1, MAX_NUM_LOOT do
+        for i = MAX_NUM_LOOT, 1, -1 do
           freeForAll(i)
           roundRobin(i)
           masterLoot(i)
           groupLoot(i)
           needBeforeGreed(i)
         end
-        last = now
       end
+    end
+
+    if (event == "PLAYER_ENTERING_WORLD") then
+      local isInitialLogin = arg1
+      local isReloadingUi = arg2
+      if (QUICKEPGP_OPTIONS.LOOTING.automaster and not isInitialLogin and not isReloadingUi and QUICKEPGP.isInRaidInstance() and GetLootMethod() ~= MASTER_LOOT) then
+        setMasterLoot()
+      end
+    end
+
+    if (event == "PARTY_LOOT_METHOD_CHANGED") then
+      QUICKEPGP.setMasterLootThreshold()
     end
   end
 end
@@ -245,4 +215,3 @@ QUICKEPGP.LOOTING:RegisterEvent("LOOT_CLOSED")
 QUICKEPGP.LOOTING:RegisterEvent("PLAYER_ENTERING_WORLD")
 QUICKEPGP.LOOTING:RegisterEvent("PARTY_LOOT_METHOD_CHANGED")
 QUICKEPGP.LOOTING:SetScript("OnEvent", onEvent)
-QUICKEPGP.LOOTING:SetScript("OnUpdate", onUpdate)
