@@ -29,15 +29,15 @@ local CLASS_INDEX = 3
 local ROLE_INDEX = 4
 local ISML_INDEX = 5
 
-StaticPopupDialogs["QEPGP_RELOADUI"] = {
-  text = "It's recommended to reload the UI to save the current raid settings. Would you like to reload now?",
-  button1 = "Reload",
-  button2 = "Cancel",
-  OnAccept = ReloadUI,
-  timeout = 0,
-  whileDead = true,
-  hideOnEscape = true
-}
+-- StaticPopupDialogs["QEPGP_RELOADUI"] = {
+--   text = "It's recommended to reload the UI to save the current raid settings. Would you like to reload now?",
+--   button1 = "Reload",
+--   button2 = "Cancel",
+--   OnAccept = ReloadUI,
+--   timeout = 0,
+--   whileDead = true,
+--   hideOnEscape = true
+-- }
 
 -- ############################################################
 -- ##### LOCAL FUNCTIONS ######################################
@@ -276,7 +276,7 @@ QUICKEPGP.startRaid = function()
         "Raid started. Type '/epgp stop' to stop a raid. It's recommended to reload your UI to save this raid's settings."
       )
       QUICKEPGP.raidStatus()
-      StaticPopup_Show("QEPGP_RELOADUI")
+      -- StaticPopup_Show("QEPGP_RELOADUI")
     else
       QUICKEPGP.error("You have already started a raid! Type '/epgp stop' to stop a raid.")
     end
