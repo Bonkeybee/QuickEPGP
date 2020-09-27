@@ -146,6 +146,29 @@ end
 -- ##### GLOBAL FUNCTIONS #####################################
 -- ############################################################
 
+QUICKEPGP.decay = function()
+  QUICKEPGP_PRE_DECAY = {}
+  QUICKEPGP_POST_DECAY = {}
+
+  QUICKEPGP.GUILD:RefreshAll()
+  for name,data in pairs(QUICKEPGP.GUILD.Members) do
+    if (name) then
+      QUICKEPGP_PRE_DECAY[name] = (data.EP or QUICKEPGP.MINIMUM_EP)..","..(data.GP or QUICKEPGP.MINIMUM_GP)
+
+      local ep = math.floor((data.EP or QUICKEPGP.MINIMUM_EP) * 0.8)
+      local gp = math.floor(max((data.GP or QUICKEPGP.MINIMUM_GP) * 0.8, QUICKEPGP.MINIMUM_GP))
+
+      local dep = ep - data.EP
+      local dgp = gp - data.GP
+
+      print("test: " .. name .." ".. dep .." ".. dgp)
+      QUICKEPGP.SafeSetOfficerNote(name, dep, dgp)
+      QUICKEPGP_POST_DECAY[name] = ep..","..gp
+    end
+  end
+  SendChatMessage("EPGP decayed by 20%", "OFFICER")
+end
+
 QUICKEPGP.getEPGPPRMessage = function(name)
   local member = QUICKEPGP.GUILD:GetMemberInfo(name or UnitName("player"), true)
   if (member) then
