@@ -1,6 +1,8 @@
 local EP = "EP"
 local GP = "GP"
 local EMPTY = ""
+local addFormat = "Adding %d%s to %s (%s)"
+local removeFormat = "Removing %d%s from %s (%s)"
 
 local INFLATION_MOD = 10
 local EXPONENTIAL_MOD = 4
@@ -122,23 +124,11 @@ local OVERRIDE = {
 -- ##### LOCAL FUNCTIONS ######################################
 -- ############################################################
 
-local function notifyEPGP(name, value, reason, type)
+local function notifyEPGP(name, value, type, reason)
   if (name and value) then
-    local message = ""
-    if (value >= 0) then
-      message = message .. "Adding "
-    else
-      message = message .. "Removing "
-    end
-    if (type == EP) then
-      message = message .. value .. "EP to " .. name
-    elseif (type == GP) then
-      message = message .. value .. "GP to " .. name
-    end
-    if (reason) then
-      message = message .. " for " .. reason
-    end
-    SendChatMessage(message, "OFFICER")
+    local f = value >= 0 and addFormat or removeFormat
+    local r = (reason and reason:len() > 0) and reason or "no reason specified"
+    SendChatMessage(string.format(f, math.abs(value), type, name, r), "OFFICER")
   end
 end
 
@@ -151,9 +141,9 @@ QUICKEPGP.decay = function()
   QUICKEPGP_POST_DECAY = {}
 
   QUICKEPGP.GUILD:RefreshAll()
-  for name,data in pairs(QUICKEPGP.GUILD.Members) do
+  for name, data in pairs(QUICKEPGP.GUILD.Members) do
     if (name) then
-      QUICKEPGP_PRE_DECAY[name] = (data.EP or QUICKEPGP.MINIMUM_EP)..","..(data.GP or QUICKEPGP.MINIMUM_GP)
+      QUICKEPGP_PRE_DECAY[name] = (data.EP or QUICKEPGP.MINIMUM_EP) .. "," .. (data.GP or QUICKEPGP.MINIMUM_GP)
 
       local ep = math.floor((data.EP or QUICKEPGP.MINIMUM_EP) * 0.8)
       local gp = math.floor(max((data.GP or QUICKEPGP.MINIMUM_GP) * 0.8, QUICKEPGP.MINIMUM_GP))
@@ -161,9 +151,9 @@ QUICKEPGP.decay = function()
       local dep = ep - data.EP
       local dgp = gp - data.GP
 
-      print("test: " .. name .." ".. dep .." ".. dgp)
+      print("test: " .. name .. " " .. dep .. " " .. dgp)
       QUICKEPGP.SafeSetOfficerNote(name, dep, dgp)
-      QUICKEPGP_POST_DECAY[name] = ep..","..gp
+      QUICKEPGP_POST_DECAY[name] = ep .. "," .. gp
     end
   end
   SendChatMessage("EPGP decayed by 20%", "OFFICER")
@@ -225,7 +215,9 @@ function QUICKEPGP.CalculateItemGP(itemId, itemRarity, itemLevel, itemEquipLoc, 
     end
     local slotWeight = SLOTWEIGHTS[slot]
     if (slotWeight) then
-      return math.floor((INFLATION_MOD * (EXPONENTIAL_MOD ^ ((itemLevel / 26) + (itemRarity - 4))) * slotWeight) * NORMALIZER_MOD)
+      return math.floor(
+        (INFLATION_MOD * (EXPONENTIAL_MOD ^ ((itemLevel / 26) + (itemRarity - 4))) * slotWeight) * NORMALIZER_MOD
+      )
     elseif not silent then
       QUICKEPGP.error(format("QUICKEPGP::Item %s has no valid slot weight (%s)", itemId, slot))
     end
@@ -248,8 +240,8 @@ QUICKEPGP.modifyEPGP = function(name, dep, dgp, reason, mass)
   local member = QUICKEPGP.GUILD:GetMemberInfo(name)
   if (member) then
     if (not mass) then
-      notifyEPGP(member.Name, dep, reason, EP)
-      notifyEPGP(member.Name, dgp, reason, GP)
+      notifyEPGP(member.Name, dep, EP, reason)
+      notifyEPGP(member.Name, dgp, GP, reason)
     end
     QUICKEPGP.SafeSetOfficerNote(member.Name, dep, dgp)
   end
