@@ -279,9 +279,9 @@ local function Receive(prefix, message, _, sender)
 end
 
 function QUICKEPGP.Items:OnEvent(event, ...)
-  if QUICKEPGP_OPTIONS.LOOTING.autotrack and event == "CHAT_MSG_LOOT" and IsLootMaster() then
+  if QUICKEPGP_OPTIONS.LOOTING.autotrack and event == "CHAT_MSG_LOOT" and IsLootMaster() and CanEditOfficerNote() then
     local text, _, _, _, playerName2 = ...
-    local member = QUICKEPGP.GUILD:GetMemberInfo(playerName2)
+    local member = QUICKEPGP.GUILD:GetMemberInfo(playerName2, true)
     if
       member and
         ((QUICKEPGP_OPTIONS.LOOTING.equiplootee == 1 and QUICKEPGP.isMasterLooter(member.Name)) or
@@ -303,12 +303,27 @@ local function ProcessQueue()
   end
 end
 
+local function ClearExpired()
+  local expired = {}
+  local now = GetServerTime()
+  for _, v in ipairs(QUICKEPGP.Items.Array) do
+    if v.Expiration + 7200 < now then
+      expired[#expired + 1] = v
+    end
+  end
+
+  for _, v in ipairs(expired) do
+    QUICKEPGP.Items:Untrack(v, true)
+  end
+end
+
 function QUICKEPGP.Items:Initialize()
   Deserialize()
 
   local function RegisterSendAndReceive()
     local guild = GetGuildInfo("player")
     if guild then
+      ClearExpired()
       if CanEditOfficerNote() then
         QUICKEPGP.LIBS:RegisterComm(MODULE_NAME, Receive)
         QUICKEPGP.Items:RegisterEvent("CHAT_MSG_LOOT")
