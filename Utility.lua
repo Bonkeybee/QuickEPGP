@@ -15,7 +15,7 @@ local function onEvent(_, event)
   end
 end
 
-local delay = 0.250
+local delay = 0.1
 local lastUpdate = 0
 local lastIndex = nil
 local function onUpdate()

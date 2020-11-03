@@ -165,7 +165,7 @@ QUICKEPGP.openMasterFrame = function()
     QuickEPGPMasterLootFrame:SetToplevel(true)
     QuickEPGPMasterLootFrame:SetMovable(true)
     QuickEPGPMasterLootFrame:SetResizable(true)
-    QuickEPGPMasterLootFrame:SetMinResize(300, 150)
+    QuickEPGPMasterLootFrame:SetMinResize(300, 175)
     QuickEPGPMasterLootFrame:RegisterForDrag("LeftButton")
     QuickEPGPMasterLootFrame:SetBackdrop(
       {
@@ -222,12 +222,23 @@ QUICKEPGP.openMasterFrame = function()
         QuickEPGPMasterLootFrame:StopMovingOrSizing()
       end
     )
-
     local padding = 4
+
+    local closeButton = CreateFrame("Button", nil, QuickEPGPMasterLootFrame, "UIPanelButtonTemplate")
+    closeButton:SetText("X")
+    closeButton:SetPoint("TOPRIGHT", QuickEPGPMasterLootFrame, "TOPRIGHT", -padding, -padding)
+    closeButton:SetScript(
+      "OnClick",
+      function()
+        QuickEPGPMasterLootFrame:Hide()
+      end
+    )
+
     local dropper = CreateFrame("Frame", nil, QuickEPGPMasterLootFrame)
     QuickEPGPMasterLootFrame.Dropper = dropper
     dropper:SetSize(64, 64)
-    dropper:SetPoint("TOPRIGHT", QuickEPGPMasterLootFrame, "TOPRIGHT", -padding, -padding)
+    dropper:SetPoint("TOP", closeButton, "BOTTOM", 0, -padding)
+    dropper:SetPoint("RIGHT", closeButton, "RIGHT")
     dropper:SetBackdrop(
       {
         edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
@@ -452,6 +463,36 @@ QUICKEPGP.openMasterFrame = function()
         ManualModifyEPGP(true)
       end
     )
+
+    local massValueHeader = manualFrame:CreateFontString(nil, "OVERLAY", "GameTooltipText")
+    massValueHeader:SetPoint("TOP", addButton, "BOTTOM", 0, 0)
+    massValueHeader:SetPoint("LEFT", manualHeader, "LEFT", 0, 0)
+    massValueHeader:SetTextColor(1, 1, 1, 1)
+    massValueHeader:SetText("Mass EP Amount:")
+
+    local massAddButton = CreateFrame("Button", nil, manualFrame, "UIPanelButtonTemplate")
+    massAddButton:SetText("Mass Change")
+    massAddButton:SetSize(90, 22)
+    massAddButton:SetPoint("TOP", massValueHeader, "BOTTOM", -padding, -padding)
+    massAddButton:SetPoint("RIGHT", manualFrame, -padding - padding - 16, -padding)
+    massAddButton:SetScript(
+      "OnClick",
+      function()
+        QUICKEPGP.RaidReward(QuickEPGPMasterLootFrame.Manual.MassValueBox:GetNumber(), "manual edit")
+      end
+    )
+
+    local massValueBox = CreateFrame("EditBox", nil, manualFrame, "InputBoxTemplate")
+    manualFrame.MassValueBox = massValueBox
+    massValueBox:SetFontObject(ChatFontNormal)
+    massValueBox:ClearAllPoints() --bugfix
+    massValueBox:SetPoint("TOP", massAddButton, "TOP")
+    massValueBox:SetPoint("BOTTOM", massAddButton, "BOTTOM")
+    massValueBox:SetPoint("RIGHT", massAddButton, "LEFT", -padding, 0)
+    massValueBox:SetPoint("LEFT", valueBox, "LEFT", 0, 0)
+    massValueBox:SetAutoFocus(false)
+    massValueBox:SetNumeric()
+    massValueBox:SetNumber(0)
 
     manualFrame:Hide()
 

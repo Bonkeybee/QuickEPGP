@@ -3,6 +3,9 @@ local loaded = false
 local valid = false
 local race = false
 
+local addFormat = "Adding %dEP to all raid members (%s)"
+local removeFormat = "Removing %dEP from all raid members (%s)"
+
 local PLAYER = "player"
 local MASTER_LOOT = "master"
 local RAID_LEADER = 2
@@ -128,7 +131,7 @@ local function timeReward(index, value, pastEnd)
     reason = "raid time"
   end
 
-  for name, _ in pairs(QUICKEPGP.getRaidMembers()) do
+  for name, _ in pairs(QUICKEPGP.getRaidMembers() > 0) do
     local ep = value
 
     if pastEnd and not QUICKEPGP_STARTING_RAIDERS[name] then
@@ -201,12 +204,17 @@ end
 -- ############################################################
 
 function QUICKEPGP.RaidReward(value, reason)
-  if CanEditOfficerNote() then
+  if (CanEditOfficerNote()) then
     for name, _ in pairs(QUICKEPGP.getRaidMembers()) do
       QUICKEPGP.modifyEPGP(name, value, nil, reason, true)
     end
-    local message = format("Adding %sEP to all raid members for %s.", value, reason)
-    SendChatMessage(message, RAID)
+
+    local f = value >= 0 and addFormat or removeFormat
+    local r = (reason and reason:len() > 0) and reason or "no reason specified"
+    local message = format(f, math.abs(value), r)
+    if (IsInRaid()) then
+      SendChatMessage(message, RAID)
+    end
     SendChatMessage(message, OFFICER)
   else
     QUICKEPGP.error("You do not have permisson to do that.")
