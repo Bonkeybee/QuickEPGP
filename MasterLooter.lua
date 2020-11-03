@@ -100,7 +100,11 @@ local function CreateTrackingRow(parent, showBackdrop)
         color = "|cFFFF0000"
       end
 
-      self.TimeText:SetText(string.format("%s%d:%02d remaining|r", color, hours, minutes))
+      if seconds == 0 and hours == 0 then
+        self.TimeText:SetText("Expired!|r")
+      else
+        self.TimeText:SetText(string.format("%s%d:%02d remaining|r", color, hours, minutes))
+      end
     end
   end
 
