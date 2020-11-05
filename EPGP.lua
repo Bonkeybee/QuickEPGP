@@ -151,7 +151,6 @@ QUICKEPGP.decay = function()
       local dep = ep - data.EP
       local dgp = gp - data.GP
 
-      print("test: " .. name .. " " .. dep .. " " .. dgp)
       QUICKEPGP.SafeSetOfficerNote(name, dep, dgp)
       QUICKEPGP_POST_DECAY[name] = ep .. "," .. gp
     end

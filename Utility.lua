@@ -4,6 +4,21 @@ local loaded = false
 local officerNoteUpdateTable = {}
 
 -- ############################################################
+-- ##### LOGGING FUNCTIONS ####################################
+-- ############################################################
+
+QUICKEPGP.info = function(str1, str2)
+  local str = ""
+  if (str1) then
+    str = str .. "|cFFFFFF00" .. str1 .. "|r"
+  end
+  if (str2) then
+    str = str .. "|cFFFFFFFF" .. str2 .. "|r"
+  end
+  print(str)
+end
+
+-- ############################################################
 -- ##### LOCAL FUNCTIONS ######################################
 -- ############################################################
 
@@ -24,6 +39,7 @@ local function onUpdate()
     local name, delta = next(officerNoteUpdateTable, lastIndex)
 
     if name and delta and now - lastUpdate >= delay then
+      QUICKEPGP.info("SafeSetOfficerNote "..(name or "?")..": "..(delta.EP or 0).."EP "..(delta.GP or 0).."GP")
       local member = QUICKEPGP.GUILD:GetMemberInfo(name)
 
       if not member then
@@ -169,17 +185,6 @@ QUICKEPGP.pluralize = function(single, plural, number)
   else
     return plural
   end
-end
-
-QUICKEPGP.info = function(str1, str2)
-  local str = ""
-  if (str1) then
-    str = str .. "|cFFFFFF00" .. str1 .. "|r"
-  end
-  if (str2) then
-    str = str .. "|cFFFFFFFF" .. str2 .. "|r"
-  end
-  print(str)
 end
 
 QUICKEPGP.error = function(str)

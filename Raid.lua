@@ -131,7 +131,7 @@ local function timeReward(index, value, pastEnd)
     reason = "raid time"
   end
 
-  for name, _ in pairs(QUICKEPGP.getRaidMembers() > 0) do
+  for name, _ in pairs(QUICKEPGP.getRaidMembers()) do
     local ep = value
 
     if pastEnd and not QUICKEPGP_STARTING_RAIDERS[name] then
