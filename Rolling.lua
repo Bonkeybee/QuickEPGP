@@ -17,11 +17,21 @@ local rollTable = {}
 local highestRoller = nil
 local currentItem = nil
 
+local epRolling = false
+local epRollTable = {}
+local highestEPRoller = nil
+local currentEPItem = nil
+
+
+QUICKEPGP.epRollTable = function()
+  return epRollTable
+end
+
 -- ############################################################
 -- ##### LOCAL FUNCTIONS ######################################
 -- ############################################################
 
-local function findHighestRoller(rollTable)
+local function findHighestRoller()
   local name = nil
   local highestPR = 0
   local highestLevel = 0
@@ -95,6 +105,10 @@ local function setHighestRoller(name)
   end
 end
 
+local function setHighestEPRoller(name)
+  highestEPRoller = name
+end
+
 local function validateRoll(player)
   if (not QUICKEPGP.raidMember(player)) then
     QUICKEPGP.error("Skipping " .. (player or EMPTY) .. "'s need roll: not in raid")
@@ -136,6 +150,19 @@ local function handleNeeding(player)
   )
 end
 
+local function handleEPNeeding(player, rollResult)
+  if (validateRoll(player)) then
+    if (not epRollTable[player]) then
+      epRollTable[player] = {
+        QUICKEPGP.guildMemberLevel(player),
+        QUICKEPGP.guildMemberClass(player),
+        QUICKEPGP.guildMemberEP(player),
+        rollResult
+      }
+    end
+  end
+end
+
 local function handlePassing(player)
   if (validateRoll(player)) then
     if (rollTable[player]) then
@@ -148,7 +175,7 @@ local function handlePassing(player)
       )
     end
     rollTable[player] = nil
-    setHighestRoller(findHighestRoller(rollTable))
+    setHighestRoller(findHighestRoller())
   end
   QUICKEPGP.LIBS:SendCommMessage(
     MODULE_NAME,
@@ -159,11 +186,35 @@ local function handlePassing(player)
   )
 end
 
+local function handleEPPassing(player)
+  if (validateRoll(player)) then
+
+    if (epRollTable[player]) then
+      SendChatMessage(
+        format(
+          "%s passed",
+          QUICKEPGP.getCharacterString(QUICKEPGP.guildMemberLevel(player), QUICKEPGP.guildMemberClass(player), player)
+        ),
+        "RAID"
+      )
+    end
+    epRollTable[player][3] = 0
+    epRollTable[player][4] = 0
+  end
+end
+
 local function clearRollData()
   rolling = false
   rollTable = {}
   clearCurrentItem()
   clearHighestRoller()
+end
+
+local function clearEPRollData()
+  epRolling = false
+  epRollTable = {}
+  highestEPRoller = nil
+  currentEPItem = nil
 end
 
 local function endRolling(cancel)
@@ -222,6 +273,42 @@ local function endRolling(cancel)
   QUICKEPGP.ROLLING.TrackedItem = nil
   QUICKEPGP:CloseRollFrame()
   clearRollData()
+end
+
+local function endEPRolling()
+  setHighestEPRoller(QUICKEPGP.compareRoll(epRollTable))
+  if (highestEPRoller) then
+    SendChatMessage(
+      format(
+        "%s (%s EP) wins %s",
+        QUICKEPGP.getCharacterString(
+          QUICKEPGP.guildMemberLevel(highestEPRoller),
+          QUICKEPGP.guildMemberClass(highestEPRoller),
+          highestEPRoller
+        ),
+        QUICKEPGP.guildMemberEP(highestEPRoller),
+        currentEPItem
+      ),
+      "RAID_WARNING"
+    )
+    SendChatMessage(
+      format(
+        "%s (%s EP) wins %s",
+        QUICKEPGP.getCharacterString(
+          QUICKEPGP.guildMemberLevel(highestEPRoller),
+          QUICKEPGP.guildMemberClass(highestEPRoller),
+          highestEPRoller
+        ),
+        QUICKEPGP.guildMemberEP(highestEPRoller),
+        currentEPItem
+      ),
+      "OFFICER"
+    )
+  else
+    SendChatMessage(format("Everyone passed on %s", currentEPItem), "RAID_WARNING")
+    SendChatMessage(format("Everyone passed on %s", currentEPItem), "OFFICER")
+  end
+  clearEPRollData()
 end
 
 local handleRollFrameEvent = function(module, message, distribution, _)
@@ -322,6 +409,22 @@ QUICKEPGP.handleRolling = function(event, command, author)
       end
     end
   end
+  if (epRolling) then
+    if (event == "CHAT_MSG_SYSTEM") then
+      local rollAuthor, rollResult, rollMin, rollMax = string.match(command, "(.+) rolls (%d+) %((%d+)-(%d+)%)")
+      if (rollAuthor and rollResult and tonumber(rollMin) == 1 and tonumber(rollMax) == 100) then
+        return handleEPNeeding(QUICKEPGP.NormalizeName(rollAuthor), tonumber(rollResult))
+      end
+    end
+    if (event == "CHAT_MSG_RAID" or event == "CHAT_MSG_RAID_LEADER") then
+      if (command == "pass") then
+        return handleEPPassing(author)
+      end
+      if (command == "end" and UnitIsUnit("player", author)) then
+        return endEPRolling()
+      end
+    end
+  end
 end
 
 QUICKEPGP.startRolling = function(itemId, itemLink)
@@ -371,6 +474,22 @@ QUICKEPGP.distributeItem = function(message, type)
           end
         end
       end
+    end
+  end
+end
+
+QUICKEPGP.startEPRolling = function(itemLink)
+  if CanEditOfficerNote() then
+    local raidMember = QUICKEPGP.raidMember(UnitName("player"))
+    if (raidMember and raidMember[2] > 0) then
+      if (epRolling) then
+        endEPRolling()
+      end
+      SendChatMessage(format("Starting an EP roll on %s", itemLink), "RAID_WARNING")
+      SendChatMessage(format("Type /roll or PASS"), "RAID")
+      currentEPItem = itemLink
+      epRolling = true
+      epRollTable = {}
     end
   end
 end

@@ -81,7 +81,9 @@ local function masterLootee(slot, type)
       end
     end
   end
-  GiveMasterLoot(slot, masterlooterIndex)
+  if (slot and masterlooterIndex) then
+    GiveMasterLoot(slot, masterlooterIndex)
+  end
 end
 
 local function freeForAll(i)

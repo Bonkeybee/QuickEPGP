@@ -1,4 +1,4 @@
-## Interface: 11305
+## Interface: 11306
 ## Title: QuickEPGP
 ## Notes: QuickEPGP
 ## SavedVariables: QUICKEPGP_OPTIONS, QUICKEPGP_RAIDING_TIMESTAMP, QUICKEPGP_TIME_REWARDS, QUICKEPGP_STARTING_RAIDERS, QUICKEPGP_PRE_DECAY, QUICKEPGP_POST_DECAY
@@ -6,7 +6,7 @@
 ## LoadOnDemand: 0
 ## DefaultState: enabled
 ## Author: Bonkeybee
-## Version: 11305.47
+## Version: 11306.48
 
 
 Libs\LibStub\LibStub.lua

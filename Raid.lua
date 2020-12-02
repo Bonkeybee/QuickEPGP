@@ -16,13 +16,13 @@ local OFFICER = "OFFICER"
 
 local NUM_RAID_MEMBERS = 40
 local TIME_REWARDS_TEMPLATE = {
-  {Time = 1800 * 0, EP = 100},
-  {Time = 1800 * 1, EP = 150},
-  {Time = 1800 * 2, EP = 150},
-  {Time = 1800 * 3, EP = 150},
-  {Time = 1800 * 4, EP = 150},
-  {Time = 1800 * 5, EP = 150},
-  {Time = 1800 * 6, EP = 150}
+  {Time = 1800 * 0, EP = 150},
+  {Time = 1800 * 1, EP = 200},
+  {Time = 1800 * 2, EP = 200},
+  {Time = 1800 * 3, EP = 200},
+  {Time = 1800 * 4, EP = 200},
+  {Time = 1800 * 5, EP = 200},
+  {Time = 1800 * 6, EP = 200}
 }
 local TIME_REWARDS_TEMPLATE_COUNT = QUICKEPGP.count(TIME_REWARDS_TEMPLATE)
 

@@ -52,8 +52,8 @@ local OVERRIDE = {
   [18423] = 0, --Head of Onyxia
   [18705] = 187, --Mature Black Dragon Sinew
   --BLACKWING LAIR OVERRIDES
-  [19002] = 53, --Head of Nefarian TODO FREE P6
-  [19003] = 53, --Head of Nefarian TODO FREE P6
+  [19002] = 0, --Head of Nefarian
+  [19003] = 0, --Head of Nefarian
   --ZUL'GURUB OVERRIDES
   [19717] = 16, --Primal Hakkari Armsplint
   [19716] = 16, --Primal Hakkari Bindings
@@ -115,9 +115,45 @@ local OVERRIDE = {
   [20930] = 93, --Veklors Diadem
   [20931] = 93, --Skin Of The Great Sandworm
   [20932] = 60, --Qiraji Bindings Of Dominance
-  [20933] = 136 --Husk Of The Old God
-
-  --TODO NAXXRAMAS OVERRIDES
+  [20933] = 136, --Husk Of The Old God
+  --NAXXRAMAS OVERRIDES
+  [23042] = 0, --Loathebs Reflection
+  [23033] = 0, --Icy Scale Coif
+  [23032] = 0, --Glacial Headdress
+  [23028] = 0, --Hailstone Band
+  [23020] = 0, --Polar Helmet
+  [23019] = 0, --Icebane Helmet
+  [22968] = 0, --Glacial Mantle
+  [22967] = 0, --Icy Scale Spaulders
+  [22941] = 0, --Polar Shoulder Pads
+  [22940] = 0, --Icebane Pauldrons
+  [22935] = 0, --Touch Of Frost
+  [22520] = 113, --The Phylactery Of Kelthuzad
+  [22372] = 91, --Desecrated Sandals
+  [22371] = 102, --Desecrated Gloves
+  [22370] = 102, --Desecrated Belt
+  [22369] = 102, --Desecrated Bindings
+  [22368] = 91, --Desecrated Shoulderpads
+  [22367] = 136, --Desecrated Circlet
+  [22366] = 136, --Desecrated Leggings
+  [22365] = 91, --Desecrated Boots
+  [22364] = 102, --Desecrated Handguards
+  [22363] = 102, --Desecrated Girdle
+  [22362] = 102, --Desecrated Wristguards
+  [22361] = 91, --Desecrated Spaulders
+  [22360] = 136, --Desecrated Headpiece
+  [22359] = 136, --Desecrated Legguards
+  [22358] = 91, --Desecrated Sabatons
+  [22357] = 102, --Desecrated Gauntlets
+  [22356] = 102, --Desecrated Waistguard
+  [22355] = 102, --Desecrated Bracers
+  [22354] = 91, --Desecrated Pauldrons
+  [22353] = 136, --Desecrated Helmet
+  [22352] = 136, --Desecrated Legplates
+  [22349] = 168, --Desecrated Breastplate
+  [22351] = 168, --Desecrated Robe
+  [22350] = 168, --Desecrated Tunic
+  [22726] = 1213 --Splinter Of Atiesh
 }
 
 -- ############################################################
@@ -195,6 +231,45 @@ QUICKEPGP.comparePR = function(name1, name2, rollTable)
     return name1
   else
     return name2
+  end
+end
+
+QUICKEPGP.compareRoll = function(epRollTable)
+  local highestEP1 = {}
+  highestEP1.name = nil
+  highestEP1.ep = 0
+  highestEP1.roll = nil
+  for name,data in pairs(epRollTable) do
+    if (name) then
+      if (data[3] > highestEP1.ep) then
+        highestEP1.roll = data[4]
+        highestEP1.ep = data[3]
+        highestEP1.name = name
+      end
+    end
+  end
+
+  local highestEP2 = {}
+  highestEP2.name = nil
+  highestEP2.ep = 0
+  highestEP2.roll = nil
+  for name,data in pairs(epRollTable) do
+    if (name and name ~= highestEP1.name) then
+      if (data[3] > highestEP2.ep) then
+        highestEP2.roll = data[4]
+        highestEP2.ep = data[3]
+        highestEP2.name = name
+      end
+    end
+  end
+
+  if (not highestEP2.name) then
+    return highestEP1.name
+  end
+  if (highestEP1.roll > highestEP2.roll) then
+    return highestEP1.name
+  else
+    return highestEP2.name
   end
 end
 

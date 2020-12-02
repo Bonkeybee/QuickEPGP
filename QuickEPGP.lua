@@ -53,16 +53,28 @@ local function onEvent(_, event, message, author)
   end
 
   if (event == "CHAT_MSG_RAID" or event == "CHAT_MSG_RAID_LEADER") then
-    local command = strlower(strsub(message, 1, 4))
-    if (command == "roll" and UnitIsUnit("player", name)) then
-      local itemLink = strsub(message, 5)
-      local itemId = QUICKEPGP.itemIdFromLink(itemLink)
-      if itemId then
-        return QUICKEPGP.startRolling(itemId, itemLink)
+    if (UnitIsUnit("player", name)) then
+      local command = strlower(strsub(message, 1, 4))
+      if (command == "roll") then
+        local itemLink = strsub(message, 5)
+        local itemId = QUICKEPGP.itemIdFromLink(itemLink)
+        if itemId then
+          return QUICKEPGP.startRolling(itemId, itemLink)
+        end
+      end
+      command = strlower(strsub(message, 1, 6))
+      if (command == "eproll") then
+        local itemLink = strsub(message, 7)
+        local itemId = QUICKEPGP.itemIdFromLink(itemLink)
+        if itemId then
+          return QUICKEPGP.startEPRolling(itemLink)
+        end
       end
     end
+    return QUICKEPGP.handleRolling(event, strlower(message), name)
+  elseif (event == "CHAT_MSG_SYSTEM") then
+    return QUICKEPGP.handleRolling(event, strlower(message), name)
   end
-  QUICKEPGP.handleRolling(event, strlower(message), name)
 end
 
 QUICKEPGP.FRAME:RegisterEvent("CHAT_MSG_WHISPER")
@@ -70,6 +82,7 @@ QUICKEPGP.FRAME:RegisterEvent("CHAT_MSG_RAID")
 QUICKEPGP.FRAME:RegisterEvent("CHAT_MSG_RAID_LEADER")
 QUICKEPGP.FRAME:RegisterEvent("CHAT_MSG_RAID_WARNING")
 QUICKEPGP.FRAME:RegisterEvent("CHAT_MSG_OFFICER")
+QUICKEPGP.FRAME:RegisterEvent("CHAT_MSG_SYSTEM")
 QUICKEPGP.FRAME:SetScript("OnEvent", onEvent)
 
 -- ############################################################
