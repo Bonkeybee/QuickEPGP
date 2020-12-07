@@ -42,13 +42,13 @@ local function safeLootSlot(slot)
   end
 end
 
-local function masterLootee(slot, type)
+local function masterLootee(slot, itemType)
   local masterlooterIndex = nil
   for i = 1, MAX_PARTY_SIZE do
     local name = GetMasterLootCandidate(slot, i)
     if (name) then
       if (QUICKEPGP.isOnlineRaid(name)) then
-        if (type == EQUIPPABLE) then
+        if (itemType == EQUIPPABLE) then
           if (QUICKEPGP_OPTIONS.LOOTING.equiplootee == 1 and QUICKEPGP.isMasterLooter(name)) then
             safeGiveMasterLoot(slot, i)
             return
@@ -82,7 +82,7 @@ local function masterLootee(slot, type)
     end
   end
   if (slot and masterlooterIndex) then
-    GiveMasterLoot(slot, masterlooterIndex)
+    safeGiveMasterLoot(slot, masterlooterIndex)
   end
 end
 
@@ -107,7 +107,7 @@ local function masterLoot(i)
       if (not isQuest and not isActive) then
         if (rarity) then
           local itemLink = GetLootSlotLink(i)
-          if (itemLink) then
+          if (itemLink and rarity < 5) then
             if (IsEquippableItem(itemLink) and rarity >= QUICKEPGP_OPTIONS.LOOTING.equiprarity) then
               masterLootee(i, EQUIPPABLE)
             elseif (rarity >= QUICKEPGP_OPTIONS.LOOTING.otherrarity) then
