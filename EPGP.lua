@@ -156,6 +156,10 @@ local OVERRIDE = {
   [22726] = 1213 --Splinter Of Atiesh
 }
 
+local IGNORE = {
+  [6265] = true
+}
+
 -- ############################################################
 -- ##### LOCAL FUNCTIONS ######################################
 -- ############################################################
@@ -274,6 +278,9 @@ QUICKEPGP.compareRoll = function(epRollTable)
 end
 
 function QUICKEPGP.CalculateItemGP(itemId, itemRarity, itemLevel, itemEquipLoc, silent)
+  if (IGNORE[itemId]) then
+    return 0
+  end
   if (OVERRIDE[itemId]) then
     return OVERRIDE[itemId]
   end
