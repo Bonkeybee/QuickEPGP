@@ -132,21 +132,21 @@ local OVERRIDE = {
   [22372] = 91, --Desecrated Sandals
   [22371] = 102, --Desecrated Gloves
   [22370] = 102, --Desecrated Belt
-  [22369] = 102, --Desecrated Bindings
+  [22369] = 68, --Desecrated Bindings
   [22368] = 91, --Desecrated Shoulderpads
   [22367] = 136, --Desecrated Circlet
   [22366] = 136, --Desecrated Leggings
   [22365] = 91, --Desecrated Boots
   [22364] = 102, --Desecrated Handguards
   [22363] = 102, --Desecrated Girdle
-  [22362] = 102, --Desecrated Wristguards
+  [22362] = 68, --Desecrated Wristguards
   [22361] = 91, --Desecrated Spaulders
   [22360] = 136, --Desecrated Headpiece
   [22359] = 136, --Desecrated Legguards
   [22358] = 91, --Desecrated Sabatons
   [22357] = 102, --Desecrated Gauntlets
   [22356] = 102, --Desecrated Waistguard
-  [22355] = 102, --Desecrated Bracers
+  [22355] = 68, --Desecrated Bracers
   [22354] = 91, --Desecrated Pauldrons
   [22353] = 136, --Desecrated Helmet
   [22352] = 136, --Desecrated Legplates
@@ -243,7 +243,7 @@ QUICKEPGP.compareRoll = function(epRollTable)
   highestEP1.name = nil
   highestEP1.ep = 0
   highestEP1.roll = nil
-  for name,data in pairs(epRollTable) do
+  for name, data in pairs(epRollTable) do
     if (name) then
       if (data[3] > highestEP1.ep) then
         highestEP1.roll = data[4]
@@ -257,7 +257,7 @@ QUICKEPGP.compareRoll = function(epRollTable)
   highestEP2.name = nil
   highestEP2.ep = 0
   highestEP2.roll = nil
-  for name,data in pairs(epRollTable) do
+  for name, data in pairs(epRollTable) do
     if (name and name ~= highestEP1.name) then
       if (data[3] > highestEP2.ep) then
         highestEP2.roll = data[4]
