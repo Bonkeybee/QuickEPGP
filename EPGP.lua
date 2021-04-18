@@ -153,7 +153,11 @@ local OVERRIDE = {
   [22349] = 168, --Desecrated Breastplate
   [22351] = 168, --Desecrated Robe
   [22350] = 168, --Desecrated Tunic
-  [22726] = 1213 --Splinter Of Atiesh
+  [22726] = 1213, --Splinter Of Atiesh
+  [23549] = 30, --Fortitude of the Scourge
+  [23545] = 30, --Power of the Scourge
+  [23547] = 30, --Resilience of the Scourge
+  [23548] = 30 --Might of the Scourge
 }
 
 local IGNORE = {
